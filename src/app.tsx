@@ -1,11 +1,14 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { useGameState } from "./hooks/use-game-state";
 import { Board } from "./components/board";
 import { Hud } from "./components/hud";
 import { SpiritPanel } from "./components/spirit-panel";
+import { ELEMENTS, FOX_DEFS } from "./constants";
 
 function App() {
   const { state, selectCell, activateUlt, resetGame } = useGameState();
+  const [showHelp, setShowHelp] = useState(false);
 
   return (
     <div
@@ -29,6 +32,48 @@ function App() {
       />
 
       <SpiritPanel spiritCharge={state.spiritCharge} onActivate={activateUlt} />
+
+      {/* Help toggle */}
+      <div className="w-full max-w-[420px]">
+        <button
+          className="text-xs text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1"
+          onClick={() => setShowHelp((v) => !v)}
+        >
+          <span>{showHelp ? "▾" : "▸"}</span>
+          <span>Spirit abilities</span>
+        </button>
+
+        <AnimatePresence>
+          {showHelp && (
+            <motion.div
+              className="mt-1 rounded-lg bg-slate-800/70 backdrop-blur px-3 py-2 flex flex-col gap-1.5"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {ELEMENTS.map((el) => {
+                const def = FOX_DEFS[el];
+                return (
+                  <div key={el} className="flex items-start gap-2 text-xs text-slate-300">
+                    <span
+                      className="w-5 h-5 rounded flex items-center justify-center shrink-0 text-sm"
+                      style={{ backgroundColor: def.bgColor, color: def.textColor }}
+                    >
+                      {def.emoji}
+                    </span>
+                    <span>
+                      <span className="font-semibold" style={{ color: def.accentColor }}>{def.name}</span>
+                      {" — "}
+                      {def.ultDescription}
+                    </span>
+                  </div>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {state.isTimeSlow && (
         <div className="text-yellow-400 text-xs font-semibold animate-pulse">

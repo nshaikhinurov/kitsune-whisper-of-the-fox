@@ -18,13 +18,19 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
 
         return (
           <div key={el} className="flex flex-col items-center gap-1 flex-1 min-w-0">
-            {/* Fox portrait */}
-            <motion.div
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-lg border-2"
+            {/* Fox portrait — clickable when charged */}
+            <motion.button
+              className={[
+                "w-9 h-9 rounded-lg flex items-center justify-center text-lg border-2",
+                isReady ? "cursor-pointer" : "cursor-not-allowed opacity-70",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               animate={{
                 boxShadow: isReady
                   ? [`0 0 6px 2px ${def.accentColor}`, `0 0 14px 4px ${def.accentColor}`, `0 0 6px 2px ${def.accentColor}`]
                   : "none",
+                scale: isReady ? [1, 1.08, 1] : 1,
               }}
               transition={isReady ? { duration: 1.2, repeat: Infinity } : {}}
               style={{
@@ -32,10 +38,11 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
                 borderColor: def.borderColor,
                 color: def.textColor,
               }}
-              title={def.name}
+              onClick={() => isReady && onActivate(el)}
+              disabled={!isReady}
             >
               {def.emoji}
-            </motion.div>
+            </motion.button>
 
             {/* Charge bar */}
             <div className="w-full h-1.5 rounded-full bg-slate-700 overflow-hidden">
@@ -46,30 +53,6 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
                 style={{ backgroundColor: def.accentColor }}
               />
             </div>
-
-            {/* Activate button */}
-            <motion.button
-              className={[
-                "text-[10px] font-bold px-1.5 py-0.5 rounded",
-                isReady
-                  ? "text-white cursor-pointer"
-                  : "text-slate-600 cursor-not-allowed opacity-50",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              animate={isReady ? { scale: [1, 1.08, 1] } : { scale: 1 }}
-              transition={isReady ? { duration: 0.9, repeat: Infinity } : {}}
-              style={
-                isReady
-                  ? { backgroundColor: def.accentColor, color: def.textColor }
-                  : {}
-              }
-              onClick={() => isReady && onActivate(el)}
-              disabled={!isReady}
-              title={def.ultDescription}
-            >
-              ULT
-            </motion.button>
           </div>
         );
       })}
