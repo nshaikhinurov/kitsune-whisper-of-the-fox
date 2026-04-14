@@ -50,7 +50,7 @@ export interface SpiritCharge {
 export interface GameState {
   board: CellState[][];         // rows × cols
   score: number;
-  movesLeft: number;
+  timeLeft: number;          // milliseconds remaining
   level: number;
   combo: number;                // current cascade chain length
   lastMatchElement: FoxElement | null;

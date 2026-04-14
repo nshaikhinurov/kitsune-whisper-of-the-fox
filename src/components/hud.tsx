@@ -1,14 +1,26 @@
 import { AnimatePresence, motion } from "motion/react";
+import { GAME_DURATION_MS } from "../constants";
 
 interface HudProps {
   score: number;
   combo: number;
-  movesLeft: number;
+  timeLeft: number;
   gems: number;
   level: number;
 }
 
-export function Hud({ score, combo, movesLeft, gems, level }: HudProps) {
+export function Hud({ score, combo, timeLeft, gems, level }: HudProps) {
+  const secondsLeft = Math.ceil(timeLeft / 1000);
+  const pct = timeLeft / GAME_DURATION_MS;
+  const isLow = timeLeft <= 10_000;
+  const isWarning = timeLeft <= 30_000;
+
+  const barColor = isLow
+    ? "#f87171"   // red-400
+    : isWarning
+    ? "#facc15"   // yellow-400
+    : "#4ade80";  // green-400
+
   return (
     <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-slate-800/70 backdrop-blur text-white text-sm font-semibold w-full max-w-[420px] justify-between">
       <div className="flex flex-col items-center min-w-[60px]">
@@ -38,21 +50,28 @@ export function Hud({ score, combo, movesLeft, gems, level }: HudProps) {
         </AnimatePresence>
       </div>
 
-      <div className="flex flex-col items-center">
-        <span className="text-slate-400 text-xs uppercase tracking-wide">Moves</span>
-        <motion.span
-          key={movesLeft}
-          className={[
-            "text-lg font-bold tabular-nums",
-            movesLeft <= 5 ? "text-red-400" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          animate={movesLeft <= 5 ? { scale: [1, 1.2, 1] } : {}}
-          transition={{ duration: 0.3 }}
-        >
-          {movesLeft}
-        </motion.span>
+      {/* Timer progress bar */}
+      <div className="flex flex-col items-center gap-1 flex-1 min-w-0 px-2">
+        <div className="flex items-center justify-between w-full">
+          <span className="text-slate-400 text-xs uppercase tracking-wide">Time</span>
+          <motion.span
+            key={secondsLeft}
+            className="text-xs font-bold tabular-nums"
+            style={{ color: barColor }}
+            animate={isLow ? { scale: [1, 1.2, 1] } : {}}
+            transition={{ duration: 0.3 }}
+          >
+            {secondsLeft}s
+          </motion.span>
+        </div>
+        <div className="w-full h-2 rounded-full bg-slate-700 overflow-hidden">
+          <motion.div
+            className="h-full rounded-full"
+            style={{ backgroundColor: barColor }}
+            animate={{ width: `${Math.max(0, pct * 100)}%` }}
+            transition={{ duration: 0.1, ease: "linear" }}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col items-center">

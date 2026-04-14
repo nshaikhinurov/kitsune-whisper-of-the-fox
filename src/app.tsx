@@ -26,7 +26,7 @@ function App() {
       <Hud
         score={state.score}
         combo={state.combo}
-        movesLeft={state.movesLeft}
+        timeLeft={state.timeLeft}
         gems={state.gems}
         level={state.level}
       />
@@ -77,7 +77,7 @@ function App() {
 
       {state.isTimeSlow && (
         <div className="text-yellow-400 text-xs font-semibold animate-pulse">
-          🌙 Night Fox: Time Slow active (+5 moves)
+          🌙 Night Fox: Time Slow active (+15s added)
         </div>
       )}
 
@@ -103,7 +103,7 @@ function App() {
               transition={{ type: "spring", stiffness: 380, damping: 28 }}
             >
               <h2 className="text-3xl font-bold">Game Over</h2>
-              <p className="text-slate-400">No moves remaining</p>
+              <p className="text-slate-400">Time's up!</p>
               <div className="text-center">
                 <motion.p
                   className="text-4xl font-bold text-yellow-400"

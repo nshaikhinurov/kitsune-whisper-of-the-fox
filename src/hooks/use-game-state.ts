@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  BASE_MOVES,
   ELEMENTS,
+  GAME_DURATION_MS,
   GRID_COLS,
   GRID_ROWS,
   INITIAL_SPIRIT_CHARGE,
+  NIGHT_FOX_TIME_BONUS_MS,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
 } from "../constants";
@@ -130,7 +131,7 @@ function makeInitialState(): GameState {
   return {
     board: createBoard(GRID_ROWS, GRID_COLS),
     score: 0,
-    movesLeft: BASE_MOVES,
+    timeLeft: GAME_DURATION_MS,
     level: 1,
     combo: 0,
     lastMatchElement: null,
@@ -170,7 +171,6 @@ export function useGameState() {
   // Cascade queue — not in state since changes don't need re-renders
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
-  const consumeMoveRef = useRef(false); // true when a swap move should be deducted
 
   // ---------------------------------------------------------------------------
   // Night Fox auto-revert
@@ -183,6 +183,24 @@ export function useGameState() {
     }, 10_000);
     return () => clearTimeout(id);
   }, [state.isTimeSlow]);
+
+  // ---------------------------------------------------------------------------
+  // Countdown timer — ticks every 100 ms while game is active
+  // ---------------------------------------------------------------------------
+
+  const isGameOver = state.phase === "gameOver";
+  useEffect(() => {
+    if (isGameOver) return;
+    const id = setInterval(() => {
+      setState(prev => {
+        if (prev.phase === "gameOver") return prev;
+        const newTime = prev.timeLeft - 100;
+        if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver" };
+        return { ...prev, timeLeft: newTime };
+      });
+    }, 100);
+    return () => clearInterval(id);
+  }, [isGameOver]);
 
   // ---------------------------------------------------------------------------
   // Phase-driven animation sequencing
@@ -243,17 +261,8 @@ export function useGameState() {
             phase: "clearing",
           }));
         } else {
-          // Cascade fully done — deduct move and check game over
-          const shouldConsumeMove = consumeMoveRef.current;
-          consumeMoveRef.current = false;
-          setState(prev => {
-            const newMovesLeft = shouldConsumeMove ? prev.movesLeft - 1 : prev.movesLeft;
-            return {
-              ...prev,
-              movesLeft: newMovesLeft,
-              phase: newMovesLeft <= 0 ? "gameOver" : "idle",
-            };
-          });
+          // Cascade fully done — return to idle (timer drives game-over)
+          setState(prev => ({ ...prev, phase: "idle" }));
         }
       }, FALL_ANIM_MS);
       return () => clearTimeout(id);
@@ -304,7 +313,6 @@ export function useGameState() {
     // Valid swap — start animated cascade
     cascadeStepsRef.current = steps;
     cascadeIdxRef.current = 0;
-    consumeMoveRef.current = true;
 
     setState(prev => ({
       ...prev,
@@ -329,7 +337,7 @@ export function useGameState() {
     let gemsDelta = 0;
     let isDarkTheme = s.isDarkTheme;
     let isTimeSlow = s.isTimeSlow;
-    let movesLeft = s.movesLeft;
+    let timeLeft = s.timeLeft;
 
     switch (element) {
       case "white": {
@@ -389,7 +397,7 @@ export function useGameState() {
       case "night": {
         isDarkTheme = true;
         isTimeSlow = true;
-        movesLeft += 5;
+        timeLeft = Math.min(timeLeft + NIGHT_FOX_TIME_BONUS_MS, GAME_DURATION_MS);
         break;
       }
       case "sakura": {
@@ -416,7 +424,6 @@ export function useGameState() {
     if (steps.length > 0) {
       cascadeStepsRef.current = steps;
       cascadeIdxRef.current = 0;
-      consumeMoveRef.current = false; // ults don't consume a move
 
       setState(prev => ({
         ...prev,
@@ -425,7 +432,7 @@ export function useGameState() {
         gems: prev.gems + gemsDelta,
         isDarkTheme,
         isTimeSlow,
-        movesLeft,
+        timeLeft,
         combo: steps[0].combo,
         phase: "clearing",
       }));
@@ -437,7 +444,7 @@ export function useGameState() {
         gems: prev.gems + gemsDelta,
         isDarkTheme,
         isTimeSlow,
-        movesLeft,
+        timeLeft,
         phase: "idle",
       }));
     }
@@ -450,7 +457,6 @@ export function useGameState() {
   const resetGame = useCallback(() => {
     cascadeStepsRef.current = [];
     cascadeIdxRef.current = 0;
-    consumeMoveRef.current = false;
     setState(makeInitialState());
   }, []);
 
