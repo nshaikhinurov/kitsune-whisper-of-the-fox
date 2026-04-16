@@ -1,0 +1,51 @@
+import { AnimatePresence } from "motion/react";
+import { cn } from "../shared/lib/utils";
+import { useGameState } from "../features/game-session";
+import { Board } from "../widgets/game-board";
+import { Hud } from "../widgets/game-hud";
+import { GameOverBlock } from "../widgets/game-over";
+import { HelpBlock } from "../widgets/help-block";
+import { SpiritPanel } from "../widgets/spirit-panel";
+
+export function MainPage() {
+  const { state, selectCell, activateUlt } = useGameState();
+
+  return (
+    <main
+      className={cn(
+        "flex flex-col items-center justify-start min-h-screen gap-3 py-4 px-2 transition-colors duration-700",
+        state.isDarkTheme ? "bg-neutral-950 text-yellow-400" : "bg-neutral-900 text-white",
+      )}
+    >
+      <h1 className="text-2xl font-bold tracking-tight">🦊 Fox Spirit Match</h1>
+
+      <Hud
+        score={state.score}
+        combo={state.combo}
+        timeLeft={state.timeLeft}
+        gems={state.gems}
+        level={state.level}
+      />
+
+      <SpiritPanel spiritCharge={state.spiritCharge} onActivate={activateUlt} />
+
+      <HelpBlock />
+
+      {state.isTimeSlow && (
+        <div className="text-yellow-400 text-xs font-semibold animate-pulse">
+          🌙 Night Fox: Time Slow active (+15s added)
+        </div>
+      )}
+
+      <Board
+        board={state.board}
+        selected={state.selected}
+        onCellClick={selectCell}
+      />
+
+      <AnimatePresence>
+        {state.phase === "gameOver" && <GameOverBlock />}
+      </AnimatePresence>
+    </main>
+  );
+}
