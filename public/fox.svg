@@ -2,9 +2,9 @@
 <svg id="_Слой_2" data-name="Слой 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 142.35 150.2">
   <defs>
     <style>
-      .cls-1 { fill: var(--fox-primary, #986bac); }
-      .cls-2 { fill: var(--fox-secondary, #b18ec1); }
-      .cls-3 { fill: var(--fox-dark, #0f172a); }
+      .cls-1 { fill: oklch(60% 0.16 292.759); }
+      .cls-2 { fill: oklch(70% 0.12 292.759); }
+      .cls-3 { fill: oklch(18% 0.04 0.00); }
     </style>
   </defs>
   <g id="Layer_4" data-name="Layer 4">

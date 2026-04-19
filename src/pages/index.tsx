@@ -1,6 +1,6 @@
 import { AnimatePresence } from "motion/react";
-import { cn } from "../shared/lib/utils";
 import { useGameState } from "../features/game-session";
+import { cn } from "../shared/lib/utils";
 import { Board } from "../widgets/game-board";
 import { Hud } from "../widgets/game-hud";
 import { GameOverBlock } from "../widgets/game-over";
@@ -14,10 +14,15 @@ export function MainPage() {
     <main
       className={cn(
         "flex flex-col items-center justify-start min-h-screen gap-3 py-4 px-2 transition-colors duration-700",
-        state.isDarkTheme ? "bg-neutral-950 text-yellow-400" : "bg-neutral-900 text-white",
+        state.isDarkTheme
+          ? "bg-neutral-950 text-yellow-400"
+          : "bg-neutral-900 text-white",
       )}
     >
-      <h1 className="text-2xl font-bold tracking-tight">🦊 Fox Spirit Match</h1>
+      <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+        <img src="/fox.svg" alt="Fox Spirit" className="w-8 h-8" />
+        Kitsune: Whisper of the Fox
+      </h1>
 
       <Hud
         score={state.score}
