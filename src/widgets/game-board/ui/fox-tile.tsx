@@ -32,13 +32,10 @@ export function FoxTile({ tile, isSelected }: FoxTileProps) {
         {tile.element}
       </span> */}
 
-      {/* Gem dot — bottom right */}
       {tile.hasGem && (
-        <span
-          className="absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full border border-white/60"
-          style={{ backgroundColor: "#60a5fa" }}
-          title="Gem"
-        />
+        <span className="absolute top-2 left-1/2 -translate-x-1/2 text-2xl leading-none">
+          💎
+        </span>
       )}
     </motion.div>
   );

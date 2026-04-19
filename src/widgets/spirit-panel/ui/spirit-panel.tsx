@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { FOX_DEFS } from "../../../entities/fox";
+import { FOX_DEFS, FoxSprite } from "../../../entities/fox";
 import { ELEMENTS, SPIRIT_MAX } from "../../../shared/config/game-config";
 import { cn } from "../../../shared/lib/utils";
 import type { FoxElement, SpiritCharge } from "../../../shared/types/game";
@@ -26,7 +26,7 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
             {/* Fox portrait — clickable when charged */}
             <motion.button
               className={cn(
-                "w-9 h-9 rounded-lg flex items-center justify-center text-lg border-2",
+                "w-12 aspect-square rounded-lg flex items-center justify-center text-lg ",
                 isReady ? "cursor-pointer" : "cursor-not-allowed opacity-70",
               )}
               animate={{
@@ -40,15 +40,10 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
                 scale: isReady ? [1, 1.08, 1] : 1,
               }}
               transition={isReady ? { duration: 1.2, repeat: Infinity } : {}}
-              style={{
-                backgroundColor: def.bgColor,
-                borderColor: def.borderColor,
-                color: def.textColor,
-              }}
               onClick={() => isReady && onActivate(el)}
               disabled={!isReady}
             >
-              <img src={`/${el}.svg`} alt={def.name} className="w-5 h-5 object-contain" />
+              <FoxSprite element={el} className="w-full h-full" />
             </motion.button>
 
             {/* Charge bar */}
