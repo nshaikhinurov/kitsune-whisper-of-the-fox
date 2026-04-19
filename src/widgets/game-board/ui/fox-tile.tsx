@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { FOX_DEFS } from "../../../entities/fox";
+import { FOX_DEFS, FoxSprite } from "../../../entities/fox";
 import type { TileState } from "../../../shared/types/game";
 
 interface FoxTileProps {
@@ -25,12 +25,12 @@ export function FoxTile({ tile, isSelected }: FoxTileProps) {
         zIndex: isSelected ? 10 : 0,
       }}
     >
-      {/* Fox SVG */}
-      <img
-        src={`/${tile.element}.svg`}
-        alt={def.name}
-        className="w-8/10 aspect-square object-contain"
-      />
+      <FoxSprite element={tile.element} className="w-8/10 aspect-square" />
+
+      {/* TODO: remove — debug label
+      <span className="absolute bottom-0 left-0 right-0 text-center text-[8px] font-bold leading-tight text-white/80 bg-black/40">
+        {tile.element}
+      </span> */}
 
       {/* Gem dot — bottom right */}
       {tile.hasGem && (

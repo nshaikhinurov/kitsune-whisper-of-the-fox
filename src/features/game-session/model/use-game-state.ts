@@ -1,15 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  CHAOTIC_PATCH_SIZE,
+  CLEAR_ANIM_MS,
+  COMBO_MULT_STEP,
   ELEMENTS,
+  FALL_ANIM_MS,
   GAME_DURATION_MS,
   GRID_COLS,
   GRID_ROWS,
   INITIAL_SPIRIT_CHARGE,
+  NIGHT_FOX_ACTIVE_MS,
   NIGHT_FOX_TIME_BONUS_MS,
+  RED_FOX_MIN_TILES,
+  RED_FOX_TILE_VARIANCE,
+  SAKURA_GEM_VARIANCE,
+  SAKURA_MIN_GEMS,
+  SCORE_PER_TILE,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
+  SWAP_ANIM_MS,
+  TIMER_TICK_MS,
+  WHITE_FOX_MIN_TILES,
+  WHITE_FOX_TILE_VARIANCE,
 } from "../../../shared/config/game-config";
-import type { CellState, FoxElement, GameState, Position, SpiritCharge } from "../../../shared/types/game";
 import {
   applyGravity,
   createBoard,
@@ -19,22 +32,21 @@ import {
   swapTiles,
 } from "../../../shared/lib/board";
 import { findMatches, positionsToSet } from "../../../shared/lib/matches";
-
-// ---------------------------------------------------------------------------
-// Animation timing
-// ---------------------------------------------------------------------------
-
-const SWAP_ANIM_MS = 230;   // layoutId slide animation
-const CLEAR_ANIM_MS = 190;  // exit scale/fade animation
-const FALL_ANIM_MS = 330;   // gravity layoutId + entry animation
+import type {
+  CellState,
+  FoxElement,
+  GameState,
+  Position,
+  SpiritCharge,
+} from "../../../shared/types/game";
 
 // ---------------------------------------------------------------------------
 // Cascade step — one iteration of: clear matches → gravity → refill
 // ---------------------------------------------------------------------------
 
 interface CascadeStep {
-  clearedBoard: CellState[][];   // board with matched tiles set to null  (drives exit anims)
-  filledBoard: CellState[][];    // board after gravity + refill          (drives fall/entry anims)
+  clearedBoard: CellState[][]; // board with matched tiles set to null  (drives exit anims)
+  filledBoard: CellState[][]; // board after gravity + refill          (drives fall/entry anims)
   scoreDelta: number;
   gemsDelta: number;
   spiritDelta: Partial<Record<FoxElement, number>>;
@@ -49,7 +61,7 @@ function computeCascadeSteps(
   startCombo: number,
   startLastElement: FoxElement | null,
   startConsecutive: number,
-  startElectricCol: number
+  startElectricCol: number,
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
   let board = initialBoard;
@@ -67,9 +79,12 @@ function computeCascadeSteps(
     // Dominant element for spirit charging
     const elementCounts: Partial<Record<FoxElement, number>> = {};
     for (const match of matches) {
-      elementCounts[match.element] = (elementCounts[match.element] ?? 0) + match.positions.length;
+      elementCounts[match.element] =
+        (elementCounts[match.element] ?? 0) + match.positions.length;
     }
-    const dominant = Object.entries(elementCounts).sort((a, b) => b[1] - a[1])[0][0] as FoxElement;
+    const dominant = Object.entries(elementCounts).sort(
+      (a, b) => b[1] - a[1],
+    )[0][0] as FoxElement;
 
     if (dominant === lastMatchElement) {
       consecutiveSameElement++;
@@ -79,18 +94,19 @@ function computeCascadeSteps(
     }
 
     const matchedSet = positionsToSet(matches);
-    const comboMult = 1 + 0.5 * (combo - 1);
+    const comboMult = 1 + COMBO_MULT_STEP * (combo - 1);
     let scoreDelta = 0;
     let gemsDelta = 0;
     const spiritDelta: Partial<Record<FoxElement, number>> = {};
 
     for (const match of matches) {
-      scoreDelta += match.positions.length * 10 * comboMult;
+      scoreDelta += match.positions.length * SCORE_PER_TILE * comboMult;
       const chargeBonus =
         match.element === lastMatchElement
           ? SPIRIT_CHARGE_PER_MATCH * consecutiveSameElement
           : SPIRIT_CHARGE_PER_MATCH;
-      spiritDelta[match.element] = (spiritDelta[match.element] ?? 0) + chargeBonus;
+      spiritDelta[match.element] =
+        (spiritDelta[match.element] ?? 0) + chargeBonus;
     }
 
     for (const key of matchedSet) {
@@ -101,9 +117,13 @@ function computeCascadeSteps(
     }
 
     const clearedBoard = board.map((row, r) =>
-      row.map((cell, c) => (matchedSet.has(`${r},${c}`) ? null : cell))
+      row.map((cell, c) => (matchedSet.has(`${r},${c}`) ? null : cell)),
     );
-    const filledBoard = refillBoard(applyGravity(clearedBoard), GRID_ROWS, GRID_COLS);
+    const filledBoard = refillBoard(
+      applyGravity(clearedBoard),
+      GRID_ROWS,
+      GRID_COLS,
+    );
 
     steps.push({
       clearedBoard,
@@ -148,7 +168,7 @@ function makeInitialState(): GameState {
 
 function applyChargeDeltas(
   current: SpiritCharge,
-  deltas: Partial<Record<FoxElement, number>>
+  deltas: Partial<Record<FoxElement, number>>,
 ): SpiritCharge {
   const next = { ...current };
   for (const el of ELEMENTS) {
@@ -179,8 +199,8 @@ export function useGameState() {
   useEffect(() => {
     if (!state.isTimeSlow) return;
     const id = setTimeout(() => {
-      setState(prev => ({ ...prev, isDarkTheme: false, isTimeSlow: false }));
-    }, 10_000);
+      setState((prev) => ({ ...prev, isDarkTheme: false, isTimeSlow: false }));
+    }, NIGHT_FOX_ACTIVE_MS);
     return () => clearTimeout(id);
   }, [state.isTimeSlow]);
 
@@ -192,13 +212,13 @@ export function useGameState() {
   useEffect(() => {
     if (isGameOver) return;
     const id = setInterval(() => {
-      setState(prev => {
+      setState((prev) => {
         if (prev.phase === "gameOver") return prev;
-        const newTime = prev.timeLeft - 100;
+        const newTime = prev.timeLeft - TIMER_TICK_MS;
         if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver" };
         return { ...prev, timeLeft: newTime };
       });
-    }, 100);
+    }, TIMER_TICK_MS);
     return () => clearInterval(id);
   }, [isGameOver]);
 
@@ -215,10 +235,10 @@ export function useGameState() {
       const id = setTimeout(() => {
         const steps = cascadeStepsRef.current;
         if (steps.length === 0) {
-          setState(prev => ({ ...prev, phase: "idle" }));
+          setState((prev) => ({ ...prev, phase: "idle" }));
           return;
         }
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           board: steps[0].clearedBoard,
           combo: steps[0].combo,
@@ -231,7 +251,7 @@ export function useGameState() {
     if (state.phase === "clearing") {
       const id = setTimeout(() => {
         const step = cascadeStepsRef.current[cascadeIdxRef.current];
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           board: step.filledBoard,
           score: prev.score + step.scoreDelta,
@@ -254,7 +274,7 @@ export function useGameState() {
         if (nextIdx < steps.length) {
           // More cascade steps — advance to next clear
           cascadeIdxRef.current = nextIdx;
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             board: steps[nextIdx].clearedBoard,
             combo: steps[nextIdx].combo,
@@ -262,7 +282,7 @@ export function useGameState() {
           }));
         } else {
           // Cascade fully done — return to idle (timer drives game-over)
-          setState(prev => ({ ...prev, phase: "idle" }));
+          setState((prev) => ({ ...prev, phase: "idle" }));
         }
       }, FALL_ANIM_MS);
       return () => clearTimeout(id);
@@ -279,7 +299,7 @@ export function useGameState() {
 
     // No tile selected yet — select this one
     if (!s.selected) {
-      setState(prev => ({ ...prev, selected: pos }));
+      setState((prev) => ({ ...prev, selected: pos }));
       return;
     }
 
@@ -287,26 +307,29 @@ export function useGameState() {
 
     // Clicking same tile — deselect
     if (sel.row === pos.row && sel.col === pos.col) {
-      setState(prev => ({ ...prev, selected: null }));
+      setState((prev) => ({ ...prev, selected: null }));
       return;
     }
 
     // Not adjacent — move selection
     if (!isAdjacent(sel, pos)) {
-      setState(prev => ({ ...prev, selected: pos }));
+      setState((prev) => ({ ...prev, selected: pos }));
       return;
     }
 
     // Adjacent — attempt swap
     const swapped = swapTiles(s.board, sel, pos);
     const steps = computeCascadeSteps(
-      swapped, 0,
-      s.lastMatchElement, s.consecutiveSameElement, s.lastElectricCol
+      swapped,
+      0,
+      s.lastMatchElement,
+      s.consecutiveSameElement,
+      s.lastElectricCol,
     );
 
     if (steps.length === 0) {
       // No match — revert selection, no move consumed
-      setState(prev => ({ ...prev, selected: null }));
+      setState((prev) => ({ ...prev, selected: null }));
       return;
     }
 
@@ -314,9 +337,9 @@ export function useGameState() {
     cascadeStepsRef.current = steps;
     cascadeIdxRef.current = 0;
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      board: swapped,   // show swapped positions (layoutId animates the slide)
+      board: swapped, // show swapped positions (layoutId animates the slide)
       selected: null,
       combo: 0,
       phase: "swapping",
@@ -333,15 +356,17 @@ export function useGameState() {
     if (s.spiritCharge[element] < SPIRIT_MAX) return;
 
     const newCharge = { ...s.spiritCharge, [element]: 0 };
-    let board = s.board.map(row => [...row]);
+    let board = s.board.map((row) => [...row]);
     let gemsDelta = 0;
     let isDarkTheme = s.isDarkTheme;
     let isTimeSlow = s.isTimeSlow;
     let timeLeft = s.timeLeft;
 
     switch (element) {
-      case "white": {
-        const count = 4 + Math.floor(Math.random() * 3);
+      case "ori": {
+        const count =
+          WHITE_FOX_MIN_TILES +
+          Math.floor(Math.random() * WHITE_FOX_TILE_VARIANCE);
         const positions: Position[] = [];
         for (let r = 0; r < GRID_ROWS; r++)
           for (let c = 0; c < GRID_COLS; c++)
@@ -353,12 +378,17 @@ export function useGameState() {
         for (let i = 0; i < Math.min(count, positions.length); i++) {
           const { row, col } = positions[i];
           const tile = board[row][col];
-          if (tile) board[row][col] = { ...tile, element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)] };
+          if (tile)
+            board[row][col] = {
+              ...tile,
+              element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
+            };
         }
         break;
       }
       case "red": {
-        const count = 3 + Math.floor(Math.random() * 3);
+        const count =
+          RED_FOX_MIN_TILES + Math.floor(Math.random() * RED_FOX_TILE_VARIANCE);
         const positions: Position[] = [];
         for (let r = 0; r < GRID_ROWS; r++)
           for (let c = 0; c < GRID_COLS; c++)
@@ -385,11 +415,15 @@ export function useGameState() {
         break;
       }
       case "chaotic": {
-        const startRow = Math.floor(Math.random() * (GRID_ROWS - 2));
-        const startCol = Math.floor(Math.random() * (GRID_COLS - 2));
+        const startRow = Math.floor(
+          Math.random() * (GRID_ROWS - CHAOTIC_PATCH_SIZE + 1),
+        );
+        const startCol = Math.floor(
+          Math.random() * (GRID_COLS - CHAOTIC_PATCH_SIZE + 1),
+        );
         const positions: Position[] = [];
-        for (let r = startRow; r < startRow + 3; r++)
-          for (let c = startCol; c < startCol + 3; c++)
+        for (let r = startRow; r < startRow + CHAOTIC_PATCH_SIZE; r++)
+          for (let c = startCol; c < startCol + CHAOTIC_PATCH_SIZE; c++)
             positions.push({ row: r, col: c });
         board = shuffleRegion(board, positions);
         break;
@@ -397,7 +431,10 @@ export function useGameState() {
       case "night": {
         isDarkTheme = true;
         isTimeSlow = true;
-        timeLeft = Math.min(timeLeft + NIGHT_FOX_TIME_BONUS_MS, GAME_DURATION_MS);
+        timeLeft = Math.min(
+          timeLeft + NIGHT_FOX_TIME_BONUS_MS,
+          GAME_DURATION_MS,
+        );
         break;
       }
       case "sakura": {
@@ -405,10 +442,16 @@ export function useGameState() {
         for (let r = 0; r < GRID_ROWS; r++)
           for (let c = 0; c < GRID_COLS; c++)
             if (board[r][c]?.hasGem) gemPositions.push({ row: r, col: c });
-        const count = Math.min(4 + Math.floor(Math.random() * 3), gemPositions.length);
+        const count = Math.min(
+          SAKURA_MIN_GEMS + Math.floor(Math.random() * SAKURA_GEM_VARIANCE),
+          gemPositions.length,
+        );
         for (let i = 0; i < count; i++) {
           const j = Math.floor(Math.random() * gemPositions.length);
-          [gemPositions[i], gemPositions[j]] = [gemPositions[j], gemPositions[i]];
+          [gemPositions[i], gemPositions[j]] = [
+            gemPositions[j],
+            gemPositions[i],
+          ];
         }
         for (let i = 0; i < count; i++) {
           const { row, col } = gemPositions[i];
@@ -419,13 +462,19 @@ export function useGameState() {
       }
     }
 
-    const steps = computeCascadeSteps(board, s.combo, s.lastMatchElement, s.consecutiveSameElement, s.lastElectricCol);
+    const steps = computeCascadeSteps(
+      board,
+      s.combo,
+      s.lastMatchElement,
+      s.consecutiveSameElement,
+      s.lastElectricCol,
+    );
 
     if (steps.length > 0) {
       cascadeStepsRef.current = steps;
       cascadeIdxRef.current = 0;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         board: steps[0].clearedBoard,
         spiritCharge: newCharge,
@@ -437,7 +486,7 @@ export function useGameState() {
         phase: "clearing",
       }));
     } else {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         board,
         spiritCharge: newCharge,

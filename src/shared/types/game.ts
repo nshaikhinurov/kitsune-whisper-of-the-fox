@@ -1,5 +1,5 @@
 export type FoxElement =
-  | "white"
+  | "ori"
   | "red"
   | "electric"
   | "chaotic"
@@ -38,7 +38,7 @@ export interface Match {
 }
 
 export interface SpiritCharge {
-  white: number;
+  ori: number;
   red: number;
   electric: number;
   chaotic: number;

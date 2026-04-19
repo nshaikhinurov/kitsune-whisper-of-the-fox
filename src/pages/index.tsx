@@ -8,7 +8,7 @@ import { HelpBlock } from "../widgets/help-block";
 import { SpiritPanel } from "../widgets/spirit-panel";
 
 export function MainPage() {
-  const { state, selectCell, activateUlt } = useGameState();
+  const { state, selectCell, activateUlt, resetGame } = useGameState();
 
   return (
     <main
@@ -44,7 +44,14 @@ export function MainPage() {
       />
 
       <AnimatePresence>
-        {state.phase === "gameOver" && <GameOverBlock />}
+        {state.phase === "gameOver" && (
+          <GameOverBlock
+            score={state.score}
+            gems={state.gems}
+            level={state.level}
+            onReset={resetGame}
+          />
+        )}
       </AnimatePresence>
     </main>
   );

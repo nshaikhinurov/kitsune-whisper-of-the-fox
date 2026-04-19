@@ -1,6 +1,13 @@
-import { ELEMENTS, GEM_SPAWN_CHANCE } from "../config/game-config";
+import {
+  BOARD_GEN_ATTEMPTS,
+  BOARD_MATCH_REMOVAL_ATTEMPTS,
+  BOARD_REFILL_ATTEMPTS,
+  BOARD_REFILL_REGEN_AT,
+  ELEMENTS,
+  GEM_SPAWN_CHANCE,
+} from "../config/game-config";
 import type { CellState, Position, TileState } from "../types/game";
-import { findMatches } from "./matches";
+import { findMatches, hasPossibleMove } from "./matches";
 
 let _tileIdCounter = 0;
 function nextTileId(): string {
@@ -16,34 +23,38 @@ function randomTile(): TileState {
 }
 
 export function createBoard(rows: number, cols: number): CellState[][] {
-  const board: CellState[][] = Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => randomTile())
-  );
+  let board: CellState[][];
+  let outerAttempts = 0;
 
-  // Remove any initial matches by re-rolling conflicting tiles
-  let hasMatches = findMatches(board).length > 0;
-  let attempts = 0;
-  while (hasMatches && attempts < 100) {
-    attempts++;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        // Check if this tile is part of a 3-match
-        const el = board[r][c]?.element;
-        const leftEl = c >= 2 ? board[r][c - 1]?.element : null;
-        const left2El = c >= 2 ? board[r][c - 2]?.element : null;
-        const upEl = r >= 2 ? board[r - 1][c]?.element : null;
-        const up2El = r >= 2 ? board[r - 2][c]?.element : null;
+  do {
+    board = Array.from({ length: rows }, () =>
+      Array.from({ length: cols }, () => randomTile())
+    );
 
-        if (
-          (el === leftEl && el === left2El) ||
-          (el === upEl && el === up2El)
-        ) {
-          board[r][c] = randomTile();
+    // Remove any initial matches by re-rolling conflicting tiles
+    let attempts = 0;
+    while (findMatches(board).length > 0 && attempts < BOARD_MATCH_REMOVAL_ATTEMPTS) {
+      attempts++;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const el = board[r][c]?.element;
+          const leftEl = c >= 2 ? board[r][c - 1]?.element : null;
+          const left2El = c >= 2 ? board[r][c - 2]?.element : null;
+          const upEl = r >= 2 ? board[r - 1][c]?.element : null;
+          const up2El = r >= 2 ? board[r - 2][c]?.element : null;
+
+          if (
+            (el === leftEl && el === left2El) ||
+            (el === upEl && el === up2El)
+          ) {
+            board[r][c] = randomTile();
+          }
         }
       }
     }
-    hasMatches = findMatches(board).length > 0;
-  }
+
+    outerAttempts++;
+  } while (!hasPossibleMove(board) && outerAttempts < BOARD_GEN_ATTEMPTS);
 
   return board;
 }
@@ -75,7 +86,7 @@ export function refillBoard(
   rows: number,
   cols: number
 ): CellState[][] {
-  const next: CellState[][] = Array.from({ length: rows }, (_, r) =>
+  let next: CellState[][] = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => board[r][c])
   );
 
@@ -85,6 +96,25 @@ export function refillBoard(
         next[r][c] = randomTile();
       }
     }
+  }
+
+  // Ensure at least one possible move exists
+  let attempts = 0;
+  while (!hasPossibleMove(next) && attempts < BOARD_REFILL_ATTEMPTS) {
+    const positions: Position[] = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        positions.push({ row: r, col: c });
+
+    // After many shuffles try a full regeneration
+    if (attempts === BOARD_REFILL_REGEN_AT) {
+      for (let r = 0; r < rows; r++)
+        for (let c = 0; c < cols; c++)
+          next[r][c] = randomTile();
+    } else {
+      next = shuffleRegion(next, positions);
+    }
+    attempts++;
   }
 
   return next;

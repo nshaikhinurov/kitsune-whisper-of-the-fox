@@ -1,3 +1,4 @@
+import { MIN_MATCH_LENGTH } from "../config/game-config";
 import type { CellState, Match, Position } from "../types/game";
 
 export function findMatches(board: CellState[][]): Match[] {
@@ -15,7 +16,7 @@ export function findMatches(board: CellState[][]): Match[] {
       while (c + len < cols && board[r][c + len]?.element === tile.element) {
         len++;
       }
-      if (len >= 3) {
+      if (len >= MIN_MATCH_LENGTH) {
         const positions: Position[] = [];
         for (let k = 0; k < len; k++) positions.push({ row: r, col: c + k });
         matches.push({ positions, element: tile.element });
@@ -34,7 +35,7 @@ export function findMatches(board: CellState[][]): Match[] {
       while (r + len < rows && board[r + len][c]?.element === tile.element) {
         len++;
       }
-      if (len >= 3) {
+      if (len >= MIN_MATCH_LENGTH) {
         const positions: Position[] = [];
         for (let k = 0; k < len; k++) positions.push({ row: r + k, col: c });
         matches.push({ positions, element: tile.element });
@@ -44,6 +45,28 @@ export function findMatches(board: CellState[][]): Match[] {
   }
 
   return matches;
+}
+
+export function hasPossibleMove(board: CellState[][]): boolean {
+  const rows = board.length;
+  const cols = board[0]?.length ?? 0;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (c + 1 < cols) {
+        const swapped = board.map(row => [...row]);
+        [swapped[r][c], swapped[r][c + 1]] = [swapped[r][c + 1], swapped[r][c]];
+        if (findMatches(swapped).length > 0) return true;
+      }
+      if (r + 1 < rows) {
+        const swapped = board.map(row => [...row]);
+        [swapped[r][c], swapped[r + 1][c]] = [swapped[r + 1][c], swapped[r][c]];
+        if (findMatches(swapped).length > 0) return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 export function positionsToSet(matches: Match[]): Set<string> {

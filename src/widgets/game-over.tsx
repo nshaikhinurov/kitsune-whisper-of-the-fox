@@ -1,9 +1,13 @@
 import { motion } from "motion/react";
-import { useGameState } from "../features/game-session";
 
-export const GameOverBlock = () => {
-  const { state, resetGame } = useGameState();
+interface GameOverBlockProps {
+  score: number;
+  gems: number;
+  level: number;
+  onReset: () => void;
+}
 
+export const GameOverBlock = ({ score, gems, level, onReset }: GameOverBlockProps) => {
   return (
     <motion.div
       className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50"
@@ -27,17 +31,17 @@ export const GameOverBlock = () => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
           >
-            {state.score.toLocaleString()}
+            {score.toLocaleString()}
           </motion.p>
           <p className="text-neutral-400 text-sm">Final Score</p>
         </div>
         <div className="flex gap-6 text-sm text-neutral-300">
-          <span>💎 {state.gems} gems</span>
-          <span>Level {state.level}</span>
+          <span>💎 {gems} gems</span>
+          <span>Level {level}</span>
         </div>
         <button
           className="mt-2 px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-neutral-900 font-bold rounded-lg transition-colors"
-          onClick={resetGame}
+          onClick={onReset}
         >
           Play Again
         </button>

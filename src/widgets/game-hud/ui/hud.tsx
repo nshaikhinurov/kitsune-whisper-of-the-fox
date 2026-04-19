@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { GAME_DURATION_MS } from "../../../shared/config/game-config";
+import { GAME_DURATION_MS, TIME_LOW_MS, TIME_WARNING_MS } from "../../../shared/config/game-config";
 
 interface HudProps {
   score: number;
@@ -12,8 +12,8 @@ interface HudProps {
 export function Hud({ score, combo, timeLeft, gems, level }: HudProps) {
   const secondsLeft = Math.ceil(timeLeft / 1000);
   const pct = timeLeft / GAME_DURATION_MS;
-  const isLow = timeLeft <= 10_000;
-  const isWarning = timeLeft <= 30_000;
+  const isLow = timeLeft <= TIME_LOW_MS;
+  const isWarning = timeLeft <= TIME_WARNING_MS;
 
   const barColor = isLow
     ? "#f87171" // red-400
