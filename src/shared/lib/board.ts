@@ -2,7 +2,6 @@ import {
   BOARD_GEN_ATTEMPTS,
   BOARD_MATCH_REMOVAL_ATTEMPTS,
   BOARD_REFILL_ATTEMPTS,
-  BOARD_REFILL_REGEN_AT,
   ELEMENTS,
   GEM_SPAWN_CHANCE,
 } from "../config/game-config";
@@ -86,33 +85,25 @@ export function refillBoard(
   rows: number,
   cols: number
 ): CellState[][] {
-  let next: CellState[][] = Array.from({ length: rows }, (_, r) =>
+  const next: CellState[][] = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => board[r][c])
   );
 
+  const newPositions: Position[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (next[r][c] === null) {
         next[r][c] = randomTile();
+        newPositions.push({ row: r, col: c });
       }
     }
   }
 
-  // Ensure at least one possible move exists
+  // Re-roll only newly added tiles until a possible move exists
   let attempts = 0;
   while (!hasPossibleMove(next) && attempts < BOARD_REFILL_ATTEMPTS) {
-    const positions: Position[] = [];
-    for (let r = 0; r < rows; r++)
-      for (let c = 0; c < cols; c++)
-        positions.push({ row: r, col: c });
-
-    // After many shuffles try a full regeneration
-    if (attempts === BOARD_REFILL_REGEN_AT) {
-      for (let r = 0; r < rows; r++)
-        for (let c = 0; c < cols; c++)
-          next[r][c] = randomTile();
-    } else {
-      next = shuffleRegion(next, positions);
+    for (const { row, col } of newPositions) {
+      next[row][col] = randomTile();
     }
     attempts++;
   }

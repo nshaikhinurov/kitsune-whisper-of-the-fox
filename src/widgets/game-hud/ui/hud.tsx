@@ -1,26 +1,13 @@
-import { AnimatePresence, motion } from "motion/react";
-import { GAME_DURATION_MS, TIME_LOW_MS, TIME_WARNING_MS } from "../../../shared/config/game-config";
+import { motion } from "motion/react";
 
 interface HudProps {
   score: number;
   combo: number;
-  timeLeft: number;
   gems: number;
   level: number;
 }
 
-export function Hud({ score, combo, timeLeft, gems, level }: HudProps) {
-  const secondsLeft = Math.ceil(timeLeft / 1000);
-  const pct = timeLeft / GAME_DURATION_MS;
-  const isLow = timeLeft <= TIME_LOW_MS;
-  const isWarning = timeLeft <= TIME_WARNING_MS;
-
-  const barColor = isLow
-    ? "#f87171" // red-400
-    : isWarning
-      ? "#facc15" // yellow-400
-      : "#4ade80"; // green-400
-
+export function Hud({ score, combo, gems, level }: HudProps) {
   return (
     <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-neutral-800/70 backdrop-blur text-white text-sm font-semibold w-full max-w-[420px] justify-between">
       <div className="flex flex-col items-center min-w-[60px]">
@@ -36,46 +23,15 @@ export function Hud({ score, combo, timeLeft, gems, level }: HudProps) {
         >
           {score.toLocaleString()}
         </motion.span>
-        <AnimatePresence>
-          {combo > 1 && (
-            <motion.span
-              key={combo}
-              className="text-yellow-400 text-xs font-bold"
-              initial={{ scale: 1.5, opacity: 0, y: -4 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              ×{combo} combo!
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Timer progress bar */}
-      <div className="flex flex-col items-center gap-1 flex-1 min-w-0 px-2">
-        <div className="flex items-center justify-between w-full">
-          <span className="text-neutral-400 text-xs uppercase tracking-wide">
-            Time
-          </span>
-          <motion.span
-            key={secondsLeft}
-            className="text-xs font-bold tabular-nums"
-            style={{ color: barColor }}
-            animate={isLow ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 0.3 }}
-          >
-            {secondsLeft}s
-          </motion.span>
-        </div>
-        <div className="w-full h-2 rounded-full bg-neutral-700 overflow-hidden">
-          <motion.div
-            className="h-full rounded-full"
-            style={{ backgroundColor: barColor }}
-            animate={{ width: `${Math.max(0, pct * 100)}%` }}
-            transition={{ duration: 0.1, ease: "linear" }}
-          />
-        </div>
+        <motion.span
+          key={combo}
+          className="text-yellow-400 text-xs font-bold"
+          animate={{ scale: combo > 1 ? [1.5, 1] : 1, opacity: combo > 1 ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+          style={{ visibility: combo > 1 ? "visible" : "hidden" }}
+        >
+          ×{combo} combo!
+        </motion.span>
       </div>
 
       <div className="flex flex-col items-center">
