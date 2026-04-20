@@ -45,7 +45,7 @@ export const FALL_ANIM_MS = 330;
 
 export const ELEMENTS: FoxElement[] = [
   "ori",
-  "red",
+  "green",
   "electric",
   "chaotic",
   "night",
@@ -53,10 +53,10 @@ export const ELEMENTS: FoxElement[] = [
 ];
 
 export const INITIAL_SPIRIT_CHARGE: SpiritCharge = {
-  ori: 0,
-  red: 0,
-  electric: 0,
-  chaotic: 0,
-  night: 0,
-  sakura: 0,
+  ori: 100,
+  green: 100,
+  electric: 100,
+  chaotic: 100,
+  night: 100,
+  sakura: 100,
 };

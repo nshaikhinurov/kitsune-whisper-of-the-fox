@@ -14,8 +14,8 @@ import {
   NIGHT_FOX_TIME_BONUS_MS,
   RED_FOX_MIN_TILES,
   RED_FOX_TILE_VARIANCE,
-  SAKURA_STAR_VARIANCE,
   SAKURA_MIN_STARS,
+  SAKURA_STAR_VARIANCE,
   SCORE_PER_TILE,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
@@ -431,7 +431,7 @@ export function useGameState() {
         }
         break;
       }
-      case "red": {
+      case "green": {
         const count =
           RED_FOX_MIN_TILES + Math.floor(Math.random() * RED_FOX_TILE_VARIANCE);
         const positions: Position[] = [];

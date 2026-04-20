@@ -34,8 +34,6 @@ export function MainPage() {
         level={state.level}
       />
 
-      <SpiritPanel spiritCharge={state.spiritCharge} onActivate={activateUlt} />
-
       <div className="w-full max-w-105 flex items-center justify-between">
         <HelpBlock />
         <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
@@ -55,6 +53,10 @@ export function MainPage() {
       )}
 
       <div className="flex items-stretch gap-3">
+        <SpiritPanel
+          spiritCharge={state.spiritCharge}
+          onActivate={activateUlt}
+        />
         <Board
           board={state.board}
           selected={state.selected}

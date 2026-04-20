@@ -1,6 +1,6 @@
 export type FoxElement =
   | "ori"
-  | "red"
+  | "green"
   | "electric"
   | "chaotic"
   | "night"
@@ -12,7 +12,6 @@ export interface FoxDef {
   element: FoxElement;
   name: string;
   rarity: Rarity;
-  bgColor: string; // CSS hex color for tile background
   borderColor: string; // CSS hex color for tile border
   textColor: string; // CSS hex color for text/emoji
   accentColor: string; // CSS hex color for spirit charge bar
@@ -37,14 +36,7 @@ export interface Match {
   element: FoxElement;
 }
 
-export interface SpiritCharge {
-  ori: number;
-  red: number;
-  electric: number;
-  chaotic: number;
-  night: number;
-  sakura: number;
-}
+export type SpiritCharge = Record<FoxElement, number>;
 
 export interface GameState {
   board: CellState[][]; // rows × cols
