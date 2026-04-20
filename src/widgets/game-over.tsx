@@ -2,12 +2,17 @@ import { motion } from "motion/react";
 
 interface GameOverBlockProps {
   score: number;
-  gems: number;
+  stars: number;
   level: number;
   onReset: () => void;
 }
 
-export const GameOverBlock = ({ score, gems, level, onReset }: GameOverBlockProps) => {
+export const GameOverBlock = ({
+  score,
+  stars,
+  level,
+  onReset,
+}: GameOverBlockProps) => {
   return (
     <motion.div
       className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50"
@@ -36,7 +41,7 @@ export const GameOverBlock = ({ score, gems, level, onReset }: GameOverBlockProp
           <p className="text-neutral-400 text-sm">Final Score</p>
         </div>
         <div className="flex gap-6 text-sm text-neutral-300">
-          <span>💎 {gems} gems</span>
+          <span><img src="/star.svg" alt="star" className="inline w-4 h-4 mr-1 align-middle" />{stars} stars</span>
           <span>Level {level}</span>
         </div>
         <button

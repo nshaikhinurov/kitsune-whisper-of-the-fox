@@ -10,34 +10,34 @@ export interface FoxColors {
 }
 
 export const FOX_COLORS: Record<FoxElement, FoxColors> = {
-  chaotic: {
-    primary: "oklch(60% 0.16 17.58)",
-    secondary: "oklch(70% 0.12 17.58)",
+  ori: {
+    primary: "oklch(60% 0.16 58)",
+    secondary: "oklch(75% 0.10 58)",
+    dark: "oklch(18% 0.04 0.00)",
+  },
+  red: {
+    primary: "oklch(60% 0.16 120)",
+    secondary: "oklch(75% 0.10 120)",
     dark: "oklch(18% 0.04 0.00)",
   },
   electric: {
     primary: "oklch(60% 0.16 292.759)",
-    secondary: "oklch(70% 0.12 292.759)",
+    secondary: "oklch(75% 0.10 292.759)",
     dark: "oklch(18% 0.04 0.00)",
   },
-  red: {
-    primary: "oklch(60% 0.16 31.15)",
-    secondary: "oklch(70% 0.12 31.15)",
-    dark: "oklch(18% 0.04 0.00)",
-  },
-  ori: {
-    primary: "oklch(60% 0.16 58)",
-    secondary: "oklch(70% 0.12 58)",
+  chaotic: {
+    primary: "oklch(60% 0.16 17.58)",
+    secondary: "oklch(75% 0.10 17.58)",
     dark: "oklch(18% 0.04 0.00)",
   },
   night: {
     primary: "oklch(60% 0.16 262)",
-    secondary: "oklch(70% 0.12 262)",
+    secondary: "oklch(75% 0.10 262)",
     dark: "oklch(18% 0.04 0.00)",
   },
   sakura: {
     primary: "oklch(60% 0.16 333.49)",
-    secondary: "oklch(70% 0.12 333.49)",
+    secondary: "oklch(75% 0.10 333.49)",
     dark: "oklch(18% 0.04 0.00)",
   },
 };
@@ -101,6 +101,6 @@ export const FOX_DEFS: Record<FoxElement, FoxDef> = {
     borderColor: "#db2777",
     textColor: "#ffffff",
     accentColor: "#f472b6",
-    ultDescription: "Collects gems from random tiles",
+    ultDescription: "Collects stars from random tiles",
   },
 };

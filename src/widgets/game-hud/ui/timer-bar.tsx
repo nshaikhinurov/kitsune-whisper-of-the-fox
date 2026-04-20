@@ -11,7 +11,7 @@ export function TimerBar({ timeLeft }: TimerBarProps) {
 
   // oklch: lime at 100% → red at 0%
   const hue = 30 + 110 * timeLeftPercentage;
-  const lightness = 0.75;
+  const lightness = 0.65;
   const chroma = 0.26;
   const barColor = `oklch(${lightness.toFixed(3)} ${chroma} ${hue.toFixed(1)})`;
 

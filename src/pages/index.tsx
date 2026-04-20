@@ -1,6 +1,8 @@
 import { AnimatePresence } from "motion/react";
+import { useState } from "react";
 import { useGameState } from "../features/game-session";
 import { cn } from "../shared/lib/utils";
+import { Switch } from "../shared/ui/switch";
 import { Board } from "../widgets/game-board";
 import { Hud, TimerBar } from "../widgets/game-hud";
 import { GameOverBlock } from "../widgets/game-over";
@@ -9,6 +11,7 @@ import { SpiritPanel } from "../widgets/spirit-panel";
 
 export function MainPage() {
   const { state, selectCell, activateUlt, resetGame } = useGameState();
+  const [showHints, setShowHints] = useState(true);
 
   return (
     <main
@@ -27,13 +30,23 @@ export function MainPage() {
       <Hud
         score={state.score}
         combo={state.combo}
-        gems={state.gems}
+        stars={state.stars}
         level={state.level}
       />
 
       <SpiritPanel spiritCharge={state.spiritCharge} onActivate={activateUlt} />
 
-      <HelpBlock />
+      <div className="w-full max-w-105 flex items-center justify-between">
+        <HelpBlock />
+        <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
+          <Switch
+            size="sm"
+            checked={showHints}
+            onCheckedChange={setShowHints}
+          />
+          Show hints
+        </label>
+      </div>
 
       {state.isTimeSlow && (
         <div className="text-yellow-400 text-xs font-semibold animate-pulse">
@@ -45,6 +58,7 @@ export function MainPage() {
         <Board
           board={state.board}
           selected={state.selected}
+          hintPositions={showHints ? state.hintPositions : null}
           onCellClick={selectCell}
         />
         <TimerBar timeLeft={state.timeLeft} />
@@ -54,7 +68,7 @@ export function MainPage() {
         {state.phase === "gameOver" && (
           <GameOverBlock
             score={state.score}
-            gems={state.gems}
+            stars={state.stars}
             level={state.level}
             onReset={resetGame}
           />

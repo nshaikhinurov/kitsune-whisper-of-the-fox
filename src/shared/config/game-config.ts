@@ -24,16 +24,19 @@ export const WHITE_FOX_TILE_VARIANCE = 3;
 export const RED_FOX_MIN_TILES = 3;
 export const RED_FOX_TILE_VARIANCE = 3;
 export const CHAOTIC_PATCH_SIZE = 3;
-export const SAKURA_MIN_GEMS = 4;
-export const SAKURA_GEM_VARIANCE = 3;
+export const SAKURA_MIN_STARS = 4;
+export const SAKURA_STAR_VARIANCE = 3;
 
 // Board generation
-export const GEM_SPAWN_CHANCE = 0.12;
+export const STAR_SPAWN_CHANCE = 0.12;
 export const MIN_MATCH_LENGTH = 3;
 export const BOARD_MATCH_REMOVAL_ATTEMPTS = 100;
 export const BOARD_GEN_ATTEMPTS = 50;
 export const BOARD_REFILL_ATTEMPTS = 50;
 export const BOARD_REFILL_REGEN_AT = 25;
+
+// Hint
+export const HINT_IDLE_MS = 20_000;
 
 // Animation
 export const SWAP_ANIM_MS = 230;

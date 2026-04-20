@@ -69,6 +69,28 @@ export function hasPossibleMove(board: CellState[][]): boolean {
   return false;
 }
 
+export function findFirstHintMove(board: CellState[][]): [Position, Position] | null {
+  const rows = board.length;
+  const cols = board[0]?.length ?? 0;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (c + 1 < cols) {
+        const swapped = board.map(row => [...row]);
+        [swapped[r][c], swapped[r][c + 1]] = [swapped[r][c + 1], swapped[r][c]];
+        if (findMatches(swapped).length > 0)
+          return [{ row: r, col: c }, { row: r, col: c + 1 }];
+      }
+      if (r + 1 < rows) {
+        const swapped = board.map(row => [...row]);
+        [swapped[r][c], swapped[r + 1][c]] = [swapped[r + 1][c], swapped[r][c]];
+        if (findMatches(swapped).length > 0)
+          return [{ row: r, col: c }, { row: r + 1, col: c }];
+      }
+    }
+  }
+  return null;
+}
+
 export function positionsToSet(matches: Match[]): Set<string> {
   const set = new Set<string>();
   for (const match of matches) {

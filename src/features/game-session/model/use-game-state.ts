@@ -8,13 +8,14 @@ import {
   GAME_DURATION_MS,
   GRID_COLS,
   GRID_ROWS,
+  HINT_IDLE_MS,
   INITIAL_SPIRIT_CHARGE,
   NIGHT_FOX_ACTIVE_MS,
   NIGHT_FOX_TIME_BONUS_MS,
   RED_FOX_MIN_TILES,
   RED_FOX_TILE_VARIANCE,
-  SAKURA_GEM_VARIANCE,
-  SAKURA_MIN_GEMS,
+  SAKURA_STAR_VARIANCE,
+  SAKURA_MIN_STARS,
   SCORE_PER_TILE,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
@@ -31,7 +32,11 @@ import {
   shuffleRegion,
   swapTiles,
 } from "../../../shared/lib/board";
-import { findMatches, positionsToSet } from "../../../shared/lib/matches";
+import {
+  findFirstHintMove,
+  findMatches,
+  positionsToSet,
+} from "../../../shared/lib/matches";
 import type {
   CellState,
   FoxElement,
@@ -48,7 +53,7 @@ interface CascadeStep {
   clearedBoard: CellState[][]; // board with matched tiles set to null  (drives exit anims)
   filledBoard: CellState[][]; // board after gravity + refill          (drives fall/entry anims)
   scoreDelta: number;
-  gemsDelta: number;
+  starsDelta: number;
   spiritDelta: Partial<Record<FoxElement, number>>;
   combo: number;
   lastMatchElement: FoxElement | null;
@@ -96,7 +101,7 @@ function computeCascadeSteps(
     const matchedSet = positionsToSet(matches);
     const comboMult = 1 + COMBO_MULT_STEP * (combo - 1);
     let scoreDelta = 0;
-    let gemsDelta = 0;
+    let starsDelta = 0;
     const spiritDelta: Partial<Record<FoxElement, number>> = {};
 
     for (const match of matches) {
@@ -112,7 +117,7 @@ function computeCascadeSteps(
     for (const key of matchedSet) {
       const [r, c] = key.split(",").map(Number);
       const tile = board[r][c];
-      if (tile?.hasGem) gemsDelta++;
+      if (tile?.hasStar) starsDelta++;
       if (tile?.element === "electric") lastElectricCol = c;
     }
 
@@ -129,7 +134,7 @@ function computeCascadeSteps(
       clearedBoard,
       filledBoard,
       scoreDelta: Math.round(scoreDelta),
-      gemsDelta,
+      starsDelta,
       spiritDelta,
       combo,
       lastMatchElement,
@@ -157,12 +162,13 @@ function makeInitialState(): GameState {
     lastMatchElement: null,
     consecutiveSameElement: 0,
     spiritCharge: { ...INITIAL_SPIRIT_CHARGE },
-    gems: 0,
+    stars: 0,
     selected: null,
     isDarkTheme: false,
     isTimeSlow: false,
     phase: "idle",
     lastElectricCol: 0,
+    hintPositions: null,
   };
 }
 
@@ -191,14 +197,21 @@ export function useGameState() {
   // Cascade queue — not in state since changes don't need re-renders
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
-  const prevGemsRef = useRef(0);
+  const prevStarsRef = useRef(0);
+  const idleMsRef = useRef(0);
 
   useEffect(() => {
-    if (state.gems > prevGemsRef.current) {
-      new Audio("/diamond_obtained.mp3").play().catch(() => {});
+    if (state.stars > prevStarsRef.current) {
+      new Audio("/star-collected.mp3").play().catch(() => {});
     }
-    prevGemsRef.current = state.gems;
-  }, [state.gems]);
+    prevStarsRef.current = state.stars;
+  }, [state.stars]);
+
+  useEffect(() => {
+    if (state.phase === "clearing") {
+      new Audio("/tiles-matched.mp3").play().catch(() => {});
+    }
+  }, [state.phase]);
 
   // ---------------------------------------------------------------------------
   // Night Fox auto-revert
@@ -224,11 +237,32 @@ export function useGameState() {
         if (prev.phase === "gameOver") return prev;
         const newTime = prev.timeLeft - TIMER_TICK_MS;
         if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver" };
+
+        if (prev.phase === "idle" && prev.hintPositions === null) {
+          idleMsRef.current += TIMER_TICK_MS;
+          if (idleMsRef.current >= HINT_IDLE_MS) {
+            const hint = findFirstHintMove(prev.board);
+            if (hint) {
+              idleMsRef.current = 0;
+              return { ...prev, timeLeft: newTime, hintPositions: hint };
+            }
+          }
+        }
+
         return { ...prev, timeLeft: newTime };
       });
     }, TIMER_TICK_MS);
     return () => clearInterval(id);
   }, [isGameOver]);
+
+  useEffect(() => {
+    idleMsRef.current = 0;
+    if (state.phase !== "idle") {
+      setState((prev) =>
+        prev.hintPositions !== null ? { ...prev, hintPositions: null } : prev,
+      );
+    }
+  }, [state.phase]);
 
   // ---------------------------------------------------------------------------
   // Phase-driven animation sequencing
@@ -263,7 +297,7 @@ export function useGameState() {
           ...prev,
           board: step.filledBoard,
           score: prev.score + step.scoreDelta,
-          gems: prev.gems + step.gemsDelta,
+          stars: prev.stars + step.starsDelta,
           spiritCharge: applyChargeDeltas(prev.spiritCharge, step.spiritDelta),
           lastMatchElement: step.lastMatchElement,
           consecutiveSameElement: step.consecutiveSameElement,
@@ -305,9 +339,11 @@ export function useGameState() {
     const s = stateRef.current;
     if (s.phase !== "idle") return;
 
+    idleMsRef.current = 0;
+
     // No tile selected yet — select this one
     if (!s.selected) {
-      setState((prev) => ({ ...prev, selected: pos }));
+      setState((prev) => ({ ...prev, selected: pos, hintPositions: null }));
       return;
     }
 
@@ -315,13 +351,13 @@ export function useGameState() {
 
     // Clicking same tile — deselect
     if (sel.row === pos.row && sel.col === pos.col) {
-      setState((prev) => ({ ...prev, selected: null }));
+      setState((prev) => ({ ...prev, selected: null, hintPositions: null }));
       return;
     }
 
     // Not adjacent — move selection
     if (!isAdjacent(sel, pos)) {
-      setState((prev) => ({ ...prev, selected: pos }));
+      setState((prev) => ({ ...prev, selected: pos, hintPositions: null }));
       return;
     }
 
@@ -337,7 +373,7 @@ export function useGameState() {
 
     if (steps.length === 0) {
       // No match — revert selection, no move consumed
-      setState((prev) => ({ ...prev, selected: null }));
+      setState((prev) => ({ ...prev, selected: null, hintPositions: null }));
       return;
     }
 
@@ -349,6 +385,7 @@ export function useGameState() {
       ...prev,
       board: swapped, // show swapped positions (layoutId animates the slide)
       selected: null,
+      hintPositions: null,
       combo: 0,
       phase: "swapping",
     }));
@@ -365,7 +402,7 @@ export function useGameState() {
 
     const newCharge = { ...s.spiritCharge, [element]: 0 };
     let board = s.board.map((row) => [...row]);
-    let gemsDelta = 0;
+    let starsDelta = 0;
     let isDarkTheme = s.isDarkTheme;
     let isTimeSlow = s.isTimeSlow;
     let timeLeft = s.timeLeft;
@@ -407,7 +444,7 @@ export function useGameState() {
         }
         for (let i = 0; i < Math.min(count, positions.length); i++) {
           const { row, col } = positions[i];
-          if (board[row][col]?.hasGem) gemsDelta++;
+          if (board[row][col]?.hasStar) starsDelta++;
           board[row][col] = null;
         }
         board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
@@ -416,7 +453,7 @@ export function useGameState() {
       case "electric": {
         const col = s.lastElectricCol;
         for (let r = 0; r < GRID_ROWS; r++) {
-          if (board[r][col]?.hasGem) gemsDelta++;
+          if (board[r][col]?.hasStar) starsDelta++;
           board[r][col] = null;
         }
         board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
@@ -446,25 +483,25 @@ export function useGameState() {
         break;
       }
       case "sakura": {
-        const gemPositions: Position[] = [];
+        const starPositions: Position[] = [];
         for (let r = 0; r < GRID_ROWS; r++)
           for (let c = 0; c < GRID_COLS; c++)
-            if (board[r][c]?.hasGem) gemPositions.push({ row: r, col: c });
+            if (board[r][c]?.hasStar) starPositions.push({ row: r, col: c });
         const count = Math.min(
-          SAKURA_MIN_GEMS + Math.floor(Math.random() * SAKURA_GEM_VARIANCE),
-          gemPositions.length,
+          SAKURA_MIN_STARS + Math.floor(Math.random() * SAKURA_STAR_VARIANCE),
+          starPositions.length,
         );
         for (let i = 0; i < count; i++) {
-          const j = Math.floor(Math.random() * gemPositions.length);
-          [gemPositions[i], gemPositions[j]] = [
-            gemPositions[j],
-            gemPositions[i],
+          const j = Math.floor(Math.random() * starPositions.length);
+          [starPositions[i], starPositions[j]] = [
+            starPositions[j],
+            starPositions[i],
           ];
         }
         for (let i = 0; i < count; i++) {
-          const { row, col } = gemPositions[i];
-          gemsDelta++;
-          board[row][col] = { ...board[row][col]!, hasGem: false };
+          const { row, col } = starPositions[i];
+          starsDelta++;
+          board[row][col] = { ...board[row][col]!, hasStar: false };
         }
         break;
       }
@@ -486,7 +523,7 @@ export function useGameState() {
         ...prev,
         board: steps[0].clearedBoard,
         spiritCharge: newCharge,
-        gems: prev.gems + gemsDelta,
+        stars: prev.stars + starsDelta,
         isDarkTheme,
         isTimeSlow,
         timeLeft,
@@ -498,7 +535,7 @@ export function useGameState() {
         ...prev,
         board,
         spiritCharge: newCharge,
-        gems: prev.gems + gemsDelta,
+        stars: prev.stars + starsDelta,
         isDarkTheme,
         isTimeSlow,
         timeLeft,

@@ -20,10 +20,12 @@ export function FoxTile({ tile }: FoxTileProps) {
         {tile.element}
       </span> */}
 
-      {tile.hasGem && (
-        <span className="absolute top-2 left-1/2 -translate-x-1/2 text-2xl leading-none">
-          💎
-        </span>
+      {tile.hasStar && (
+        <img
+          src="/star.svg"
+          alt="star"
+          className="animate-pulse absolute top-2 left-1/2 -translate-x-1/2 w-5 aspect-square"
+        />
       )}
     </div>
   );

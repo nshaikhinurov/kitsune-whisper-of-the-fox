@@ -3,11 +3,11 @@ import { motion } from "motion/react";
 interface HudProps {
   score: number;
   combo: number;
-  gems: number;
+  stars: number;
   level: number;
 }
 
-export function Hud({ score, combo, gems, level }: HudProps) {
+export function Hud({ score, combo, stars, level }: HudProps) {
   return (
     <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-neutral-800/70 backdrop-blur text-white text-sm font-semibold w-full max-w-[420px] justify-between">
       <div className="flex flex-col items-center min-w-[60px]">
@@ -26,7 +26,10 @@ export function Hud({ score, combo, gems, level }: HudProps) {
         <motion.span
           key={combo}
           className="text-yellow-400 text-xs font-bold"
-          animate={{ scale: combo > 1 ? [1.5, 1] : 1, opacity: combo > 1 ? 1 : 0 }}
+          animate={{
+            scale: combo > 1 ? [1.5, 1] : 1,
+            opacity: combo > 1 ? 1 : 0,
+          }}
           transition={{ duration: 0.2 }}
           style={{ visibility: combo > 1 ? "visible" : "hidden" }}
         >
@@ -36,16 +39,16 @@ export function Hud({ score, combo, gems, level }: HudProps) {
 
       <div className="flex flex-col items-center">
         <span className="text-neutral-400 text-xs uppercase tracking-wide">
-          Gems
+          Stars
         </span>
         <motion.span
-          key={gems}
+          key={stars}
           className="text-lg font-bold tabular-nums text-blue-400"
           initial={{ scale: 1.25 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.25 }}
         >
-          💎 {gems}
+          <img src="/star.svg" alt="star" className="inline w-4 h-4 mr-1 align-middle" />{stars}
         </motion.span>
       </div>
 

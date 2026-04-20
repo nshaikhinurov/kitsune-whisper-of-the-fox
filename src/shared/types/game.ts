@@ -22,7 +22,7 @@ export interface FoxDef {
 export interface TileState {
   tileId: string;
   element: FoxElement;
-  hasGem: boolean;
+  hasStar: boolean;
 }
 
 export type CellState = TileState | null; // null = hole
@@ -55,10 +55,11 @@ export interface GameState {
   lastMatchElement: FoxElement | null;
   consecutiveSameElement: number;
   spiritCharge: SpiritCharge;
-  gems: number; // collected gems total
+  stars: number; // collected stars total
   selected: Position | null; // first tile of a swap
   isDarkTheme: boolean; // Night Fox ult active
   isTimeSlow: boolean; // Night Fox ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
   lastElectricCol: number; // column of last matched electric tile
+  hintPositions: [Position, Position] | null;
 }

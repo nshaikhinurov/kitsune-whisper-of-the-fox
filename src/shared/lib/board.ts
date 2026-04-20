@@ -3,7 +3,7 @@ import {
   BOARD_MATCH_REMOVAL_ATTEMPTS,
   BOARD_REFILL_ATTEMPTS,
   ELEMENTS,
-  GEM_SPAWN_CHANCE,
+  STAR_SPAWN_CHANCE,
 } from "../config/game-config";
 import type { CellState, Position, TileState } from "../types/game";
 import { findMatches, hasPossibleMove } from "./matches";
@@ -17,7 +17,7 @@ function randomTile(): TileState {
   return {
     tileId: nextTileId(),
     element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
-    hasGem: Math.random() < GEM_SPAWN_CHANCE,
+    hasStar: Math.random() < STAR_SPAWN_CHANCE,
   };
 }
 

@@ -6,10 +6,11 @@ import { Cell } from "./cell";
 interface BoardProps {
   board: CellState[][];
   selected: Position | null;
+  hintPositions: [Position, Position] | null;
   onCellClick: (pos: Position) => void;
 }
 
-export function Board({ board, selected, onCellClick }: BoardProps) {
+export function Board({ board, selected, hintPositions, onCellClick }: BoardProps) {
   return (
     <LayoutGroup>
       <div
@@ -27,6 +28,9 @@ export function Board({ board, selected, onCellClick }: BoardProps) {
             const key = `${r},${c}`;
             const isSelected =
               selected !== null && selected.row === r && selected.col === c;
+            const isHint =
+              hintPositions !== null &&
+              hintPositions.some((p) => p.row === r && p.col === c);
 
             return (
               <Cell
@@ -34,6 +38,7 @@ export function Board({ board, selected, onCellClick }: BoardProps) {
                 tile={board[r]?.[c] ?? null}
                 pos={pos}
                 isSelected={isSelected}
+                isHint={isHint}
                 onClick={onCellClick}
               />
             );
