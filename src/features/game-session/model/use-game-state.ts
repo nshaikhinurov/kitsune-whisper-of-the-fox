@@ -191,6 +191,14 @@ export function useGameState() {
   // Cascade queue — not in state since changes don't need re-renders
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
+  const prevGemsRef = useRef(0);
+
+  useEffect(() => {
+    if (state.gems > prevGemsRef.current) {
+      new Audio("/diamond_obtained.mp3").play().catch(() => {});
+    }
+    prevGemsRef.current = state.gems;
+  }, [state.gems]);
 
   // ---------------------------------------------------------------------------
   // Night Fox auto-revert

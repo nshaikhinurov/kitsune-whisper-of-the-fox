@@ -23,17 +23,25 @@ export function Cell({ tile, pos, isSelected, onClick }: CellProps) {
           <motion.div
             key={tile.tileId}
             layoutId={tile.tileId}
-            className="absolute inset-0"
+            className="absolute inset-0 rounded-lg"
             initial={{ scale: 0.4, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{
+              scale: isSelected ? 1.1 : 1,
+              opacity: 1,
+              boxShadow: isSelected
+                ? `0 0 0 3px rgba(255,255,255,0.85), 0 0 12px rgba(255,255,255,0.4)`
+                : "none",
+            }}
             exit={{ scale: 1.35, opacity: 0 }}
             transition={{
               layout: { type: "spring", stiffness: 500, damping: 35 },
-              scale: { duration: 0.18 },
+              scale: { type: "spring", stiffness: 600, damping: 30 },
               opacity: { duration: 0.15 },
+              boxShadow: { type: "spring", stiffness: 600, damping: 30 },
             }}
+            style={{ zIndex: isSelected ? 10 : 0 }}
           >
-            <FoxTile tile={tile} isSelected={isSelected} />
+            <FoxTile tile={tile} />
           </motion.div>
         )}
       </AnimatePresence>
