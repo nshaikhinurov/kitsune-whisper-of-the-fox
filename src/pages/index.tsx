@@ -10,8 +10,9 @@ import { HelpBlock } from "../widgets/help-block";
 import { SpiritPanel } from "../widgets/spirit-panel";
 
 export function MainPage() {
-  const { state, selectCell, activateUlt, resetGame } = useGameState();
   const [showHints, setShowHints] = useState(true);
+  const [zenMode, setZenMode] = useState(false);
+  const { state, selectCell, activateUlt, resetGame } = useGameState(zenMode);
 
   return (
     <main
@@ -36,14 +37,20 @@ export function MainPage() {
 
       <div className="w-full max-w-105 flex items-center justify-between">
         <HelpBlock />
-        <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
-          <Switch
-            size="sm"
-            checked={showHints}
-            onCheckedChange={setShowHints}
-          />
-          Show hints
-        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
+            <Switch size="sm" checked={zenMode} onCheckedChange={setZenMode} />
+            Zen mode
+          </label>
+          <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
+            <Switch
+              size="sm"
+              checked={showHints}
+              onCheckedChange={setShowHints}
+            />
+            Show hints
+          </label>
+        </div>
       </div>
 
       {state.isTimeSlow && (
@@ -63,7 +70,7 @@ export function MainPage() {
           hintPositions={showHints ? state.hintPositions : null}
           onCellClick={selectCell}
         />
-        <TimerBar timeLeft={state.timeLeft} />
+        {!zenMode && <TimerBar timeLeft={state.timeLeft} />}
       </div>
 
       <AnimatePresence>

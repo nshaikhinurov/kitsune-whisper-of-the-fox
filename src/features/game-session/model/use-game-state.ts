@@ -187,8 +187,10 @@ function applyChargeDeltas(
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useGameState() {
+export function useGameState(zenMode = false) {
   const [state, setState] = useState<GameState>(makeInitialState);
+  const zenModeRef = useRef(zenMode);
+  zenModeRef.current = zenMode;
 
   // Stable ref so callbacks always read fresh state without stale closures
   const stateRef = useRef(state);
@@ -235,6 +237,7 @@ export function useGameState() {
     const id = setInterval(() => {
       setState((prev) => {
         if (prev.phase === "gameOver") return prev;
+        if (zenModeRef.current) return prev;
         const newTime = prev.timeLeft - TIMER_TICK_MS;
         if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver" };
 
