@@ -12,7 +12,7 @@ interface SpiritPanelProps {
 
 export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
   return (
-    <div className="flex flex-col gap-5 justify-end py-3 mr-5">
+    <div className="flex flex-col gap-5 justify-between py-9 mr-5">
       {ELEMENTS.map((el) => {
         const def = FOX_DEFS[el];
         const charge = spiritCharge[el];

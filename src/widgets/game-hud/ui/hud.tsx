@@ -5,9 +5,10 @@ interface HudProps {
   combo: number;
   stars: number;
   level: number;
+  onOpenLeaderboard?: () => void;
 }
 
-export function Hud({ score, combo, stars, level }: HudProps) {
+export function Hud({ score, combo, stars, level, onOpenLeaderboard }: HudProps) {
   return (
     <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-neutral-800/70 backdrop-blur text-white text-sm font-semibold w-full max-w-[420px] justify-between">
       <div className="flex flex-col items-center min-w-[60px]">
@@ -43,12 +44,17 @@ export function Hud({ score, combo, stars, level }: HudProps) {
         </span>
         <motion.span
           key={stars}
-          className="text-lg font-bold tabular-nums text-blue-400"
+          className="text-lg font-bold tabular-nums "
           initial={{ scale: 1.25 }}
           animate={{ scale: 1 }}
           transition={{ duration: 0.25 }}
         >
-          <img src="/star.svg" alt="star" className="inline w-4 h-4 mr-1 align-middle" />{stars}
+          <img
+            src="/star.svg"
+            alt="star"
+            className="inline w-4 h-4 mr-1 align-baseline"
+          />
+          {stars}
         </motion.span>
       </div>
 
@@ -58,6 +64,17 @@ export function Hud({ score, combo, stars, level }: HudProps) {
         </span>
         <span className="text-lg font-bold">{level}</span>
       </div>
+
+      {onOpenLeaderboard && (
+        <button
+          onClick={onOpenLeaderboard}
+          className="text-neutral-400 hover:text-yellow-400 transition-colors text-xl leading-none"
+          title="Leaderboard"
+          aria-label="Open leaderboard"
+        >
+          🏆
+        </button>
+      )}
     </div>
   );
 }

@@ -1,5 +1,9 @@
 import { AnimatePresence } from "motion/react";
 import { useState } from "react";
+import {
+  SHOW_HINTS_INITIALLY,
+  ZEN_MODE_ON_INITIALLY,
+} from "~/shared/config/game-config";
 import { useGameState } from "../features/game-session";
 import { cn } from "../shared/lib/utils";
 import { Switch } from "../shared/ui/switch";
@@ -7,11 +11,13 @@ import { Board } from "../widgets/game-board";
 import { Hud, TimerBar } from "../widgets/game-hud";
 import { GameOverBlock } from "../widgets/game-over";
 import { HelpBlock } from "../widgets/help-block";
+import { LeaderboardPanel } from "../widgets/leaderboard";
 import { SpiritPanel } from "../widgets/spirit-panel";
 
 export function MainPage() {
-  const [showHints, setShowHints] = useState(true);
-  const [zenMode, setZenMode] = useState(false);
+  const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
+  const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const { state, selectCell, activateUlt, resetGame } = useGameState(zenMode);
 
   return (
@@ -33,6 +39,7 @@ export function MainPage() {
         combo={state.combo}
         stars={state.stars}
         level={state.level}
+        onOpenLeaderboard={() => setShowLeaderboard(true)}
       />
 
       <div className="w-full max-w-105 flex items-center justify-between">
@@ -76,10 +83,18 @@ export function MainPage() {
       <AnimatePresence>
         {state.phase === "gameOver" && (
           <GameOverBlock
+            key="game-over"
             score={state.score}
             stars={state.stars}
             level={state.level}
+            mode={zenMode ? "zen" : "normal"}
             onReset={resetGame}
+          />
+        )}
+        {showLeaderboard && state.phase !== "gameOver" && (
+          <LeaderboardPanel
+            key="leaderboard"
+            onClose={() => setShowLeaderboard(false)}
           />
         )}
       </AnimatePresence>
