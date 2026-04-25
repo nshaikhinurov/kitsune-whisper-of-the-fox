@@ -1,44 +1,35 @@
 import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "../../../../convex/_generated/api";
+import { Dialog, DialogClose, DialogContent } from "../../../shared/ui/dialog";
 import type { LeaderboardEntry } from "../../../shared/types/leaderboard";
 
 interface LeaderboardPanelProps {
+  open: boolean;
   onClose: () => void;
   highlightId?: string | null;
 }
 
-export function LeaderboardPanel({ onClose, highlightId }: LeaderboardPanelProps) {
-  const scores = useQuery(api.leaderboard.getTopScores);
+export function LeaderboardPanel({ open, onClose, highlightId }: LeaderboardPanelProps) {
+  const scores = useQuery(api.leaderboard.getTopScores, open ? {} : "skip");
 
   return (
-    <motion.div
-      className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-    >
-      <motion.div
-        className="bg-neutral-800 rounded-2xl p-6 flex flex-col gap-4 shadow-2xl text-white w-full max-w-md mx-4 max-h-[80vh] overflow-hidden"
-        initial={{ scale: 0.7, opacity: 0, y: 40 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 380, damping: 28 }}
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}>
+      <DialogContent
+        showCloseButton={false}
+        className="bg-neutral-800 text-white border-neutral-700 rounded-2xl max-w-md flex flex-col gap-4 shadow-2xl max-h-[80vh] overflow-hidden p-6"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <img src="/fox.svg" alt="" className="h-6" />
             Leaderboard
           </h2>
-          <button
+          <DialogClose
             className="text-neutral-400 hover:text-white transition-colors text-xl leading-none"
-            onClick={onClose}
             aria-label="Close leaderboard"
           >
             ✕
-          </button>
+          </DialogClose>
         </div>
 
         <div className="grid grid-cols-[2rem_1fr_5rem_3rem_3rem] gap-2 text-xs text-neutral-400 uppercase tracking-wide px-1">
@@ -104,7 +95,7 @@ export function LeaderboardPanel({ onClose, highlightId }: LeaderboardPanelProps
         <p className="text-xs text-neutral-500 text-center">
           Updates in real time
         </p>
-      </motion.div>
-    </motion.div>
+      </DialogContent>
+    </Dialog>
   );
 }

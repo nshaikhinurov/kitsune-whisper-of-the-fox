@@ -1,4 +1,3 @@
-import { AnimatePresence } from "motion/react";
 import { useState } from "react";
 import {
   SHOW_HINTS_INITIALLY,
@@ -80,24 +79,18 @@ export function MainPage() {
         {!zenMode && <TimerBar timeLeft={state.timeLeft} />}
       </div>
 
-      <AnimatePresence>
-        {state.phase === "gameOver" && (
-          <GameOverBlock
-            key="game-over"
-            score={state.score}
-            stars={state.stars}
-            level={state.level}
-            mode={zenMode ? "zen" : "normal"}
-            onReset={resetGame}
-          />
-        )}
-        {showLeaderboard && state.phase !== "gameOver" && (
-          <LeaderboardPanel
-            key="leaderboard"
-            onClose={() => setShowLeaderboard(false)}
-          />
-        )}
-      </AnimatePresence>
+      <GameOverBlock
+        open={state.phase === "gameOver"}
+        score={state.score}
+        stars={state.stars}
+        level={state.level}
+        mode={zenMode ? "zen" : "normal"}
+        onReset={resetGame}
+      />
+      <LeaderboardPanel
+        open={showLeaderboard && state.phase !== "gameOver"}
+        onClose={() => setShowLeaderboard(false)}
+      />
     </main>
   );
 }

@@ -5,7 +5,7 @@ export const GRID_COLS = 6;
 export const GRID_ROWS = 6;
 
 // Timer
-export const ZEN_MODE_ON_INITIALLY = true;
+export const ZEN_MODE_ON_INITIALLY = false;
 export const GAME_DURATION_MS = 90_000;
 export const TIMER_TICK_MS = 100;
 export const TIME_WARNING_MS = 30_000;
@@ -38,7 +38,7 @@ export const BOARD_REFILL_REGEN_AT = 25;
 
 // Hint
 export const HINT_IDLE_MS = 10_000;
-export const SHOW_HINTS_INITIALLY = true;
+export const SHOW_HINTS_INITIALLY = false;
 
 // Animation
 export const SWAP_ANIM_MS = 230;

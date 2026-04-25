@@ -8,7 +8,13 @@ interface HudProps {
   onOpenLeaderboard?: () => void;
 }
 
-export function Hud({ score, combo, stars, level, onOpenLeaderboard }: HudProps) {
+export function Hud({
+  score,
+  combo,
+  stars,
+  level,
+  onOpenLeaderboard,
+}: HudProps) {
   return (
     <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-neutral-800/70 backdrop-blur text-white text-sm font-semibold w-full max-w-[420px] justify-between">
       <div className="flex flex-col items-center min-w-[60px]">
@@ -25,7 +31,7 @@ export function Hud({ score, combo, stars, level, onOpenLeaderboard }: HudProps)
           {score.toLocaleString()}
         </motion.span>
         <motion.span
-          key={combo}
+          key={`combo-${combo}`}
           className="text-yellow-400 text-xs font-bold"
           animate={{
             scale: combo > 1 ? [1.5, 1] : 1,

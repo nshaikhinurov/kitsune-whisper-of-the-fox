@@ -1,10 +1,12 @@
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { useNickname, useSubmitScore } from "../features/leaderboard";
 import type { GameMode } from "../shared/types/leaderboard";
+import { Dialog, DialogContent } from "../shared/ui/dialog";
 import { LeaderboardPanel } from "./leaderboard";
 
 interface GameOverBlockProps {
+  open: boolean;
   score: number;
   stars: number;
   level: number;
@@ -13,6 +15,7 @@ interface GameOverBlockProps {
 }
 
 export const GameOverBlock = ({
+  open,
   score,
   stars,
   level,
@@ -29,28 +32,18 @@ export const GameOverBlock = ({
 
   return (
     <>
-      <AnimatePresence>
-        {showLeaderboard && (
-          <LeaderboardPanel
-            key="leaderboard"
-            highlightId={submittedId}
-            onClose={() => setShowLeaderboard(false)}
-          />
-        )}
-      </AnimatePresence>
+      {showLeaderboard && (
+        <LeaderboardPanel
+          open={showLeaderboard}
+          highlightId={submittedId}
+          onClose={() => setShowLeaderboard(false)}
+        />
+      )}
 
-      <motion.div
-        className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-40"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-      >
-        <motion.div
-          className="bg-neutral-800 rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl text-white max-w-xs w-full mx-4"
-          initial={{ scale: 0.7, opacity: 0, y: 40 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 380, damping: 28 }}
+      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onReset(); }}>
+        <DialogContent
+          showCloseButton={false}
+          className="bg-neutral-800 text-white border-neutral-700 rounded-2xl max-w-xs sm:max-w-xs flex flex-col items-center gap-4 shadow-2xl"
         >
           <h2 className="text-3xl font-bold">Game Over</h2>
           <p className="text-neutral-400">
@@ -59,6 +52,7 @@ export const GameOverBlock = ({
 
           <div className="text-center">
             <motion.p
+              key={score}
               className="text-4xl font-bold text-yellow-400"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -131,8 +125,8 @@ export const GameOverBlock = ({
           >
             Play Again
           </button>
-        </motion.div>
-      </motion.div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
