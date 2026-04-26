@@ -1,6 +1,12 @@
 import { MIN_MATCH_LENGTH } from "../config/game-config";
 import type { CellState, Match, Position } from "../types/game";
 
+export const posKey = (pos: Position): string => `${pos.row},${pos.col}`;
+export const parseKey = (key: string): Position => {
+  const comma = key.indexOf(",");
+  return { row: +key.slice(0, comma), col: +key.slice(comma + 1) };
+};
+
 export function findMatches(board: CellState[][]): Match[] {
   const rows = board.length;
   const cols = board[0]?.length ?? 0;
@@ -150,7 +156,7 @@ export function positionsToSet(matches: Match[]): Set<string> {
   const set = new Set<string>();
   for (const match of matches) {
     for (const pos of match.positions) {
-      set.add(`${pos.row},${pos.col}`);
+      set.add(posKey(pos));
     }
   }
   return set;

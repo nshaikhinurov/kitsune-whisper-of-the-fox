@@ -8,14 +8,9 @@ import {
 import type { CellState, Position, TileState } from "../types/game";
 import { findMatches, hasPossibleMove } from "./matches";
 
-let _tileIdCounter = 0;
-function nextTileId(): string {
-  return `t${++_tileIdCounter}`;
-}
-
 function randomTile(): TileState {
   return {
-    tileId: nextTileId(),
+    tileId: crypto.randomUUID(),
     element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
     hasStar: Math.random() < STAR_SPAWN_CHANCE,
   };

@@ -26,6 +26,7 @@ import { SpiritPanel } from "../widgets/spirit-panel";
 export function MainPage() {
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
+  // missing key → "true" (dark by default for new users)
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("kitsune_dark_mode") !== "false",
   );

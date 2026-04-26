@@ -15,11 +15,6 @@ export function FoxTile({ tile }: FoxTileProps) {
     >
       <FoxSprite element={tile.element} className="aspect-square w-8/10" />
 
-      {/* TODO: remove — debug label
-      <span className="absolute bottom-0 left-0 right-0 text-center text-[8px] font-bold leading-tight text-white/80 bg-black/40">
-        {tile.element}
-      </span> */}
-
       {tile.hasStar && (
         <img
           src="/star.svg"

@@ -38,7 +38,9 @@ import {
 import {
   findFirstHintMove,
   findMatches,
+  parseKey,
   positionsToSet,
+  posKey,
 } from "../../../shared/lib/matches";
 import type {
   CellState,
@@ -116,16 +118,13 @@ function computeCascadeSteps(
     }
 
     for (const key of matchedSet) {
-      const [r, c] = key.split(",").map(Number);
-      const tile = board[r][c];
+      const { row, col } = parseKey(key);
+      const tile = board[row][col];
       if (tile?.hasStar) starsDelta++;
-      if (tile?.element === "electric") lastElectricCol = c;
+      if (tile?.element === "electric") lastElectricCol = col;
     }
 
-    const matchedPositions = [...matchedSet].map((k) => {
-      const [r, c] = k.split(",").map(Number);
-      return { row: r, col: c };
-    });
+    const matchedPositions = [...matchedSet].map(parseKey);
     const matchedCentroid = {
       row:
         matchedPositions.reduce((s, p) => s + p.row, 0) /
@@ -136,7 +135,7 @@ function computeCascadeSteps(
     };
 
     const clearedBoard = board.map((row, r) =>
-      row.map((cell, c) => (matchedSet.has(`${r},${c}`) ? null : cell)),
+      row.map((cell, c) => (matchedSet.has(posKey({ row: r, col: c })) ? null : cell)),
     );
     const { board: filledBoard, deadlocked } = refillBoard(
       applyGravity(clearedBoard),
