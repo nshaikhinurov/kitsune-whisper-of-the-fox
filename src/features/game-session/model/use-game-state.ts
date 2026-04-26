@@ -29,6 +29,7 @@ import {
   applyGravity,
   createBoard,
   isAdjacent,
+  pickRandomNonNullCells,
   refillBoard,
   shuffleRegion,
   swapTiles,
@@ -451,20 +452,12 @@ export function useGameState(zenMode = false) {
       let timeLeft = s.timeLeft;
 
       switch (element) {
+        // Randomly re-rolls the element of N board tiles
         case "ori": {
           const count =
             WHITE_FOX_MIN_TILES +
             Math.floor(Math.random() * WHITE_FOX_TILE_VARIANCE);
-          const positions: Position[] = [];
-          for (let r = 0; r < GRID_ROWS; r++)
-            for (let c = 0; c < GRID_COLS; c++)
-              if (board[r][c]) positions.push({ row: r, col: c });
-          for (let i = 0; i < Math.min(count, positions.length); i++) {
-            const j = Math.floor(Math.random() * positions.length);
-            [positions[i], positions[j]] = [positions[j], positions[i]];
-          }
-          for (let i = 0; i < Math.min(count, positions.length); i++) {
-            const { row, col } = positions[i];
+          for (const { row, col } of pickRandomNonNullCells(board, count)) {
             const tile = board[row][col];
             if (tile)
               board[row][col] = {
@@ -474,26 +467,19 @@ export function useGameState(zenMode = false) {
           }
           break;
         }
+        // Clears N random tiles and refills the board
         case "green": {
           const count =
             RED_FOX_MIN_TILES +
             Math.floor(Math.random() * RED_FOX_TILE_VARIANCE);
-          const positions: Position[] = [];
-          for (let r = 0; r < GRID_ROWS; r++)
-            for (let c = 0; c < GRID_COLS; c++)
-              if (board[r][c]) positions.push({ row: r, col: c });
-          for (let i = 0; i < Math.min(count, positions.length); i++) {
-            const j = Math.floor(Math.random() * positions.length);
-            [positions[i], positions[j]] = [positions[j], positions[i]];
-          }
-          for (let i = 0; i < Math.min(count, positions.length); i++) {
-            const { row, col } = positions[i];
+          for (const { row, col } of pickRandomNonNullCells(board, count)) {
             if (board[row][col]?.hasStar) starsDelta++;
             board[row][col] = null;
           }
           board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
           break;
         }
+        // Wipes the entire column of the last electric match and refills
         case "electric": {
           const col = s.lastElectricCol;
           for (let r = 0; r < GRID_ROWS; r++) {
@@ -503,6 +489,7 @@ export function useGameState(zenMode = false) {
           board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
           break;
         }
+        // Shuffles tiles inside a randomly placed NxN patch
         case "chaotic": {
           const startRow = Math.floor(
             Math.random() * (GRID_ROWS - CHAOTIC_PATCH_SIZE + 1),
@@ -517,6 +504,7 @@ export function useGameState(zenMode = false) {
           board = shuffleRegion(board, positions);
           break;
         }
+        // Activates night theme and adds bonus time, capped at the game limit
         case "night": {
           isNight = true;
           timeLeft = Math.min(
@@ -525,6 +513,7 @@ export function useGameState(zenMode = false) {
           );
           break;
         }
+        // Collects N random starred tiles and strips their star (scoring them)
         case "sakura": {
           const starPositions: Position[] = [];
           for (let r = 0; r < GRID_ROWS; r++)
@@ -534,8 +523,9 @@ export function useGameState(zenMode = false) {
             SAKURA_MIN_STARS + Math.floor(Math.random() * SAKURA_STAR_VARIANCE),
             starPositions.length,
           );
+          // Partial Fisher-Yates: j drawn from [i, length) keeps selection uniform
           for (let i = 0; i < count; i++) {
-            const j = Math.floor(Math.random() * starPositions.length);
+            const j = i + Math.floor(Math.random() * (starPositions.length - i));
             [starPositions[i], starPositions[j]] = [
               starPositions[j],
               starPositions[i],

@@ -132,6 +132,23 @@ export function swapTiles(
   return next;
 }
 
+export function pickRandomNonNullCells(
+  board: CellState[][],
+  count: number,
+): Position[] {
+  const positions: Position[] = [];
+  for (let r = 0; r < board.length; r++)
+    for (let c = 0; c < (board[0]?.length ?? 0); c++)
+      if (board[r][c]) positions.push({ row: r, col: c });
+
+  const take = Math.min(count, positions.length);
+  for (let i = 0; i < take; i++) {
+    const j = i + Math.floor(Math.random() * (positions.length - i));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+  return positions.slice(0, take);
+}
+
 export function shuffleRegion(
   board: CellState[][],
   positions: Position[],
