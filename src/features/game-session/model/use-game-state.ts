@@ -25,6 +25,7 @@ import {
   WHITE_FOX_MIN_TILES,
   WHITE_FOX_TILE_VARIANCE,
 } from "../../../shared/config/game-config";
+import { Audition } from "../../../shared/lib/audition";
 import {
   applyGravity,
   createBoard,
@@ -238,14 +239,14 @@ export function useGameState(zenMode = false) {
 
   useEffect(() => {
     if (state.stars > prevStarsRef.current) {
-      new Audio("/star-collected.mp3").play().catch(() => {});
+      Audition.starCollected();
     }
     prevStarsRef.current = state.stars;
   }, [state.stars]);
 
   useEffect(() => {
     if (state.phase === "clearing") {
-      new Audio("/tiles-matched.mp3").play().catch(() => {});
+      Audition.tilesMatched();
     }
   }, [state.phase]);
 
@@ -525,7 +526,8 @@ export function useGameState(zenMode = false) {
           );
           // Partial Fisher-Yates: j drawn from [i, length) keeps selection uniform
           for (let i = 0; i < count; i++) {
-            const j = i + Math.floor(Math.random() * (starPositions.length - i));
+            const j =
+              i + Math.floor(Math.random() * (starPositions.length - i));
             [starPositions[i], starPositions[j]] = [
               starPositions[j],
               starPositions[i],

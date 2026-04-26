@@ -2,9 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { FOX_DEFS } from "../../../entities/fox";
 import type { CellState, Position } from "../../../shared/types/game";
 import { FoxTile } from "./fox-tile";
+import { Audition } from "../../../shared/lib/audition";
 import { useTileSwipe } from "./use-tile-swipe";
-
-const tileSelectSound = new Audio("/tile-select.mp3");
 
 interface CellProps {
   tile: CellState;
@@ -31,8 +30,7 @@ export function Cell({
 
   const handleDragSource = (p: Position | null) => {
     if (p !== null) {
-      tileSelectSound.currentTime = 0;
-      tileSelectSound.play();
+      Audition.tileSelect();
     }
     onDragSource(p);
   };
