@@ -22,75 +22,78 @@ export function MainPage() {
   return (
     <main
       className={cn(
-        "flex flex-col items-center justify-start min-h-screen gap-10 p-16 transition-colors duration-700",
+        "min-h-screen p-4 md:p-8 xl:p-16",
         state.isDarkTheme
           ? "bg-neutral-950 text-yellow-400"
           : "bg-neutral-900 text-white",
       )}
     >
-      <h1 className="flex items-center gap-[0.4em] text-5xl h-[1em] font-bold tracking-tight">
-        <img src="/fox.svg" alt="Fox Spirit" className="h-full" />
-        Kitsune: Whisper of the Fox
-      </h1>
+      <div className="mx-auto flex min-h-screen max-w-[min(90vw,600px)] flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-[min(68vw,800px)] lg:gap-10">
+        <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl font-bold tracking-tight sm:text-3xl md:text-5xl">
+          <img src="/fox.svg" alt="Fox Spirit" className="h-full shrink-0" />
+          <span className="hidden sm:inline">Kitsune: Whisper of the Fox</span>
+          <span className="sm:hidden">Kitsune</span>
+        </h1>
 
-      <Hud
-        score={state.score}
-        combo={state.combo}
-        stars={state.stars}
-        level={state.level}
-        onOpenLeaderboard={() => setShowLeaderboard(true)}
-      />
+        <Hud score={state.score} combo={state.combo} stars={state.stars} />
 
-      <div className="w-full max-w-105 flex items-center justify-between">
-        <HelpBlock />
-        <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
-            <Switch size="sm" checked={zenMode} onCheckedChange={setZenMode} />
-            Zen mode
-          </label>
-          <label className="flex items-center gap-2 text-xs text-neutral-400 cursor-pointer select-none">
-            <Switch
-              size="sm"
-              checked={showHints}
-              onCheckedChange={setShowHints}
-            />
-            Show hints
-          </label>
+        <div className="flex w-full max-w-[min(90vw,600px)] flex-wrap items-center justify-between gap-2 lg:max-w-[min(68vw,800px)]">
+          <HelpBlock />
+          <div className="flex items-center gap-3">
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-neutral-400 select-none">
+              <Switch
+                size="sm"
+                checked={zenMode}
+                onCheckedChange={setZenMode}
+              />
+              Zen mode
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-neutral-400 select-none">
+              <Switch
+                size="sm"
+                checked={showHints}
+                onCheckedChange={setShowHints}
+              />
+              Show hints
+            </label>
+          </div>
         </div>
-      </div>
 
-      {state.isTimeSlow && (
-        <div className="text-yellow-400 text-xs font-semibold animate-pulse">
-          🌙 Night Fox: Time Slow active (+15s added)
+        {state.isTimeSlow && (
+          <div className="animate-pulse text-xs font-semibold text-yellow-400">
+            🌙 Night Fox: Time Slow active (+15s added)
+          </div>
+        )}
+
+        <div className="flex w-full flex-col items-center gap-3">
+          <Board
+            board={state.board}
+            selected={state.selected}
+            hintPositions={showHints ? state.hintPositions : null}
+            onCellClick={selectCell}
+          />
+
+          <SpiritPanel
+            spiritCharge={state.spiritCharge}
+            onActivate={activateUlt}
+          />
+
+          {!zenMode && <TimerBar timeLeft={state.timeLeft} />}
         </div>
-      )}
 
-      <div className="flex items-stretch gap-3">
-        <SpiritPanel
-          spiritCharge={state.spiritCharge}
-          onActivate={activateUlt}
+        <GameOverBlock
+          open={state.phase === "gameOver"}
+          score={state.score}
+          stars={state.stars}
+          level={state.level}
+          mode={zenMode ? "zen" : "normal"}
+          onReset={resetGame}
         />
-        <Board
-          board={state.board}
-          selected={state.selected}
-          hintPositions={showHints ? state.hintPositions : null}
-          onCellClick={selectCell}
+        <LeaderboardPanel
+          open={showLeaderboard && state.phase !== "gameOver"}
+          onClose={() => setShowLeaderboard(false)}
         />
-        {!zenMode && <TimerBar timeLeft={state.timeLeft} />}
       </div>
-
-      <GameOverBlock
-        open={state.phase === "gameOver"}
-        score={state.score}
-        stars={state.stars}
-        level={state.level}
-        mode={zenMode ? "zen" : "normal"}
-        onReset={resetGame}
-      />
-      <LeaderboardPanel
-        open={showLeaderboard && state.phase !== "gameOver"}
-        onClose={() => setShowLeaderboard(false)}
-      />
     </main>
   );
 }

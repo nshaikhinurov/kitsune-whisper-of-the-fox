@@ -1,88 +1,40 @@
 import { motion } from "motion/react";
-import { Button } from "~/shared/ui/button";
 
 interface HudProps {
   score: number;
   combo: number;
   stars: number;
-  level: number;
-  onOpenLeaderboard?: () => void;
 }
 
-export function Hud({
-  score,
-  combo,
-  stars,
-  level,
-  onOpenLeaderboard,
-}: HudProps) {
+export function Hud({ score, stars }: HudProps) {
   return (
-    <div className="flex items-center gap-4 px-4 py-2 rounded-xl bg-neutral-800/70 backdrop-blur text-white text-sm font-semibold w-full max-w-[420px] justify-between">
-      <div className="flex flex-col items-center min-w-[60px]">
-        <span className="text-neutral-400 text-xs uppercase tracking-wide">
-          Score
-        </span>
-        <motion.span
-          key={score}
-          className="text-lg font-bold tabular-nums"
-          initial={{ scale: 1.3, color: "#facc15" }}
-          animate={{ scale: 1, color: "#ffffff" }}
-          transition={{ duration: 0.3 }}
-        >
-          {score.toLocaleString()}
-        </motion.span>
-        <motion.span
-          key={`combo-${combo}`}
-          className="text-yellow-400 text-xs font-bold"
-          animate={{
-            scale: combo > 1 ? [1.5, 1] : 1,
-            opacity: combo > 1 ? 1 : 0,
-          }}
-          transition={{ duration: 0.2 }}
-          style={{ visibility: combo > 1 ? "visible" : "hidden" }}
-        >
-          ×{combo} combo!
-        </motion.span>
-      </div>
+    <div className="flex w-full max-w-[min(90vw,420px)] items-center justify-between gap-2 rounded-xl bg-neutral-800/70 p-5 px-7 text-2xl font-bold text-white backdrop-blur sm:gap-4">
+      <motion.div
+        key={score}
+        className="tabular-nums"
+        initial={{ scale: 1.3, color: "#facc15" }}
+        animate={{ scale: 1, color: "#ffffff" }}
+        transition={{ duration: 0.3 }}
+      >
+        {score.toLocaleString()}
+      </motion.div>
 
       <div className="flex flex-col items-center">
-        <span className="text-neutral-400 text-xs uppercase tracking-wide">
-          Stars
-        </span>
-        <motion.span
+        <motion.div
           key={stars}
-          className="text-lg font-bold tabular-nums "
-          initial={{ scale: 1.25 }}
+          className="align-baseline tabular-nums"
+          initial={{ scale: 1.3 }}
           animate={{ scale: 1 }}
-          transition={{ duration: 0.25 }}
+          transition={{ duration: 0.3 }}
         >
           <img
             src="/star.svg"
             alt="star"
-            className="inline w-4 h-4 mr-1 align-baseline"
+            className="mr-1 inline h-4 w-4 align-baseline"
           />
           {stars}
-        </motion.span>
+        </motion.div>
       </div>
-
-      <div className="flex flex-col items-center">
-        <span className="text-neutral-400 text-xs uppercase tracking-wide">
-          Level
-        </span>
-        <span className="text-lg font-bold">{level}</span>
-      </div>
-
-      {onOpenLeaderboard && (
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={onOpenLeaderboard}
-          title="Leaderboard"
-          aria-label="Open leaderboard"
-        >
-          🏆
-        </Button>
-      )}
     </div>
   );
 }

@@ -50,7 +50,7 @@ export const GameOverBlock = ({
       >
         <DialogContent
           showCloseButton={false}
-          className="bg-neutral-800 text-white border-neutral-700 rounded-2xl max-w-xs sm:max-w-xs flex flex-col items-center gap-4 shadow-2xl"
+          className="flex max-w-[min(90vw,22rem)] flex-col items-center gap-4 rounded-2xl border-neutral-700 bg-neutral-800 text-white shadow-2xl"
         >
           <h2 className="text-3xl font-bold">Game Over</h2>
           <p className="text-neutral-400">
@@ -67,7 +67,7 @@ export const GameOverBlock = ({
             >
               {score.toLocaleString()}
             </motion.p>
-            <p className="text-neutral-400 text-sm">Final Score</p>
+            <p className="text-sm text-neutral-400">Final Score</p>
           </div>
 
           <div className="flex gap-6 text-sm text-neutral-300">
@@ -75,14 +75,14 @@ export const GameOverBlock = ({
               <img
                 src="/star.svg"
                 alt="star"
-                className="inline w-4 h-4 mr-1 align-middle"
+                className="mr-1 inline h-4 w-4 align-middle"
               />
               {stars} stars
             </span>
             <span>Level {level}</span>
           </div>
 
-          <div className="w-full flex flex-col gap-2">
+          <div className="flex w-full flex-col gap-2">
             {status !== "success" ? (
               <>
                 <Input
@@ -93,12 +93,12 @@ export const GameOverBlock = ({
                   maxLength={24}
                 />
                 {errorMessage && (
-                  <p className="text-red-400 text-xs text-center">
+                  <p className="text-center text-xs text-red-400">
                     {errorMessage}
                   </p>
                 )}
                 <Button
-                  className="w-full "
+                  className="w-full"
                   onClick={handleSubmit}
                   disabled={
                     status === "submitting" || nickname.trim().length === 0
@@ -111,12 +111,12 @@ export const GameOverBlock = ({
               </>
             ) : (
               <>
-                <p className="text-green-400 text-sm text-center">
+                <p className="text-center text-sm text-green-400">
                   Score submitted!
                 </p>
                 <Button
                   variant="secondary"
-                  className="w-full "
+                  className="w-full"
                   onClick={() => setShowLeaderboard(true)}
                 >
                   View Leaderboard
@@ -128,7 +128,7 @@ export const GameOverBlock = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs "
+                className="text-xs"
                 onClick={() => setShowLeaderboard(true)}
               >
                 View Leaderboard
@@ -136,7 +136,7 @@ export const GameOverBlock = ({
             )}
           </div>
 
-          <Button className="mt-1 w-full  " onClick={onReset}>
+          <Button className="mt-1 w-full" onClick={onReset}>
             Play Again
           </Button>
         </DialogContent>

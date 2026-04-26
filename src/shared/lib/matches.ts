@@ -11,7 +11,10 @@ export function findMatches(board: CellState[][]): Match[] {
     let c = 0;
     while (c < cols) {
       const tile = board[r][c];
-      if (!tile) { c++; continue; }
+      if (!tile) {
+        c++;
+        continue;
+      }
       let len = 1;
       while (c + len < cols && board[r][c + len]?.element === tile.element) {
         len++;
@@ -30,7 +33,10 @@ export function findMatches(board: CellState[][]): Match[] {
     let r = 0;
     while (r < rows) {
       const tile = board[r][c];
-      if (!tile) { r++; continue; }
+      if (!tile) {
+        r++;
+        continue;
+      }
       let len = 1;
       while (r + len < rows && board[r + len][c]?.element === tile.element) {
         len++;
@@ -54,12 +60,12 @@ export function hasPossibleMove(board: CellState[][]): boolean {
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (c + 1 < cols) {
-        const swapped = board.map(row => [...row]);
+        const swapped = board.map((row) => [...row]);
         [swapped[r][c], swapped[r][c + 1]] = [swapped[r][c + 1], swapped[r][c]];
         if (findMatches(swapped).length > 0) return true;
       }
       if (r + 1 < rows) {
-        const swapped = board.map(row => [...row]);
+        const swapped = board.map((row) => [...row]);
         [swapped[r][c], swapped[r + 1][c]] = [swapped[r + 1][c], swapped[r][c]];
         if (findMatches(swapped).length > 0) return true;
       }
@@ -69,22 +75,30 @@ export function hasPossibleMove(board: CellState[][]): boolean {
   return false;
 }
 
-export function findFirstHintMove(board: CellState[][]): [Position, Position] | null {
+export function findFirstHintMove(
+  board: CellState[][],
+): [Position, Position] | null {
   const rows = board.length;
   const cols = board[0]?.length ?? 0;
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (c + 1 < cols) {
-        const swapped = board.map(row => [...row]);
+        const swapped = board.map((row) => [...row]);
         [swapped[r][c], swapped[r][c + 1]] = [swapped[r][c + 1], swapped[r][c]];
         if (findMatches(swapped).length > 0)
-          return [{ row: r, col: c }, { row: r, col: c + 1 }];
+          return [
+            { row: r, col: c },
+            { row: r, col: c + 1 },
+          ];
       }
       if (r + 1 < rows) {
-        const swapped = board.map(row => [...row]);
+        const swapped = board.map((row) => [...row]);
         [swapped[r][c], swapped[r + 1][c]] = [swapped[r + 1][c], swapped[r][c]];
         if (findMatches(swapped).length > 0)
-          return [{ row: r, col: c }, { row: r + 1, col: c }];
+          return [
+            { row: r, col: c },
+            { row: r + 1, col: c },
+          ];
       }
     }
   }

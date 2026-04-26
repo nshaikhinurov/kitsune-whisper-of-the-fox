@@ -10,16 +10,19 @@ interface BoardProps {
   onCellClick: (pos: Position) => void;
 }
 
-export function Board({ board, selected, hintPositions, onCellClick }: BoardProps) {
+export function Board({
+  board,
+  selected,
+  hintPositions,
+  onCellClick,
+}: BoardProps) {
   return (
     <LayoutGroup>
       <div
-        className="inline-grid gap-2 p-5 rounded-2xl bg-neutral-800/50 backdrop-blur"
+        className="inline-grid aspect-square w-[min(90vw,600px)] gap-1.5 rounded-2xl bg-neutral-800/50 p-3 backdrop-blur sm:gap-2 sm:p-5 lg:w-[min(68vw,800px)]"
         style={{
           gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`,
           gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`,
-          width: "min(90vw, 800px)",
-          height: "min(90vw, 800px)",
         }}
       >
         {Array.from({ length: GRID_ROWS }, (_, r) =>

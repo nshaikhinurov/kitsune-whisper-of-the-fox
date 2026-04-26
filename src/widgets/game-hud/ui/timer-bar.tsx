@@ -16,18 +16,18 @@ export function TimerBar({ timeLeft }: TimerBarProps) {
   const barColor = `oklch(${lightness.toFixed(3)} ${chroma} ${hue.toFixed(1)})`;
 
   return (
-    <div className="flex flex-col items-center gap-2 self-stretch justify-center w-20">
-      <div className="flex-1 w-7 rounded-full bg-neutral-700 overflow-hidden flex flex-col-reverse">
+    <div className="flex w-full items-center gap-3">
+      <div className="h-5 flex-1 overflow-hidden rounded-full bg-neutral-700">
         <motion.div
-          className="w-full rounded-full"
+          className="h-full rounded-full"
           style={{ backgroundColor: barColor }}
-          animate={{ height: `${timeLeftPercentage * 100}%` }}
+          animate={{ width: `${timeLeftPercentage * 100}%` }}
           transition={{ duration: 0.1, ease: "linear" }}
         />
       </div>
       <motion.span
         key={secondsLeft}
-        className="text-5xl font-bold tabular-nums"
+        className="w-10 shrink-0 text-right text-3xl font-bold tabular-nums"
         style={{ color: barColor }}
         animate={timeLeft <= 10000 ? { scale: [1, 1.2, 1] } : {}}
         transition={{ duration: 0.3 }}

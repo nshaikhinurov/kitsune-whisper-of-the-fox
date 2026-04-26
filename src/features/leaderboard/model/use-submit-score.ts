@@ -29,7 +29,9 @@ export function useSubmitScore() {
         setSubmittedId(id);
         setStatus("success");
       } catch (err) {
-        setErrorMessage(err instanceof Error ? err.message : "Failed to submit");
+        setErrorMessage(
+          err instanceof Error ? err.message : "Failed to submit",
+        );
         setStatus("error");
       }
     },

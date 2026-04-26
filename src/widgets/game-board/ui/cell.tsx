@@ -14,16 +14,23 @@ interface CellProps {
 }
 
 export function Cell({ tile, pos, isSelected, isHint, onClick }: CellProps) {
-  const hintColor = tile !== null ? FOX_DEFS[tile.element].accentColor : "rgba(255,255,255,0.6)";
+  const hintColor =
+    tile !== null
+      ? FOX_DEFS[tile.element].accentColor
+      : "rgba(255,255,255,0.6)";
   const showHint = isHint && !isSelected;
 
   return (
     <div
-      className="relative w-full h-full rounded-lg"
-      onClick={() => { tileSelectSound.currentTime = 0; tileSelectSound.play(); onClick(pos); }}
+      className="relative h-full w-full rounded-lg"
+      onClick={() => {
+        tileSelectSound.currentTime = 0;
+        tileSelectSound.play();
+        onClick(pos);
+      }}
     >
       {/* Empty hole background */}
-      <div className="absolute inset-0 rounded-lg bg-neutral-900/60 border border-neutral-700/40" />
+      <div className="absolute inset-0 rounded-lg border border-neutral-700/40 bg-neutral-900/60" />
 
       <AnimatePresence>
         {tile !== null && (
@@ -38,8 +45,12 @@ export function Cell({ tile, pos, isSelected, isHint, onClick }: CellProps) {
               boxShadow: isSelected
                 ? `0 0 0 3px rgba(255,255,255,0.85), 0 0 12px rgba(255,255,255,0.4)`
                 : showHint
-                ? ["none", `0 0 0 3px ${hintColor}, 0 0 18px ${hintColor}`, "none"]
-                : "none",
+                  ? [
+                      "none",
+                      `0 0 0 3px ${hintColor}, 0 0 18px ${hintColor}`,
+                      "none",
+                    ]
+                  : "none",
             }}
             exit={{ scale: 1.35, opacity: 0 }}
             transition={
@@ -48,7 +59,11 @@ export function Cell({ tile, pos, isSelected, isHint, onClick }: CellProps) {
                     layout: { type: "spring", stiffness: 500, damping: 35 },
                     scale: { type: "spring", stiffness: 600, damping: 30 },
                     opacity: { duration: 0.15 },
-                    boxShadow: { duration: 0.9, repeat: Infinity, ease: "easeInOut" },
+                    boxShadow: {
+                      duration: 0.9,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    },
                   }
                 : {
                     layout: { type: "spring", stiffness: 500, damping: 35 },

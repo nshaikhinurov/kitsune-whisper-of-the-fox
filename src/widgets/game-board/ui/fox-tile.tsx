@@ -10,10 +10,10 @@ export function FoxTile({ tile }: FoxTileProps) {
 
   return (
     <div
-      className="relative flex items-center justify-center w-full h-full rounded-lg select-none cursor-pointer"
+      className="relative flex h-full w-full cursor-pointer items-center justify-center rounded-lg select-none"
       style={{ color: def.textColor }}
     >
-      <FoxSprite element={tile.element} className="w-8/10 aspect-square" />
+      <FoxSprite element={tile.element} className="aspect-square w-8/10" />
 
       {/* TODO: remove — debug label
       <span className="absolute bottom-0 left-0 right-0 text-center text-[8px] font-bold leading-tight text-white/80 bg-black/40">
@@ -24,7 +24,7 @@ export function FoxTile({ tile }: FoxTileProps) {
         <img
           src="/star.svg"
           alt="star"
-          className="animate-pulse absolute top-2 left-1/2 -translate-x-1/2 w-5 aspect-square"
+          className="absolute top-2 left-1/2 aspect-square w-5 -translate-x-1/2 animate-pulse"
         />
       )}
     </div>

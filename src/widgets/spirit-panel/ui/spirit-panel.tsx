@@ -12,7 +12,7 @@ interface SpiritPanelProps {
 
 export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
   return (
-    <div className="flex flex-col gap-5 justify-between py-9 mr-5">
+    <div className="flex w-[min(90vw,800px)] justify-around gap-2 px-6 py-3 lg:h-full lg:gap-5 lg:py-9">
       {ELEMENTS.map((el) => {
         const def = FOX_DEFS[el];
         const charge = spiritCharge[el];
@@ -20,11 +20,14 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
         const pct = Math.min(100, (charge / SPIRIT_MAX) * 100);
 
         return (
-          <div key={el} className="flex h-20 items-center gap-3">
+          <div
+            key={el}
+            className="flex flex-col items-center gap-1.5 lg:h-20 lg:gap-3"
+          >
             <motion.button
               className={cn(
-                "rounded-full p-0 border-0 bg-transparent",
-                isReady ? "cursor-pointer " : "cursor-not-allowed opacity-70",
+                "rounded-full border-0 bg-transparent p-0",
+                isReady ? "cursor-pointer" : "cursor-not-allowed opacity-70",
               )}
               animate={{
                 boxShadow: isReady
@@ -40,18 +43,17 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
               onClick={() => isReady && onActivate(el)}
               disabled={!isReady}
             >
-              <Avatar className="size-20 ">
-                <AvatarFallback className="bg-transparent  p-0.5">
+              <Avatar className="size-10 sm:size-12 lg:size-20">
+                <AvatarFallback className="bg-transparent p-0.5">
                   <FoxSprite element={el} className="aspect-square w-8/10" />
                 </AvatarFallback>
               </Avatar>
             </motion.button>
 
-            {/* Vertical charge bar */}
-            <div className="w-3 h-full rounded-full bg-neutral-700 overflow-hidden flex flex-col-reverse">
+            <div className="flex h-1.5 w-10 overflow-hidden rounded-full bg-neutral-700 sm:w-12">
               <motion.div
-                className="w-full rounded-full"
-                animate={{ height: `${pct}%` }}
+                className="h-full rounded-full"
+                animate={{ width: `${pct}%` }}
                 transition={{ type: "spring", stiffness: 120, damping: 20 }}
                 style={{ backgroundColor: def.accentColor }}
               />

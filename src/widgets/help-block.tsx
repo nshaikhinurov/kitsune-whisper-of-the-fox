@@ -8,11 +8,11 @@ export const HelpBlock = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   return (
-    <div className="w-full max-w-105">
+    <div className="w-full">
       <Button
         variant="ghost"
         size="xs"
-        className="text-neutral-400 hover:text-neutral-200 gap-1"
+        className="gap-1 text-neutral-400 hover:text-neutral-200"
         onClick={() => setShowHelp((v) => !v)}
       >
         <span>{showHelp ? "▾" : "▸"}</span>
@@ -22,7 +22,7 @@ export const HelpBlock = () => {
       <AnimatePresence>
         {showHelp && (
           <motion.div
-            className="mt-1 rounded-lg bg-neutral-800/70 backdrop-blur px-3 py-2 flex flex-col gap-1.5"
+            className="mt-1 flex flex-col gap-1.5 rounded-lg bg-neutral-800/70 px-3 py-2 backdrop-blur"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -36,7 +36,7 @@ export const HelpBlock = () => {
                   className="flex items-start gap-2 text-xs text-neutral-300"
                 >
                   <span
-                    className="w-5 h-5 rounded flex items-center justify-center shrink-0 text-sm"
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-sm"
                     style={{
                       color: def.textColor,
                     }}

@@ -27,12 +27,15 @@ export function createBoard(rows: number, cols: number): CellState[][] {
 
   do {
     board = Array.from({ length: rows }, () =>
-      Array.from({ length: cols }, () => randomTile())
+      Array.from({ length: cols }, () => randomTile()),
     );
 
     // Remove any initial matches by re-rolling conflicting tiles
     let attempts = 0;
-    while (findMatches(board).length > 0 && attempts < BOARD_MATCH_REMOVAL_ATTEMPTS) {
+    while (
+      findMatches(board).length > 0 &&
+      attempts < BOARD_MATCH_REMOVAL_ATTEMPTS
+    ) {
       attempts++;
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -62,7 +65,7 @@ export function applyGravity(board: CellState[][]): CellState[][] {
   const rows = board.length;
   const cols = board[0]?.length ?? 0;
   const next: CellState[][] = Array.from({ length: rows }, (_, r) =>
-    Array.from({ length: cols }, (_, c) => board[r][c])
+    Array.from({ length: cols }, (_, c) => board[r][c]),
   );
 
   for (let c = 0; c < cols; c++) {
@@ -83,10 +86,10 @@ export function applyGravity(board: CellState[][]): CellState[][] {
 export function refillBoard(
   board: CellState[][],
   rows: number,
-  cols: number
+  cols: number,
 ): CellState[][] {
   const next: CellState[][] = Array.from({ length: rows }, (_, r) =>
-    Array.from({ length: cols }, (_, c) => board[r][c])
+    Array.from({ length: cols }, (_, c) => board[r][c]),
   );
 
   const newPositions: Position[] = [];
@@ -120,7 +123,7 @@ export function isAdjacent(a: Position, b: Position): boolean {
 export function swapTiles(
   board: CellState[][],
   a: Position,
-  b: Position
+  b: Position,
 ): CellState[][] {
   const next: CellState[][] = board.map((row) => [...row]);
   const tmp = next[a.row][a.col];
@@ -131,7 +134,7 @@ export function swapTiles(
 
 export function shuffleRegion(
   board: CellState[][],
-  positions: Position[]
+  positions: Position[],
 ): CellState[][] {
   const next: CellState[][] = board.map((row) => [...row]);
   const tiles = positions.map((p) => next[p.row][p.col]);
