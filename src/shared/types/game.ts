@@ -57,6 +57,7 @@ export interface GameState {
   selected: Position | null; // first tile of a swap
   isNight: boolean; // Night Fox ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
+  gameOverReason: "time" | "deadlock";
   lastElectricCol: number; // column of last matched electric tile
   hintPositions: [Position, Position] | null;
   scoreFlash: ScoreFlash | null;

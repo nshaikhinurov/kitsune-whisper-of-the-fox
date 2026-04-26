@@ -145,6 +145,7 @@ export function MainPage() {
           score={state.score}
           stars={state.stars}
           mode={zenMode ? "zen" : "normal"}
+          reason={state.gameOverReason}
           onReset={resetGame}
         />
       </div>

@@ -63,6 +63,7 @@ interface CascadeStep {
   consecutiveSameElement: number;
   lastElectricCol: number;
   matchedCentroid: { row: number; col: number };
+  deadlocked?: boolean;
 }
 
 function computeCascadeSteps(
@@ -137,7 +138,7 @@ function computeCascadeSteps(
     const clearedBoard = board.map((row, r) =>
       row.map((cell, c) => (matchedSet.has(`${r},${c}`) ? null : cell)),
     );
-    const filledBoard = refillBoard(
+    const { board: filledBoard, deadlocked } = refillBoard(
       applyGravity(clearedBoard),
       GRID_ROWS,
       GRID_COLS,
@@ -153,8 +154,10 @@ function computeCascadeSteps(
       consecutiveSameElement,
       lastElectricCol,
       matchedCentroid,
+      deadlocked,
     });
 
+    if (deadlocked) break;
     board = filledBoard;
   }
 
@@ -178,6 +181,7 @@ function makeInitialState(): GameState {
     selected: null,
     isNight: false,
     phase: "idle",
+    gameOverReason: "time",
     lastElectricCol: 0,
     hintPositions: null,
     scoreFlash: null,
@@ -274,7 +278,7 @@ export function useGameState(zenMode = false) {
         if (prev.phase === "gameOver") return prev;
         if (zenModeRef.current) return prev;
         const newTime = prev.timeLeft - TIMER_TICK_MS;
-        if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver" };
+        if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver", gameOverReason: "time" };
 
         if (prev.phase === "idle" && prev.hintPositions === null) {
           idleMsRef.current += TIMER_TICK_MS;
@@ -392,8 +396,17 @@ export function useGameState(zenMode = false) {
           });
           scheduleComboReset();
         } else {
-          // Cascade fully done — return to idle (timer drives game-over)
-          setState((prev) => ({ ...prev, phase: "idle" }));
+          // Cascade fully done
+          const lastStep = steps[cascadeIdxRef.current];
+          if (lastStep?.deadlocked) {
+            setState((prev) => ({
+              ...prev,
+              phase: "gameOver",
+              gameOverReason: "deadlock",
+            }));
+          } else {
+            setState((prev) => ({ ...prev, phase: "idle" }));
+          }
         }
       }, FALL_ANIM_MS);
       return () => clearTimeout(id);
@@ -451,6 +464,7 @@ export function useGameState(zenMode = false) {
       let starsDelta = 0;
       let isNight = s.isNight;
       let timeLeft = s.timeLeft;
+      let ultDeadlocked = false;
 
       switch (element) {
         // Randomly re-rolls the element of N board tiles
@@ -477,7 +491,7 @@ export function useGameState(zenMode = false) {
             if (board[row][col]?.hasStar) starsDelta++;
             board[row][col] = null;
           }
-          board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
+          ({ board, deadlocked: ultDeadlocked } = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS));
           break;
         }
         // Wipes the entire column of the last electric match and refills
@@ -487,7 +501,7 @@ export function useGameState(zenMode = false) {
             if (board[r][col]?.hasStar) starsDelta++;
             board[r][col] = null;
           }
-          board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
+          ({ board, deadlocked: ultDeadlocked } = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS));
           break;
         }
         // Shuffles tiles inside a randomly placed NxN patch
@@ -574,6 +588,18 @@ export function useGameState(zenMode = false) {
           };
         });
         scheduleComboReset();
+      } else if (ultDeadlocked) {
+        setState((prev) => ({
+          ...prev,
+          board,
+          spiritCharge: newCharge,
+          score: prev.score + starsDelta * SCORE_PER_STAR,
+          stars: prev.stars + starsDelta,
+          isNight,
+          timeLeft,
+          phase: "gameOver",
+          gameOverReason: "deadlock",
+        }));
       } else {
         setState((prev) => ({
           ...prev,

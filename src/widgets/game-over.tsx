@@ -15,7 +15,19 @@ interface GameOverBlockProps {
   score: number;
   stars: number;
   mode: GameMode;
+  reason?: "time" | "deadlock";
   onReset: () => void;
+}
+
+const DEADLOCK_JOKES = [
+  "The foxes checked every tile — twice. Even the spirits gave up.",
+  "Congratulations! You've discovered a board state mathematically guaranteed to have zero moves. Science.",
+  "A perfectly arranged prison. Not one swap leads anywhere. The universe wins.",
+  "The board looked at itself in the mirror and decided: nope, no moves today.",
+];
+
+function pickDeadlockJoke() {
+  return DEADLOCK_JOKES[Math.floor(Math.random() * DEADLOCK_JOKES.length)];
 }
 
 export const GameOverBlock = ({
@@ -23,6 +35,7 @@ export const GameOverBlock = ({
   score,
   stars,
   mode,
+  reason = "time",
   onReset,
 }: GameOverBlockProps) => {
   const { nickname, updateNickname } = useNickname();
@@ -51,27 +64,33 @@ export const GameOverBlock = ({
       >
         <DialogContent
           showCloseButton={false}
-          className="flex max-w-[min(90vw,22rem)] flex-col items-center gap-4 rounded-2xl border-border bg-card text-card-foreground shadow-2xl"
+          className="border-border bg-card text-card-foreground flex max-w-[min(90vw,22rem)] flex-col items-center gap-4 rounded-2xl shadow-2xl"
         >
           <h2 className="text-3xl font-bold">Game Over</h2>
-          <p className="text-muted-foreground">
-            {mode === "zen" ? "Zen session complete!" : "Time's up!"}
-          </p>
+          {reason === "deadlock" ? (
+            <p className="text-muted-foreground text-center text-sm italic">
+              {pickDeadlockJoke()}
+            </p>
+          ) : (
+            <p className="text-muted-foreground">
+              {mode === "zen" ? "Zen session complete!" : "Time's up!"}
+            </p>
+          )}
 
           <div className="text-center">
             <motion.p
               key={score}
-              className="text-4xl font-bold text-primary"
+              className="text-primary text-4xl font-bold"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
             >
               {score.toLocaleString()}
             </motion.p>
-            <p className="text-sm text-muted-foreground">Final Score</p>
+            <p className="text-muted-foreground text-sm">Final Score</p>
           </div>
 
-          <div className="flex gap-6 text-sm text-foreground/80">
+          <div className="text-foreground/80 flex gap-6 text-sm">
             <span>
               <img
                 src="/star.svg"
@@ -93,7 +112,7 @@ export const GameOverBlock = ({
                   maxLength={24}
                 />
                 {errorMessage && (
-                  <p className="text-center text-xs text-destructive">
+                  <p className="text-destructive text-center text-xs">
                     {errorMessage}
                   </p>
                 )}

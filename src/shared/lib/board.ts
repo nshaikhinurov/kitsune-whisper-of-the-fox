@@ -87,7 +87,7 @@ export function refillBoard(
   board: CellState[][],
   rows: number,
   cols: number,
-): CellState[][] {
+): { board: CellState[][]; deadlocked: boolean } {
   const next: CellState[][] = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => board[r][c]),
   );
@@ -111,7 +111,7 @@ export function refillBoard(
     attempts++;
   }
 
-  return next;
+  return { board: next, deadlocked: !hasPossibleMove(next) };
 }
 
 export function isAdjacent(a: Position, b: Position): boolean {
