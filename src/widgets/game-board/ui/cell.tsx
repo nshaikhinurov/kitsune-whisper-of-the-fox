@@ -30,7 +30,7 @@ export function Cell({ tile, pos, isSelected, isHint, onClick }: CellProps) {
       }}
     >
       {/* Empty hole background */}
-      <div className="absolute inset-0 rounded-lg border border-neutral-700/40 bg-neutral-900/60" />
+      <div className="absolute inset-0 rounded-lg border border-border/40 bg-background/60" />
 
       <AnimatePresence>
         {tile !== null && (

@@ -26,7 +26,7 @@ export function LeaderboardPanel({
     >
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[80vh] max-w-[min(95vw,28rem)] flex-col gap-4 overflow-hidden rounded-2xl border-neutral-700 bg-neutral-800 p-4 text-white shadow-2xl sm:p-6"
+        className="flex max-h-[80vh] max-w-[min(95vw,28rem)] flex-col gap-4 overflow-hidden rounded-2xl border-border bg-card p-4 text-card-foreground shadow-2xl sm:p-6"
       >
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-2xl font-bold">
@@ -34,14 +34,14 @@ export function LeaderboardPanel({
             Leaderboard
           </h2>
           <DialogClose
-            className="text-xl leading-none text-neutral-400 transition-colors hover:text-white"
+            className="text-xl leading-none text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Close leaderboard"
           >
             ✕
           </DialogClose>
         </div>
 
-        <div className="grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] gap-1.5 px-1 text-xs tracking-wide text-neutral-400 uppercase sm:grid-cols-[2rem_1fr_5rem_3rem_3rem] sm:gap-2">
+        <div className="grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] gap-1.5 px-1 text-xs tracking-wide text-muted-foreground uppercase sm:grid-cols-[2rem_1fr_5rem_3rem_3rem] sm:gap-2">
           <span>#</span>
           <span>Player</span>
           <span className="text-right">Score</span>
@@ -51,12 +51,12 @@ export function LeaderboardPanel({
 
         <div className="flex flex-col gap-1 overflow-y-auto pr-1">
           {scores === undefined && (
-            <div className="animate-pulse py-8 text-center text-neutral-400">
+            <div className="animate-pulse py-8 text-center text-muted-foreground">
               Loading…
             </div>
           )}
           {scores?.length === 0 && (
-            <div className="py-8 text-center text-neutral-400">
+            <div className="py-8 text-center text-muted-foreground">
               No scores yet — be the first!
             </div>
           )}
@@ -72,13 +72,13 @@ export function LeaderboardPanel({
                   className={`grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm transition-colors sm:grid-cols-[2rem_1fr_5rem_3rem_3rem] sm:gap-2 ${
                     isHighlighted
                       ? "border border-yellow-500/40 bg-yellow-500/20"
-                      : "hover:bg-neutral-700/50"
+                      : "hover:bg-muted/50"
                   }`}
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                 >
-                  <span className="font-mono text-xs text-neutral-400">
+                  <span className="font-mono text-xs text-muted-foreground">
                     {rank === 1
                       ? "🥇"
                       : rank === 2
@@ -88,10 +88,10 @@ export function LeaderboardPanel({
                           : rank}
                   </span>
                   <span className="truncate font-medium">{entry.nickname}</span>
-                  <span className="text-right font-bold text-yellow-400 tabular-nums">
+                  <span className="text-right font-bold text-primary tabular-nums">
                     {entry.score.toLocaleString()}
                   </span>
-                  <span className="text-center text-xs text-neutral-300">
+                  <span className="text-center text-xs text-foreground/80">
                     <img
                       src="/star.svg"
                       alt="star"
@@ -99,7 +99,7 @@ export function LeaderboardPanel({
                     />
                     {entry.stars}
                   </span>
-                  <span className="hidden text-center text-xs text-neutral-400 sm:block">
+                  <span className="hidden text-center text-xs text-muted-foreground sm:block">
                     {entry.mode === "zen" ? "Zen" : "90s"}
                   </span>
                 </motion.div>
@@ -108,7 +108,7 @@ export function LeaderboardPanel({
           </AnimatePresence>
         </div>
 
-        <p className="text-center text-xs text-neutral-500">
+        <p className="text-center text-xs text-muted-foreground">
           Updates in real time
         </p>
       </DialogContent>

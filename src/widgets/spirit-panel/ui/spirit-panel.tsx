@@ -50,7 +50,7 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
               </Avatar>
             </motion.button>
 
-            <div className="flex h-1.5 w-10 overflow-hidden rounded-full bg-neutral-700 sm:w-12">
+            <div className="flex h-1.5 w-10 overflow-hidden rounded-full bg-muted sm:w-12">
               <motion.div
                 className="h-full rounded-full"
                 animate={{ width: `${pct}%` }}

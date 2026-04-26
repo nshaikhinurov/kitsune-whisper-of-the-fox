@@ -1,66 +1,118 @@
-import { useState } from "react";
+import { Moon, Settings, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LeaderboardPanel } from "~/features/leaderboard";
 import {
   SHOW_HINTS_INITIALLY,
   ZEN_MODE_ON_INITIALLY,
 } from "~/shared/config/game-config";
+import { Button } from "~/shared/ui/button";
+import { TimerBar } from "~/widgets/timer-bar";
 import { useGameState } from "../features/game-session";
-import { cn } from "../shared/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../shared/ui/dropdown-menu";
 import { Switch } from "../shared/ui/switch";
 import { Board } from "../widgets/game-board";
-import { Hud, TimerBar } from "../widgets/game-hud";
+import { Hud } from "../widgets/game-hud";
 import { GameOverBlock } from "../widgets/game-over";
-import { HelpBlock } from "../widgets/help-block";
-import { LeaderboardPanel } from "../widgets/leaderboard";
 import { SpiritPanel } from "../widgets/spirit-panel";
 
 export function MainPage() {
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [darkMode, setDarkMode] = useState(
+    () => localStorage.getItem("kitsune_dark_mode") !== "false",
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("kitsune_dark_mode", String(darkMode));
+  }, [darkMode]);
   const { state, selectCell, activateUlt, resetGame } = useGameState(zenMode);
 
   return (
-    <main
-      className={cn(
-        "min-h-screen p-4 md:p-8 xl:p-16",
-        state.isDarkTheme
-          ? "bg-neutral-950 text-yellow-400"
-          : "bg-neutral-900 text-white",
-      )}
-    >
-      <div className="mx-auto flex min-h-screen max-w-[min(90vw,600px)] flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-[min(68vw,800px)] lg:gap-10">
-        <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl font-bold tracking-tight sm:text-3xl md:text-5xl">
-          <img src="/fox.svg" alt="Fox Spirit" className="h-full shrink-0" />
-          <span className="hidden sm:inline">Kitsune: Whisper of the Fox</span>
-          <span className="sm:hidden">Kitsune</span>
-        </h1>
+    <main className="bg-background text-foreground relative min-h-screen p-4 md:p-8 xl:p-16">
+      <div className="mx-auto flex max-w-[min(90vw,600px)] flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-[min(68vw,800px)]">
+        <div className="flex w-full items-center justify-center">
+          <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl font-bold tracking-tight sm:text-3xl md:text-5xl">
+            <img src="/fox.svg" alt="Fox Spirit" className="h-full shrink-0" />
+            <span className="hidden truncate sm:inline">
+              Kitsune: Whisper of the Fox
+            </span>
+            <span className="sm:hidden">Kitsune</span>
+          </h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="absolute top-3 right-3"
+              render={
+                <Button variant={"ghost"} size={"icon-lg"}>
+                  <Settings className="size-6" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  closeOnClick={false}
+                  onClick={() => setZenMode((v) => !v)}
+                  className="justify-between"
+                >
+                  Zen mode
+                  <Switch
+                    checked={zenMode}
+                    onCheckedChange={setZenMode}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  closeOnClick={false}
+                  onClick={() => setShowHints((v) => !v)}
+                  className="justify-between"
+                >
+                  Show hints
+                  <Switch
+                    checked={showHints}
+                    onCheckedChange={setShowHints}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  closeOnClick={false}
+                  onClick={() => setDarkMode((v) => !v)}
+                  className="justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    {darkMode ? (
+                      <Moon className="size-4" />
+                    ) : (
+                      <Sun className="size-4" />
+                    )}
+                    Dark mode
+                  </span>
+                  <Switch
+                    checked={darkMode}
+                    onCheckedChange={setDarkMode}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         <Hud score={state.score} combo={state.combo} stars={state.stars} />
 
-        <div className="flex w-full max-w-[min(90vw,600px)] flex-wrap items-center justify-between gap-2 lg:max-w-[min(68vw,800px)]">
-          <HelpBlock />
-          <div className="flex items-center gap-3">
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-neutral-400 select-none">
-              <Switch
-                size="sm"
-                checked={zenMode}
-                onCheckedChange={setZenMode}
-              />
-              Zen mode
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-neutral-400 select-none">
-              <Switch
-                size="sm"
-                checked={showHints}
-                onCheckedChange={setShowHints}
-              />
-              Show hints
-            </label>
-          </div>
-        </div>
-
         {state.isTimeSlow && (
-          <div className="animate-pulse text-xs font-semibold text-yellow-400">
+          <div className="text-primary animate-pulse text-xs font-semibold">
             🌙 Night Fox: Time Slow active (+15s added)
           </div>
         )}

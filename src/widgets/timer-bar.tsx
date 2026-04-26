@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { GAME_DURATION_MS } from "../../../shared/config/game-config";
+import { GAME_DURATION_MS } from "~/shared/config/game-config";
 
 interface TimerBarProps {
   timeLeft: number;
@@ -17,7 +17,7 @@ export function TimerBar({ timeLeft }: TimerBarProps) {
 
   return (
     <div className="flex w-full items-center gap-3">
-      <div className="h-5 flex-1 overflow-hidden rounded-full bg-neutral-700">
+      <div className="bg-muted h-5 flex-1 overflow-hidden rounded-full">
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: barColor }}
