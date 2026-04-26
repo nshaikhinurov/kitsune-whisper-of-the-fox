@@ -18,6 +18,10 @@ export const submitScore = mutation({
     const trimmed = args.nickname.trim();
     if (trimmed.length === 0 || trimmed.length > 24)
       throw new Error("Nickname must be 1–24 characters");
+    if (args.score < 0 || args.score > 1_000_000)
+      throw new Error("Score out of range");
+    if (args.stars < 0 || args.stars > 1000)
+      throw new Error("Stars out of range");
     return ctx.db.insert("leaderboard", {
       ...args,
       nickname: trimmed,
