@@ -35,11 +35,12 @@ export function MainPage() {
     document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("kitsune_dark_mode", String(darkMode));
   }, [darkMode]);
-  const { state, selectCell, activateUlt, resetGame } = useGameState(zenMode);
+  const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
+    useGameState(zenMode);
 
   return (
-    <main className="bg-background text-foreground relative min-h-screen p-4 md:p-8 xl:p-16">
-      <div className="mx-auto flex max-w-[min(90vw,600px)] flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-[min(68vw,800px)]">
+    <main className="bg-background text-foreground relative min-h-screen p-3 md:p-8 xl:p-16">
+      <div className="mx-auto flex max-w-150 flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-200">
         <div className="flex w-full items-center justify-center">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl font-bold tracking-tight sm:text-3xl md:text-5xl">
             <img src="/fox.svg" alt="Fox Spirit" className="h-full shrink-0" />
@@ -122,7 +123,8 @@ export function MainPage() {
             board={state.board}
             selected={state.selected}
             hintPositions={showHints ? state.hintPositions : null}
-            onCellClick={selectCell}
+            onSwipe={swipeSwap}
+            onDragSource={setDragSource}
           />
 
           <SpiritPanel

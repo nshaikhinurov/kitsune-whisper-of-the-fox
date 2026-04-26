@@ -335,37 +335,20 @@ export function useGameState(zenMode = false) {
   }, [state.phase]);
 
   // ---------------------------------------------------------------------------
-  // selectCell
+  // swipeSwap / setDragSource
   // ---------------------------------------------------------------------------
 
-  const selectCell = useCallback((pos: Position) => {
+  const setDragSource = useCallback((pos: Position | null) => {
+    idleMsRef.current = 0;
+    setState((prev) => ({ ...prev, selected: pos, hintPositions: null }));
+  }, []);
+
+  const swipeSwap = useCallback((from: Position, to: Position) => {
     const s = stateRef.current;
     if (s.phase !== "idle") return;
+    if (!isAdjacent(from, to)) return;
 
-    idleMsRef.current = 0;
-
-    // No tile selected yet — select this one
-    if (!s.selected) {
-      setState((prev) => ({ ...prev, selected: pos, hintPositions: null }));
-      return;
-    }
-
-    const sel = s.selected;
-
-    // Clicking same tile — deselect
-    if (sel.row === pos.row && sel.col === pos.col) {
-      setState((prev) => ({ ...prev, selected: null, hintPositions: null }));
-      return;
-    }
-
-    // Not adjacent — move selection
-    if (!isAdjacent(sel, pos)) {
-      setState((prev) => ({ ...prev, selected: pos, hintPositions: null }));
-      return;
-    }
-
-    // Adjacent — attempt swap
-    const swapped = swapTiles(s.board, sel, pos);
+    const swapped = swapTiles(s.board, from, to);
     const steps = computeCascadeSteps(
       swapped,
       0,
@@ -374,19 +357,14 @@ export function useGameState(zenMode = false) {
       s.lastElectricCol,
     );
 
-    if (steps.length === 0) {
-      // No match — revert selection, no move consumed
-      setState((prev) => ({ ...prev, selected: null, hintPositions: null }));
-      return;
-    }
+    if (steps.length === 0) return;
 
-    // Valid swap — start animated cascade
     cascadeStepsRef.current = steps;
     cascadeIdxRef.current = 0;
 
     setState((prev) => ({
       ...prev,
-      board: swapped, // show swapped positions (layoutId animates the slide)
+      board: swapped,
       selected: null,
       hintPositions: null,
       combo: 0,
@@ -557,5 +535,5 @@ export function useGameState(zenMode = false) {
     setState(makeInitialState());
   }, []);
 
-  return { state, selectCell, activateUlt, resetGame };
+  return { state, swipeSwap, setDragSource, activateUlt, resetGame };
 }

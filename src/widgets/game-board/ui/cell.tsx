@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { FOX_DEFS } from "../../../entities/fox";
 import type { CellState, Position } from "../../../shared/types/game";
 import { FoxTile } from "./fox-tile";
+import { useTileSwipe } from "./use-tile-swipe";
 
 const tileSelectSound = new Audio("/tile-select.mp3");
 
@@ -10,27 +11,42 @@ interface CellProps {
   pos: Position;
   isSelected: boolean;
   isHint: boolean;
-  onClick: (pos: Position) => void;
+  onSwipe: (from: Position, to: Position) => void;
+  onDragSource: (pos: Position | null) => void;
 }
 
-export function Cell({ tile, pos, isSelected, isHint, onClick }: CellProps) {
+export function Cell({
+  tile,
+  pos,
+  isSelected,
+  isHint,
+  onSwipe,
+  onDragSource,
+}: CellProps) {
   const hintColor =
     tile !== null
       ? FOX_DEFS[tile.element].accentColor
       : "rgba(255,255,255,0.6)";
   const showHint = isHint && !isSelected;
 
+  const handleDragSource = (p: Position | null) => {
+    if (p !== null) {
+      tileSelectSound.currentTime = 0;
+      tileSelectSound.play();
+    }
+    onDragSource(p);
+  };
+
+  const { ref, bind } = useTileSwipe(pos, onSwipe, handleDragSource);
+
   return (
     <div
-      className="relative h-full w-full rounded-lg"
-      onClick={() => {
-        tileSelectSound.currentTime = 0;
-        tileSelectSound.play();
-        onClick(pos);
-      }}
+      ref={ref}
+      {...bind()}
+      className="relative h-full w-full cursor-grab touch-none select-none"
     >
       {/* Empty hole background */}
-      <div className="absolute inset-0 rounded-lg border border-border/40 bg-background/60" />
+      <div className="border-border/40 bg-background/60 absolute inset-0 rounded-md sm:rounded-lg" />
 
       <AnimatePresence>
         {tile !== null && (
