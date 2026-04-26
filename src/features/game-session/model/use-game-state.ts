@@ -326,7 +326,10 @@ export function useGameState(zenMode = false) {
             ...prev,
             board: steps[0].clearedBoard,
             combo: newCombo,
-            scoreFlash: makeScoreFlash(steps[0], scoreDelta + steps[0].starsDelta * SCORE_PER_STAR),
+            scoreFlash: makeScoreFlash(
+              steps[0],
+              scoreDelta + steps[0].starsDelta * SCORE_PER_STAR,
+            ),
             phase: "clearing",
           };
         });
@@ -343,7 +346,10 @@ export function useGameState(zenMode = false) {
           return {
             ...prev,
             board: step.filledBoard,
-            score: prev.score + Math.round(step.baseScoreDelta * comboMult) + step.starsDelta * SCORE_PER_STAR,
+            score:
+              prev.score +
+              Math.round(step.baseScoreDelta * comboMult) +
+              step.starsDelta * SCORE_PER_STAR,
             stars: prev.stars + step.starsDelta,
             spiritCharge: applyChargeDeltas(
               prev.spiritCharge,
@@ -377,7 +383,10 @@ export function useGameState(zenMode = false) {
               ...prev,
               board: steps[nextIdx].clearedBoard,
               combo: newCombo,
-              scoreFlash: makeScoreFlash(steps[nextIdx], scoreDelta + steps[nextIdx].starsDelta * SCORE_PER_STAR),
+              scoreFlash: makeScoreFlash(
+                steps[nextIdx],
+                scoreDelta + steps[nextIdx].starsDelta * SCORE_PER_STAR,
+              ),
               phase: "clearing",
             };
           });
@@ -431,168 +440,179 @@ export function useGameState(zenMode = false) {
   // activateUlt
   // ---------------------------------------------------------------------------
 
-  const activateUlt = useCallback((element: FoxElement) => {
-    const s = stateRef.current;
-    if (s.phase !== "idle") return;
-    if (s.spiritCharge[element] < SPIRIT_MAX) return;
+  const activateUlt = useCallback(
+    (element: FoxElement) => {
+      const s = stateRef.current;
+      if (s.phase !== "idle") return;
+      if (s.spiritCharge[element] < SPIRIT_MAX) return;
 
-    const newCharge = { ...s.spiritCharge, [element]: 0 };
-    let board = s.board.map((row) => [...row]);
-    let starsDelta = 0;
-    let isDarkTheme = s.isDarkTheme;
-    let isTimeSlow = s.isTimeSlow;
-    let timeLeft = s.timeLeft;
+      const newCharge = { ...s.spiritCharge, [element]: 0 };
+      let board = s.board.map((row) => [...row]);
+      let starsDelta = 0;
+      let isDarkTheme = s.isDarkTheme;
+      let isTimeSlow = s.isTimeSlow;
+      let timeLeft = s.timeLeft;
 
-    switch (element) {
-      case "ori": {
-        const count =
-          WHITE_FOX_MIN_TILES +
-          Math.floor(Math.random() * WHITE_FOX_TILE_VARIANCE);
-        const positions: Position[] = [];
-        for (let r = 0; r < GRID_ROWS; r++)
-          for (let c = 0; c < GRID_COLS; c++)
-            if (board[r][c]) positions.push({ row: r, col: c });
-        for (let i = 0; i < Math.min(count, positions.length); i++) {
-          const j = Math.floor(Math.random() * positions.length);
-          [positions[i], positions[j]] = [positions[j], positions[i]];
+      switch (element) {
+        case "ori": {
+          const count =
+            WHITE_FOX_MIN_TILES +
+            Math.floor(Math.random() * WHITE_FOX_TILE_VARIANCE);
+          const positions: Position[] = [];
+          for (let r = 0; r < GRID_ROWS; r++)
+            for (let c = 0; c < GRID_COLS; c++)
+              if (board[r][c]) positions.push({ row: r, col: c });
+          for (let i = 0; i < Math.min(count, positions.length); i++) {
+            const j = Math.floor(Math.random() * positions.length);
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+          }
+          for (let i = 0; i < Math.min(count, positions.length); i++) {
+            const { row, col } = positions[i];
+            const tile = board[row][col];
+            if (tile)
+              board[row][col] = {
+                ...tile,
+                element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
+              };
+          }
+          break;
         }
-        for (let i = 0; i < Math.min(count, positions.length); i++) {
-          const { row, col } = positions[i];
-          const tile = board[row][col];
-          if (tile)
-            board[row][col] = {
-              ...tile,
-              element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
-            };
+        case "green": {
+          const count =
+            RED_FOX_MIN_TILES +
+            Math.floor(Math.random() * RED_FOX_TILE_VARIANCE);
+          const positions: Position[] = [];
+          for (let r = 0; r < GRID_ROWS; r++)
+            for (let c = 0; c < GRID_COLS; c++)
+              if (board[r][c]) positions.push({ row: r, col: c });
+          for (let i = 0; i < Math.min(count, positions.length); i++) {
+            const j = Math.floor(Math.random() * positions.length);
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+          }
+          for (let i = 0; i < Math.min(count, positions.length); i++) {
+            const { row, col } = positions[i];
+            if (board[row][col]?.hasStar) starsDelta++;
+            board[row][col] = null;
+          }
+          board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
+          break;
         }
-        break;
+        case "electric": {
+          const col = s.lastElectricCol;
+          for (let r = 0; r < GRID_ROWS; r++) {
+            if (board[r][col]?.hasStar) starsDelta++;
+            board[r][col] = null;
+          }
+          board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
+          break;
+        }
+        case "chaotic": {
+          const startRow = Math.floor(
+            Math.random() * (GRID_ROWS - CHAOTIC_PATCH_SIZE + 1),
+          );
+          const startCol = Math.floor(
+            Math.random() * (GRID_COLS - CHAOTIC_PATCH_SIZE + 1),
+          );
+          const positions: Position[] = [];
+          for (let r = startRow; r < startRow + CHAOTIC_PATCH_SIZE; r++)
+            for (let c = startCol; c < startCol + CHAOTIC_PATCH_SIZE; c++)
+              positions.push({ row: r, col: c });
+          board = shuffleRegion(board, positions);
+          break;
+        }
+        case "night": {
+          isDarkTheme = true;
+          isTimeSlow = true;
+          timeLeft = Math.min(
+            timeLeft + NIGHT_FOX_TIME_BONUS_MS,
+            GAME_DURATION_MS,
+          );
+          break;
+        }
+        case "sakura": {
+          const starPositions: Position[] = [];
+          for (let r = 0; r < GRID_ROWS; r++)
+            for (let c = 0; c < GRID_COLS; c++)
+              if (board[r][c]?.hasStar) starPositions.push({ row: r, col: c });
+          const count = Math.min(
+            SAKURA_MIN_STARS + Math.floor(Math.random() * SAKURA_STAR_VARIANCE),
+            starPositions.length,
+          );
+          for (let i = 0; i < count; i++) {
+            const j = Math.floor(Math.random() * starPositions.length);
+            [starPositions[i], starPositions[j]] = [
+              starPositions[j],
+              starPositions[i],
+            ];
+          }
+          for (let i = 0; i < count; i++) {
+            const { row, col } = starPositions[i];
+            starsDelta++;
+            board[row][col] = { ...board[row][col]!, hasStar: false };
+          }
+          break;
+        }
       }
-      case "green": {
-        const count =
-          RED_FOX_MIN_TILES + Math.floor(Math.random() * RED_FOX_TILE_VARIANCE);
-        const positions: Position[] = [];
-        for (let r = 0; r < GRID_ROWS; r++)
-          for (let c = 0; c < GRID_COLS; c++)
-            if (board[r][c]) positions.push({ row: r, col: c });
-        for (let i = 0; i < Math.min(count, positions.length); i++) {
-          const j = Math.floor(Math.random() * positions.length);
-          [positions[i], positions[j]] = [positions[j], positions[i]];
-        }
-        for (let i = 0; i < Math.min(count, positions.length); i++) {
-          const { row, col } = positions[i];
-          if (board[row][col]?.hasStar) starsDelta++;
-          board[row][col] = null;
-        }
-        board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
-        break;
-      }
-      case "electric": {
-        const col = s.lastElectricCol;
-        for (let r = 0; r < GRID_ROWS; r++) {
-          if (board[r][col]?.hasStar) starsDelta++;
-          board[r][col] = null;
-        }
-        board = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS);
-        break;
-      }
-      case "chaotic": {
-        const startRow = Math.floor(
-          Math.random() * (GRID_ROWS - CHAOTIC_PATCH_SIZE + 1),
-        );
-        const startCol = Math.floor(
-          Math.random() * (GRID_COLS - CHAOTIC_PATCH_SIZE + 1),
-        );
-        const positions: Position[] = [];
-        for (let r = startRow; r < startRow + CHAOTIC_PATCH_SIZE; r++)
-          for (let c = startCol; c < startCol + CHAOTIC_PATCH_SIZE; c++)
-            positions.push({ row: r, col: c });
-        board = shuffleRegion(board, positions);
-        break;
-      }
-      case "night": {
-        isDarkTheme = true;
-        isTimeSlow = true;
-        timeLeft = Math.min(
-          timeLeft + NIGHT_FOX_TIME_BONUS_MS,
-          GAME_DURATION_MS,
-        );
-        break;
-      }
-      case "sakura": {
-        const starPositions: Position[] = [];
-        for (let r = 0; r < GRID_ROWS; r++)
-          for (let c = 0; c < GRID_COLS; c++)
-            if (board[r][c]?.hasStar) starPositions.push({ row: r, col: c });
-        const count = Math.min(
-          SAKURA_MIN_STARS + Math.floor(Math.random() * SAKURA_STAR_VARIANCE),
-          starPositions.length,
-        );
-        for (let i = 0; i < count; i++) {
-          const j = Math.floor(Math.random() * starPositions.length);
-          [starPositions[i], starPositions[j]] = [
-            starPositions[j],
-            starPositions[i],
-          ];
-        }
-        for (let i = 0; i < count; i++) {
-          const { row, col } = starPositions[i];
-          starsDelta++;
-          board[row][col] = { ...board[row][col]!, hasStar: false };
-        }
-        break;
-      }
-    }
 
-    const steps = computeCascadeSteps(
-      board,
-      s.lastMatchElement,
-      s.consecutiveSameElement,
-      s.lastElectricCol,
-    );
+      const steps = computeCascadeSteps(
+        board,
+        s.lastMatchElement,
+        s.consecutiveSameElement,
+        s.lastElectricCol,
+      );
 
-    if (steps.length > 0) {
-      cascadeStepsRef.current = steps;
-      cascadeIdxRef.current = 0;
+      if (steps.length > 0) {
+        cascadeStepsRef.current = steps;
+        cascadeIdxRef.current = 0;
 
-      setState((prev) => {
-        const newCombo = prev.combo + 1;
-        const comboMult = 1 + COMBO_MULT_STEP * (newCombo - 1);
-        const scoreDelta = Math.round(steps[0].baseScoreDelta * comboMult);
-        return {
+        setState((prev) => {
+          const newCombo = prev.combo + 1;
+          const comboMult = 1 + COMBO_MULT_STEP * (newCombo - 1);
+          const scoreDelta = Math.round(steps[0].baseScoreDelta * comboMult);
+          return {
+            ...prev,
+            board: steps[0].clearedBoard,
+            spiritCharge: newCharge,
+            score: prev.score + scoreDelta + starsDelta * SCORE_PER_STAR,
+            stars: prev.stars + starsDelta,
+            isDarkTheme,
+            isTimeSlow,
+            timeLeft,
+            combo: newCombo,
+            scoreFlash: makeScoreFlash(
+              steps[0],
+              scoreDelta + starsDelta * SCORE_PER_STAR,
+            ),
+            phase: "clearing",
+          };
+        });
+        scheduleComboReset();
+      } else {
+        setState((prev) => ({
           ...prev,
-          board: steps[0].clearedBoard,
+          board,
           spiritCharge: newCharge,
-          score: prev.score + scoreDelta + starsDelta * SCORE_PER_STAR,
+          score: prev.score + starsDelta * SCORE_PER_STAR,
           stars: prev.stars + starsDelta,
           isDarkTheme,
           isTimeSlow,
           timeLeft,
-          combo: newCombo,
-          scoreFlash: makeScoreFlash(steps[0], scoreDelta + starsDelta * SCORE_PER_STAR),
-          phase: "clearing",
-        };
-      });
-      scheduleComboReset();
-    } else {
-      setState((prev) => ({
-        ...prev,
-        board,
-        spiritCharge: newCharge,
-        score: prev.score + starsDelta * SCORE_PER_STAR,
-        stars: prev.stars + starsDelta,
-        isDarkTheme,
-        isTimeSlow,
-        timeLeft,
-        phase: "idle",
-      }));
-    }
-  }, []);
+          phase: "idle",
+        }));
+      }
+    },
+    [scheduleComboReset],
+  );
 
   // ---------------------------------------------------------------------------
   // resetGame
   // ---------------------------------------------------------------------------
 
   const resetGame = useCallback(() => {
+    if (comboResetTimeoutRef.current !== null) {
+      clearTimeout(comboResetTimeoutRef.current);
+      comboResetTimeoutRef.current = null;
+    }
     cascadeStepsRef.current = [];
     cascadeIdxRef.current = 0;
     setState(makeInitialState());

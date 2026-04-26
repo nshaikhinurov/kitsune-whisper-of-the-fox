@@ -1,6 +1,5 @@
 import { Moon, Settings, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LeaderboardPanel } from "~/features/leaderboard";
 import {
   SHOW_HINTS_INITIALLY,
   ZEN_MODE_ON_INITIALLY,
@@ -26,7 +25,6 @@ import { SpiritPanel } from "../widgets/spirit-panel";
 export function MainPage() {
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("kitsune_dark_mode") !== "false",
   );
@@ -143,10 +141,6 @@ export function MainPage() {
           level={state.level}
           mode={zenMode ? "zen" : "normal"}
           onReset={resetGame}
-        />
-        <LeaderboardPanel
-          open={showLeaderboard && state.phase !== "gameOver"}
-          onClose={() => setShowLeaderboard(false)}
         />
       </div>
     </main>
