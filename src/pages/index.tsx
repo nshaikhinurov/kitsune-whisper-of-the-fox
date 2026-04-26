@@ -123,6 +123,7 @@ export function MainPage() {
             board={state.board}
             selected={state.selected}
             hintPositions={showHints ? state.hintPositions : null}
+            scoreFlash={state.scoreFlash}
             onSwipe={swipeSwap}
             onDragSource={setDragSource}
           />

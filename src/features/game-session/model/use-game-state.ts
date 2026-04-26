@@ -16,7 +16,6 @@ import {
   RED_FOX_TILE_VARIANCE,
   SAKURA_MIN_STARS,
   SAKURA_STAR_VARIANCE,
-  SCORE_PER_TILE,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
   SWAP_ANIM_MS,
@@ -42,6 +41,7 @@ import type {
   FoxElement,
   GameState,
   Position,
+  ScoreFlash,
   SpiritCharge,
 } from "../../../shared/types/game";
 
@@ -59,6 +59,7 @@ interface CascadeStep {
   lastMatchElement: FoxElement | null;
   consecutiveSameElement: number;
   lastElectricCol: number;
+  matchedCentroid: { row: number; col: number };
 }
 
 function computeCascadeSteps(
@@ -105,7 +106,8 @@ function computeCascadeSteps(
     const spiritDelta: Partial<Record<FoxElement, number>> = {};
 
     for (const match of matches) {
-      scoreDelta += match.positions.length * SCORE_PER_TILE * comboMult;
+      const n = match.positions.length;
+      scoreDelta += n * (n + 2) * comboMult;
       const chargeBonus =
         match.element === lastMatchElement
           ? SPIRIT_CHARGE_PER_MATCH * consecutiveSameElement
@@ -120,6 +122,19 @@ function computeCascadeSteps(
       if (tile?.hasStar) starsDelta++;
       if (tile?.element === "electric") lastElectricCol = c;
     }
+
+    const matchedPositions = [...matchedSet].map((k) => {
+      const [r, c] = k.split(",").map(Number);
+      return { row: r, col: c };
+    });
+    const matchedCentroid = {
+      row:
+        matchedPositions.reduce((s, p) => s + p.row, 0) /
+        matchedPositions.length,
+      col:
+        matchedPositions.reduce((s, p) => s + p.col, 0) /
+        matchedPositions.length,
+    };
 
     const clearedBoard = board.map((row, r) =>
       row.map((cell, c) => (matchedSet.has(`${r},${c}`) ? null : cell)),
@@ -140,6 +155,7 @@ function computeCascadeSteps(
       lastMatchElement,
       consecutiveSameElement,
       lastElectricCol,
+      matchedCentroid,
     });
 
     board = filledBoard;
@@ -169,6 +185,16 @@ function makeInitialState(): GameState {
     phase: "idle",
     lastElectricCol: 0,
     hintPositions: null,
+    scoreFlash: null,
+  };
+}
+
+function makeScoreFlash(step: CascadeStep): ScoreFlash {
+  return {
+    delta: step.scoreDelta,
+    row: step.matchedCentroid.row,
+    col: step.matchedCentroid.col,
+    id: Date.now() + Math.random(),
   };
 }
 
@@ -287,6 +313,7 @@ export function useGameState(zenMode = false) {
           ...prev,
           board: steps[0].clearedBoard,
           combo: steps[0].combo,
+          scoreFlash: makeScoreFlash(steps[0]),
           phase: "clearing",
         }));
       }, SWAP_ANIM_MS);
@@ -323,6 +350,7 @@ export function useGameState(zenMode = false) {
             ...prev,
             board: steps[nextIdx].clearedBoard,
             combo: steps[nextIdx].combo,
+            scoreFlash: makeScoreFlash(steps[nextIdx]),
             phase: "clearing",
           }));
         } else {
@@ -509,6 +537,7 @@ export function useGameState(zenMode = false) {
         isTimeSlow,
         timeLeft,
         combo: steps[0].combo,
+        scoreFlash: makeScoreFlash(steps[0]),
         phase: "clearing",
       }));
     } else {

@@ -38,6 +38,13 @@ export interface Match {
 
 export type SpiritCharge = Record<FoxElement, number>;
 
+export interface ScoreFlash {
+  delta: number;
+  row: number;
+  col: number;
+  id: number;
+}
+
 export interface GameState {
   board: CellState[][]; // rows × cols
   score: number;
@@ -54,4 +61,5 @@ export interface GameState {
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
   lastElectricCol: number; // column of last matched electric tile
   hintPositions: [Position, Position] | null;
+  scoreFlash: ScoreFlash | null;
 }
