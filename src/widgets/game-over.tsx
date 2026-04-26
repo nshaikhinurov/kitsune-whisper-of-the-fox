@@ -14,7 +14,6 @@ interface GameOverBlockProps {
   open: boolean;
   score: number;
   stars: number;
-  level: number;
   mode: GameMode;
   onReset: () => void;
 }
@@ -23,7 +22,6 @@ export const GameOverBlock = ({
   open,
   score,
   stars,
-  level,
   mode,
   onReset,
 }: GameOverBlockProps) => {
@@ -32,7 +30,7 @@ export const GameOverBlock = ({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const handleSubmit = () => {
-    void submit({ nickname, score, stars, level, mode });
+    void submit({ nickname, score, stars, mode });
   };
 
   return (
@@ -82,7 +80,6 @@ export const GameOverBlock = ({
               />
               {stars} stars
             </span>
-            <span>Level {level}</span>
           </div>
 
           <div className="flex w-full flex-col gap-2">

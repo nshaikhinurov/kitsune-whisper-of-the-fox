@@ -49,7 +49,6 @@ export interface GameState {
   board: CellState[][]; // rows × cols
   score: number;
   timeLeft: number; // milliseconds remaining
-  level: number;
   combo: number; // current cascade chain length
   lastMatchElement: FoxElement | null;
   consecutiveSameElement: number;

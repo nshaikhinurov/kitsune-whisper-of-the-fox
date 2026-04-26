@@ -6,7 +6,6 @@ export default defineSchema({
     nickname: v.string(),
     score: v.number(),
     stars: v.number(),
-    level: v.number(),
     mode: v.union(v.literal("normal"), v.literal("zen")),
     createdAt: v.number(),
   }).index("by_score", ["score"]),

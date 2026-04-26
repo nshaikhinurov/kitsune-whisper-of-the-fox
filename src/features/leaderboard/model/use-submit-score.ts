@@ -9,7 +9,6 @@ interface SubmitPayload {
   nickname: string;
   score: number;
   stars: number;
-  level: number;
   mode: GameMode;
 }
 

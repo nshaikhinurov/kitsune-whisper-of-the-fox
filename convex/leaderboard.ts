@@ -12,7 +12,6 @@ export const submitScore = mutation({
     nickname: v.string(),
     score: v.number(),
     stars: v.number(),
-    level: v.number(),
     mode: v.union(v.literal("normal"), v.literal("zen")),
   },
   handler: async (ctx, args) => {

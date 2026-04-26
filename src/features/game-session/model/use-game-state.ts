@@ -168,7 +168,6 @@ function makeInitialState(): GameState {
     board: createBoard(GRID_ROWS, GRID_COLS),
     score: 0,
     timeLeft: GAME_DURATION_MS,
-    level: 1,
     combo: 0,
     lastMatchElement: null,
     consecutiveSameElement: 0,

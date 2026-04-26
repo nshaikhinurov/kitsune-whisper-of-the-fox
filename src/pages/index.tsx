@@ -138,7 +138,6 @@ export function MainPage() {
           open={state.phase === "gameOver"}
           score={state.score}
           stars={state.stars}
-          level={state.level}
           mode={zenMode ? "zen" : "normal"}
           onReset={resetGame}
         />
