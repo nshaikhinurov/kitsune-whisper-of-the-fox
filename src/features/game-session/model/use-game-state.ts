@@ -174,8 +174,7 @@ function makeInitialState(): GameState {
     spiritCharge: { ...INITIAL_SPIRIT_CHARGE },
     stars: 0,
     selected: null,
-    isDarkTheme: false,
-    isTimeSlow: false,
+    isNight: false,
     phase: "idle",
     lastElectricCol: 0,
     hintPositions: null,
@@ -254,12 +253,12 @@ export function useGameState(zenMode = false) {
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    if (!state.isTimeSlow) return;
+    if (!state.isNight) return;
     const id = setTimeout(() => {
-      setState((prev) => ({ ...prev, isDarkTheme: false, isTimeSlow: false }));
+      setState((prev) => ({ ...prev, isNight: false }));
     }, NIGHT_FOX_ACTIVE_MS);
     return () => clearTimeout(id);
-  }, [state.isTimeSlow]);
+  }, [state.isNight]);
 
   // ---------------------------------------------------------------------------
   // Countdown timer — ticks every 100 ms while game is active
@@ -448,8 +447,7 @@ export function useGameState(zenMode = false) {
       const newCharge = { ...s.spiritCharge, [element]: 0 };
       let board = s.board.map((row) => [...row]);
       let starsDelta = 0;
-      let isDarkTheme = s.isDarkTheme;
-      let isTimeSlow = s.isTimeSlow;
+      let isNight = s.isNight;
       let timeLeft = s.timeLeft;
 
       switch (element) {
@@ -520,8 +518,7 @@ export function useGameState(zenMode = false) {
           break;
         }
         case "night": {
-          isDarkTheme = true;
-          isTimeSlow = true;
+          isNight = true;
           timeLeft = Math.min(
             timeLeft + NIGHT_FOX_TIME_BONUS_MS,
             GAME_DURATION_MS,
@@ -574,8 +571,7 @@ export function useGameState(zenMode = false) {
             spiritCharge: newCharge,
             score: prev.score + scoreDelta + starsDelta * SCORE_PER_STAR,
             stars: prev.stars + starsDelta,
-            isDarkTheme,
-            isTimeSlow,
+            isNight,
             timeLeft,
             combo: newCombo,
             scoreFlash: makeScoreFlash(
@@ -593,8 +589,7 @@ export function useGameState(zenMode = false) {
           spiritCharge: newCharge,
           score: prev.score + starsDelta * SCORE_PER_STAR,
           stars: prev.stars + starsDelta,
-          isDarkTheme,
-          isTimeSlow,
+          isNight,
           timeLeft,
           phase: "idle",
         }));

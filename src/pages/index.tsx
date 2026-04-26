@@ -1,6 +1,7 @@
 import { Moon, Settings, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
+  NIGHT_FOX_TIME_BONUS_MS,
   SHOW_HINTS_INITIALLY,
   ZEN_MODE_ON_INITIALLY,
 } from "~/shared/config/game-config";
@@ -30,11 +31,16 @@ export function MainPage() {
   );
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("kitsune_dark_mode", String(darkMode));
   }, [darkMode]);
+
   const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
     useGameState(zenMode);
+
+  const effectiveDark = darkMode !== state.isNight;
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", effectiveDark);
+  }, [effectiveDark]);
 
   return (
     <main className="bg-background text-foreground relative min-h-screen p-3 md:p-8 xl:p-16">
@@ -110,9 +116,9 @@ export function MainPage() {
 
         <Hud score={state.score} combo={state.combo} stars={state.stars} />
 
-        {state.isTimeSlow && (
+        {state.isNight && (
           <div className="text-primary animate-pulse text-xs font-semibold">
-            🌙 Night Fox: Time Slow active (+15s added)
+            🌙 Night Fox: +{NIGHT_FOX_TIME_BONUS_MS / 1000}s added
           </div>
         )}
 

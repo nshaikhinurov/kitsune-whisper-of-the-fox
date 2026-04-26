@@ -55,8 +55,7 @@ export interface GameState {
   spiritCharge: SpiritCharge;
   stars: number; // collected stars total
   selected: Position | null; // first tile of a swap
-  isDarkTheme: boolean; // Night Fox ult active
-  isTimeSlow: boolean; // Night Fox ult active
+  isNight: boolean; // Night Fox ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
   lastElectricCol: number; // column of last matched electric tile
   hintPositions: [Position, Position] | null;

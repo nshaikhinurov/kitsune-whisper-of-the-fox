@@ -36,7 +36,6 @@ export const MIN_MATCH_LENGTH = 3;
 export const BOARD_MATCH_REMOVAL_ATTEMPTS = 100;
 export const BOARD_GEN_ATTEMPTS = 50;
 export const BOARD_REFILL_ATTEMPTS = 50;
-export const BOARD_REFILL_REGEN_AT = 25;
 
 // Hint
 export const HINT_IDLE_MS = 10_000;

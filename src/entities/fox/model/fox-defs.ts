@@ -86,7 +86,7 @@ export const FOX_DEFS: Record<FoxElement, FoxDef> = {
     borderColor: "#eab308",
     textColor: "#eab308",
     accentColor: FOX_COLORS.night.primary,
-    ultDescription: "Dark theme + time-slow (more moves temporarily)",
+    ultDescription: "Dark theme + extra time",
   },
   sakura: {
     element: "sakura",
