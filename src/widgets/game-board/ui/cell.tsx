@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { FOX_DEFS } from "../../../entities/fox";
+import { Audition } from "../../../shared/lib/audition";
 import type { CellState, Position } from "../../../shared/types/game";
 import { FoxTile } from "./fox-tile";
-import { Audition } from "../../../shared/lib/audition";
 import { useTileSwipe } from "./use-tile-swipe";
 
 interface CellProps {
@@ -10,6 +10,7 @@ interface CellProps {
   pos: Position;
   isSelected: boolean;
   isHint: boolean;
+  isNew: boolean;
   onSwipe: (from: Position, to: Position) => void;
   onDragSource: (pos: Position | null) => void;
 }
@@ -19,6 +20,7 @@ export function Cell({
   pos,
   isSelected,
   isHint,
+  isNew,
   onSwipe,
   onDragSource,
 }: CellProps) {
@@ -52,7 +54,7 @@ export function Cell({
             key={tile.tileId}
             layoutId={tile.tileId}
             className="absolute inset-0 rounded-lg"
-            initial={{ scale: 0.4, opacity: 0 }}
+            initial={isNew ? { scale: 0.4, opacity: 0 } : false}
             animate={{
               scale: isSelected ? 1.1 : 1,
               opacity: 1,
@@ -68,8 +70,8 @@ export function Cell({
             transition={
               showHint
                 ? {
-                    layout: { type: "spring", stiffness: 500, damping: 35 },
-                    scale: { type: "spring", stiffness: 600, damping: 30 },
+                    layout: { type: "spring", stiffness: 380, damping: 38 },
+                    scale: { type: "spring", stiffness: 380, damping: 38 },
                     opacity: { duration: 0.15 },
                     boxShadow: {
                       duration: 0.9,
@@ -78,10 +80,10 @@ export function Cell({
                     },
                   }
                 : {
-                    layout: { type: "spring", stiffness: 500, damping: 35 },
-                    scale: { type: "spring", stiffness: 600, damping: 30 },
+                    layout: { type: "spring", stiffness: 380, damping: 38 },
+                    scale: { type: "spring", stiffness: 380, damping: 38 },
                     opacity: { duration: 0.15 },
-                    boxShadow: { type: "spring", stiffness: 600, damping: 30 },
+                    boxShadow: { type: "spring", stiffness: 380, damping: 38 },
                   }
             }
             style={{ zIndex: isSelected ? 10 : 0 }}

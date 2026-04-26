@@ -1,4 +1,5 @@
 import { LayoutGroup, motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import { GRID_COLS, GRID_ROWS } from "../../../shared/config/game-config";
 import type {
   CellState,
@@ -24,6 +25,19 @@ export function Board({
   onSwipe,
   onDragSource,
 }: BoardProps) {
+  // Track tileIds that have been rendered before. Falling tiles (same tileId,
+  // new position) must NOT receive initial={{ scale: 0.4 }} because Motion
+  // still applies non-layout initial props during a layoutId transition, which
+  // causes the tile to briefly snap to 0.4 scale → the jaggy size jump.
+  const knownTileIds = useRef(new Set<string>());
+  useEffect(() => {
+    for (const row of board) {
+      for (const cell of row) {
+        if (cell) knownTileIds.current.add(cell.tileId);
+      }
+    }
+  }, [board]);
+
   return (
     <LayoutGroup>
       <div className="relative w-full">
@@ -34,23 +48,28 @@ export function Board({
             gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`,
           }}
         >
+          {/* eslint-disable-next-line react-hooks/refs */}
           {Array.from({ length: GRID_ROWS }, (_, r) =>
             Array.from({ length: GRID_COLS }, (_, c) => {
               const pos: Position = { row: r, col: c };
               const key = `${r},${c}`;
+              const tile = board[r]?.[c] ?? null;
               const isSelected =
                 selected !== null && selected.row === r && selected.col === c;
               const isHint =
                 hintPositions !== null &&
                 hintPositions.some((p) => p.row === r && p.col === c);
+              const isNew =
+                tile !== null && !knownTileIds.current.has(tile.tileId);
 
               return (
                 <Cell
                   key={key}
-                  tile={board[r]?.[c] ?? null}
+                  tile={tile}
                   pos={pos}
                   isSelected={isSelected}
                   isHint={isHint}
+                  isNew={isNew}
                   onSwipe={onSwipe}
                   onDragSource={onDragSource}
                 />
