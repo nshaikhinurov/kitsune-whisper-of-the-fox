@@ -7,8 +7,10 @@ import {
 } from "../features/leaderboard";
 import type { GameMode } from "../shared/types/leaderboard";
 import { Button } from "../shared/ui/button";
+import { CoinIcon } from "../shared/ui/coin-icon";
 import { Dialog, DialogContent } from "../shared/ui/dialog";
 import { Input } from "../shared/ui/input";
+import { StarIcon } from "../shared/ui/star-icon";
 
 interface GameOverBlockProps {
   open: boolean;
@@ -66,39 +68,38 @@ export const GameOverBlock = ({
           showCloseButton={false}
           className="border-border bg-card text-card-foreground flex max-w-[min(90vw,22rem)] flex-col items-center gap-4 rounded-2xl shadow-2xl"
         >
-          <h2 className="text-3xl font-bold">Game Over</h2>
-          {reason === "deadlock" ? (
+          <h2 className="text-3xl font-bold">
+            {reason === "deadlock" ? "Deadlock!" : "Time's up"}
+          </h2>
+
+          {reason === "deadlock" && (
             <p className="text-muted-foreground text-center text-sm italic">
               {pickDeadlockJoke()}
             </p>
-          ) : (
-            <p className="text-muted-foreground">
-              {mode === "zen" ? "Zen session complete!" : "Time's up!"}
-            </p>
           )}
 
-          <div className="text-center">
+          <div className="flex justify-between gap-10">
             <motion.p
               key={score}
-              className="text-primary text-4xl font-bold"
+              className="text-primary flex items-center gap-1 text-4xl font-bold"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
             >
+              <CoinIcon className="size-8" />
               {score.toLocaleString()}
             </motion.p>
-            <p className="text-muted-foreground text-sm">Final Score</p>
-          </div>
 
-          <div className="text-foreground/80 flex gap-6 text-sm">
-            <span>
-              <img
-                src="/star.svg"
-                alt="star"
-                className="mr-1 inline h-4 w-4 align-middle"
-              />
-              {stars} stars
-            </span>
+            <motion.p
+              key={score}
+              className="text-primary flex items-center gap-1 text-4xl font-bold"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+            >
+              <StarIcon className="size-8" />
+              {stars}
+            </motion.p>
           </div>
 
           <div className="flex w-full flex-col gap-2">

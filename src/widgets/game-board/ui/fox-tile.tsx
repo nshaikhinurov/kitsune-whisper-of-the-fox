@@ -1,4 +1,5 @@
 import { FOX_DEFS, FoxSprite } from "../../../entities/fox";
+import { StarIcon } from "../../../shared/ui/star-icon";
 import type { TileState } from "../../../shared/types/game";
 
 interface FoxTileProps {
@@ -16,11 +17,7 @@ export function FoxTile({ tile }: FoxTileProps) {
       <FoxSprite element={tile.element} className="aspect-square w-8/10" />
 
       {tile.hasStar && (
-        <img
-          src="/star.svg"
-          alt="star"
-          className="absolute top-2 left-1/2 aspect-square w-5 -translate-x-1/2 animate-pulse"
-        />
+        <StarIcon className="absolute top-2 left-1/2 aspect-square w-5 -translate-x-1/2 animate-pulse" />
       )}
     </div>
   );

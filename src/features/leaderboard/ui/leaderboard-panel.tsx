@@ -1,6 +1,8 @@
 import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
 import { api } from "../../../../convex/_generated/api";
+import { CoinIcon } from "../../../shared/ui/coin-icon";
+import { StarIcon } from "../../../shared/ui/star-icon";
 import { Dialog, DialogClose, DialogContent } from "../../../shared/ui/dialog";
 import type { LeaderboardEntry } from "../../../shared/types/leaderboard";
 
@@ -44,7 +46,10 @@ export function LeaderboardPanel({
         <div className="grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] gap-1.5 px-1 text-xs tracking-wide text-muted-foreground uppercase sm:grid-cols-[2rem_1fr_5rem_3rem_3rem] sm:gap-2">
           <span>#</span>
           <span>Player</span>
-          <span className="text-right">Score</span>
+          <span className="flex items-center justify-end gap-0.5">
+            <CoinIcon className="h-3 w-3" />
+            Score
+          </span>
           <span className="text-center">Stars</span>
           <span className="hidden text-center sm:block">Mode</span>
         </div>
@@ -88,15 +93,12 @@ export function LeaderboardPanel({
                           : rank}
                   </span>
                   <span className="truncate font-medium">{entry.nickname}</span>
-                  <span className="text-right font-bold text-primary tabular-nums">
+                  <span className="flex items-center justify-end gap-1 font-bold text-primary tabular-nums">
+                    <CoinIcon className="h-3.5 w-3.5" />
                     {entry.score.toLocaleString()}
                   </span>
                   <span className="text-center text-xs text-foreground/80">
-                    <img
-                      src="/star.svg"
-                      alt="star"
-                      className="mr-0.5 inline h-3 w-3 align-baseline"
-                    />
+                    <StarIcon className="mr-0.5 inline h-3 w-3 align-baseline" />
                     {entry.stars}
                   </span>
                   <span className="hidden text-center text-xs text-muted-foreground sm:block">
