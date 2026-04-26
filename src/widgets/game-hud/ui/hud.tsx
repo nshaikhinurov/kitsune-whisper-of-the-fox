@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { Button } from "~/shared/ui/button";
 
 interface HudProps {
   score: number;
@@ -72,14 +73,15 @@ export function Hud({
       </div>
 
       {onOpenLeaderboard && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={onOpenLeaderboard}
-          className="text-neutral-400 hover:text-yellow-400 transition-colors text-xl leading-none"
           title="Leaderboard"
           aria-label="Open leaderboard"
         >
           🏆
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -2,19 +2,22 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { FOX_DEFS } from "../entities/fox";
 import { ELEMENTS } from "../shared/config/game-config";
+import { Button } from "../shared/ui/button";
 
 export const HelpBlock = () => {
   const [showHelp, setShowHelp] = useState(false);
 
   return (
     <div className="w-full max-w-105">
-      <button
-        className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors flex items-center gap-1"
+      <Button
+        variant="ghost"
+        size="xs"
+        className="text-neutral-400 hover:text-neutral-200 gap-1"
         onClick={() => setShowHelp((v) => !v)}
       >
         <span>{showHelp ? "▾" : "▸"}</span>
         <span>Spirit abilities</span>
-      </button>
+      </Button>
 
       <AnimatePresence>
         {showHelp && (

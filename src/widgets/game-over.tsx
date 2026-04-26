@@ -2,7 +2,9 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { useNickname, useSubmitScore } from "../features/leaderboard";
 import type { GameMode } from "../shared/types/leaderboard";
+import { Button } from "../shared/ui/button";
 import { Dialog, DialogContent } from "../shared/ui/dialog";
+import { Input } from "../shared/ui/input";
 import { LeaderboardPanel } from "./leaderboard";
 
 interface GameOverBlockProps {
@@ -40,7 +42,12 @@ export const GameOverBlock = ({
         />
       )}
 
-      <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) onReset(); }}>
+      <Dialog
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) onReset();
+        }}
+      >
         <DialogContent
           showCloseButton={false}
           className="bg-neutral-800 text-white border-neutral-700 rounded-2xl max-w-xs sm:max-w-xs flex flex-col items-center gap-4 shadow-2xl"
@@ -78,53 +85,60 @@ export const GameOverBlock = ({
           <div className="w-full flex flex-col gap-2">
             {status !== "success" ? (
               <>
-                <input
+                <Input
                   type="text"
                   value={nickname}
                   onChange={(e) => updateNickname(e.target.value)}
                   placeholder="Your nickname"
                   maxLength={24}
-                  className="bg-neutral-700 border border-neutral-600 focus:border-yellow-500/60 focus:outline-none rounded-lg px-3 py-1.5 text-sm text-white w-full placeholder-neutral-500 transition-colors"
                 />
                 {errorMessage && (
-                  <p className="text-red-400 text-xs text-center">{errorMessage}</p>
+                  <p className="text-red-400 text-xs text-center">
+                    {errorMessage}
+                  </p>
                 )}
-                <button
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed text-neutral-900 font-bold rounded-lg transition-colors text-sm"
+                <Button
+                  className="w-full "
                   onClick={handleSubmit}
-                  disabled={status === "submitting" || nickname.trim().length === 0}
+                  disabled={
+                    status === "submitting" || nickname.trim().length === 0
+                  }
                 >
-                  {status === "submitting" ? "Submitting…" : "Submit to Leaderboard"}
-                </button>
+                  {status === "submitting"
+                    ? "Submitting…"
+                    : "Submit to Leaderboard"}
+                </Button>
               </>
             ) : (
               <>
-                <p className="text-green-400 text-sm text-center">Score submitted!</p>
-                <button
-                  className="px-4 py-2 bg-yellow-500 hover:bg-yellow-400 text-neutral-900 font-bold rounded-lg transition-colors text-sm"
+                <p className="text-green-400 text-sm text-center">
+                  Score submitted!
+                </p>
+                <Button
+                  variant="secondary"
+                  className="w-full "
                   onClick={() => setShowLeaderboard(true)}
                 >
                   View Leaderboard
-                </button>
+                </Button>
               </>
             )}
 
             {status !== "success" && (
-              <button
-                className="text-xs text-neutral-400 hover:text-neutral-200 transition-colors py-1"
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs "
                 onClick={() => setShowLeaderboard(true)}
               >
                 View Leaderboard
-              </button>
+              </Button>
             )}
           </div>
 
-          <button
-            className="mt-1 px-6 py-2 bg-neutral-700 hover:bg-neutral-600 text-white font-bold rounded-lg transition-colors"
-            onClick={onReset}
-          >
+          <Button className="mt-1 w-full  " onClick={onReset}>
             Play Again
-          </button>
+          </Button>
         </DialogContent>
       </Dialog>
     </>
