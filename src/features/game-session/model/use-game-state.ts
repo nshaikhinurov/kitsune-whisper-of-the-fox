@@ -3,6 +3,7 @@ import {
   CHAOTIC_PATCH_SIZE,
   CLEAR_ANIM_MS,
   COMBO_MULT_STEP,
+  COMBO_RESET_MS,
   ELEMENTS,
   FALL_ANIM_MS,
   GAME_DURATION_MS,
@@ -52,10 +53,9 @@ import type {
 interface CascadeStep {
   clearedBoard: CellState[][]; // board with matched tiles set to null  (drives exit anims)
   filledBoard: CellState[][]; // board after gravity + refill          (drives fall/entry anims)
-  scoreDelta: number;
+  baseScoreDelta: number; // unmodified score; combo mult applied at display time
   starsDelta: number;
   spiritDelta: Partial<Record<FoxElement, number>>;
-  combo: number;
   lastMatchElement: FoxElement | null;
   consecutiveSameElement: number;
   lastElectricCol: number;
@@ -64,14 +64,12 @@ interface CascadeStep {
 
 function computeCascadeSteps(
   initialBoard: CellState[][],
-  startCombo: number,
   startLastElement: FoxElement | null,
   startConsecutive: number,
   startElectricCol: number,
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
   let board = initialBoard;
-  let combo = startCombo;
   let lastMatchElement = startLastElement;
   let consecutiveSameElement = startConsecutive;
   let lastElectricCol = startElectricCol;
@@ -79,8 +77,6 @@ function computeCascadeSteps(
   while (true) {
     const matches = findMatches(board);
     if (matches.length === 0) break;
-
-    combo++;
 
     // Dominant element for spirit charging
     const elementCounts: Partial<Record<FoxElement, number>> = {};
@@ -100,14 +96,13 @@ function computeCascadeSteps(
     }
 
     const matchedSet = positionsToSet(matches);
-    const comboMult = 1 + COMBO_MULT_STEP * (combo - 1);
-    let scoreDelta = 0;
+    let baseScoreDelta = 0;
     let starsDelta = 0;
     const spiritDelta: Partial<Record<FoxElement, number>> = {};
 
     for (const match of matches) {
       const n = match.positions.length;
-      scoreDelta += n * (n + 2) * comboMult;
+      baseScoreDelta += n * (n + 2);
       const chargeBonus =
         match.element === lastMatchElement
           ? SPIRIT_CHARGE_PER_MATCH * consecutiveSameElement
@@ -148,10 +143,9 @@ function computeCascadeSteps(
     steps.push({
       clearedBoard,
       filledBoard,
-      scoreDelta: Math.round(scoreDelta),
+      baseScoreDelta,
       starsDelta,
       spiritDelta,
-      combo,
       lastMatchElement,
       consecutiveSameElement,
       lastElectricCol,
@@ -189,9 +183,9 @@ function makeInitialState(): GameState {
   };
 }
 
-function makeScoreFlash(step: CascadeStep): ScoreFlash {
+function makeScoreFlash(step: CascadeStep, scoreDelta: number): ScoreFlash {
   return {
-    delta: step.scoreDelta,
+    delta: scoreDelta,
     row: step.matchedCentroid.row,
     col: step.matchedCentroid.col,
     id: Date.now() + Math.random(),
@@ -227,6 +221,20 @@ export function useGameState(zenMode = false) {
   const cascadeIdxRef = useRef(0);
   const prevStarsRef = useRef(0);
   const idleMsRef = useRef(0);
+  const comboResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  // Cancels any pending combo-reset and starts a fresh 2-second window.
+  const scheduleComboReset = useCallback(() => {
+    if (comboResetTimeoutRef.current !== null) {
+      clearTimeout(comboResetTimeoutRef.current);
+    }
+    comboResetTimeoutRef.current = setTimeout(() => {
+      setState((prev) => ({ ...prev, combo: 0 }));
+      comboResetTimeoutRef.current = null;
+    }, COMBO_RESET_MS);
+  }, []);
 
   useEffect(() => {
     if (state.stars > prevStarsRef.current) {
@@ -309,13 +317,19 @@ export function useGameState(zenMode = false) {
           setState((prev) => ({ ...prev, phase: "idle" }));
           return;
         }
-        setState((prev) => ({
-          ...prev,
-          board: steps[0].clearedBoard,
-          combo: steps[0].combo,
-          scoreFlash: makeScoreFlash(steps[0]),
-          phase: "clearing",
-        }));
+        setState((prev) => {
+          const newCombo = prev.combo + 1;
+          const comboMult = 1 + COMBO_MULT_STEP * (newCombo - 1);
+          const scoreDelta = Math.round(steps[0].baseScoreDelta * comboMult);
+          return {
+            ...prev,
+            board: steps[0].clearedBoard,
+            combo: newCombo,
+            scoreFlash: makeScoreFlash(steps[0], scoreDelta),
+            phase: "clearing",
+          };
+        });
+        scheduleComboReset();
       }, SWAP_ANIM_MS);
       return () => clearTimeout(id);
     }
@@ -323,17 +337,20 @@ export function useGameState(zenMode = false) {
     if (state.phase === "clearing") {
       const id = setTimeout(() => {
         const step = cascadeStepsRef.current[cascadeIdxRef.current];
-        setState((prev) => ({
-          ...prev,
-          board: step.filledBoard,
-          score: prev.score + step.scoreDelta,
-          stars: prev.stars + step.starsDelta,
-          spiritCharge: applyChargeDeltas(prev.spiritCharge, step.spiritDelta),
-          lastMatchElement: step.lastMatchElement,
-          consecutiveSameElement: step.consecutiveSameElement,
-          lastElectricCol: step.lastElectricCol,
-          phase: "falling",
-        }));
+        setState((prev) => {
+          const comboMult = 1 + COMBO_MULT_STEP * (prev.combo - 1);
+          return {
+            ...prev,
+            board: step.filledBoard,
+            score: prev.score + Math.round(step.baseScoreDelta * comboMult),
+            stars: prev.stars + step.starsDelta,
+            spiritCharge: applyChargeDeltas(prev.spiritCharge, step.spiritDelta),
+            lastMatchElement: step.lastMatchElement,
+            consecutiveSameElement: step.consecutiveSameElement,
+            lastElectricCol: step.lastElectricCol,
+            phase: "falling",
+          };
+        });
       }, CLEAR_ANIM_MS);
       return () => clearTimeout(id);
     }
@@ -346,13 +363,21 @@ export function useGameState(zenMode = false) {
         if (nextIdx < steps.length) {
           // More cascade steps — advance to next clear
           cascadeIdxRef.current = nextIdx;
-          setState((prev) => ({
-            ...prev,
-            board: steps[nextIdx].clearedBoard,
-            combo: steps[nextIdx].combo,
-            scoreFlash: makeScoreFlash(steps[nextIdx]),
-            phase: "clearing",
-          }));
+          setState((prev) => {
+            const newCombo = prev.combo + 1;
+            const comboMult = 1 + COMBO_MULT_STEP * (newCombo - 1);
+            const scoreDelta = Math.round(
+              steps[nextIdx].baseScoreDelta * comboMult,
+            );
+            return {
+              ...prev,
+              board: steps[nextIdx].clearedBoard,
+              combo: newCombo,
+              scoreFlash: makeScoreFlash(steps[nextIdx], scoreDelta),
+              phase: "clearing",
+            };
+          });
+          scheduleComboReset();
         } else {
           // Cascade fully done — return to idle (timer drives game-over)
           setState((prev) => ({ ...prev, phase: "idle" }));
@@ -379,7 +404,6 @@ export function useGameState(zenMode = false) {
     const swapped = swapTiles(s.board, from, to);
     const steps = computeCascadeSteps(
       swapped,
-      0,
       s.lastMatchElement,
       s.consecutiveSameElement,
       s.lastElectricCol,
@@ -395,7 +419,6 @@ export function useGameState(zenMode = false) {
       board: swapped,
       selected: null,
       hintPositions: null,
-      combo: 0,
       phase: "swapping",
     }));
   }, []);
@@ -518,7 +541,6 @@ export function useGameState(zenMode = false) {
 
     const steps = computeCascadeSteps(
       board,
-      s.combo,
       s.lastMatchElement,
       s.consecutiveSameElement,
       s.lastElectricCol,
@@ -528,18 +550,24 @@ export function useGameState(zenMode = false) {
       cascadeStepsRef.current = steps;
       cascadeIdxRef.current = 0;
 
-      setState((prev) => ({
-        ...prev,
-        board: steps[0].clearedBoard,
-        spiritCharge: newCharge,
-        stars: prev.stars + starsDelta,
-        isDarkTheme,
-        isTimeSlow,
-        timeLeft,
-        combo: steps[0].combo,
-        scoreFlash: makeScoreFlash(steps[0]),
-        phase: "clearing",
-      }));
+      setState((prev) => {
+        const newCombo = prev.combo + 1;
+        const comboMult = 1 + COMBO_MULT_STEP * (newCombo - 1);
+        const scoreDelta = Math.round(steps[0].baseScoreDelta * comboMult);
+        return {
+          ...prev,
+          board: steps[0].clearedBoard,
+          spiritCharge: newCharge,
+          stars: prev.stars + starsDelta,
+          isDarkTheme,
+          isTimeSlow,
+          timeLeft,
+          combo: newCombo,
+          scoreFlash: makeScoreFlash(steps[0], scoreDelta),
+          phase: "clearing",
+        };
+      });
+      scheduleComboReset();
     } else {
       setState((prev) => ({
         ...prev,

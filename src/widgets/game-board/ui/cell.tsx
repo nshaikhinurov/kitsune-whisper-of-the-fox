@@ -58,15 +58,13 @@ export function Cell({
             animate={{
               scale: isSelected ? 1.1 : 1,
               opacity: 1,
-              boxShadow: isSelected
-                ? `0 0 0 3px rgba(255,255,255,0.85), 0 0 12px rgba(255,255,255,0.4)`
-                : showHint
-                  ? [
-                      "none",
-                      `0 0 0 3px ${hintColor}, 0 0 18px ${hintColor}`,
-                      "none",
-                    ]
-                  : "none",
+              boxShadow: showHint
+                ? [
+                    "none",
+                    `0 0 0 3px ${hintColor}, 0 0 18px ${hintColor}`,
+                    "none",
+                  ]
+                : "none",
             }}
             exit={{ scale: 1.35, opacity: 0 }}
             transition={

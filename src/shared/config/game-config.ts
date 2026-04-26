@@ -13,7 +13,8 @@ export const TIME_LOW_MS = 10_000;
 
 // Scoring
 export const SCORE_PER_TILE = 10;
-export const COMBO_MULT_STEP = 0.5;
+export const COMBO_MULT_STEP = 0.1;
+export const COMBO_RESET_MS = 2_000;
 
 // Spirit / ultimates
 export const SPIRIT_MAX = 100;
