@@ -13,6 +13,7 @@ export const TIME_LOW_MS = 10_000;
 
 // Scoring
 export const SCORE_PER_TILE = 10;
+export const SCORE_PER_STAR = 50;
 export const COMBO_MULT_STEP = 0.1;
 export const COMBO_RESET_MS = 2_000;
 

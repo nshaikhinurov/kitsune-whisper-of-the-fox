@@ -17,6 +17,7 @@ import {
   RED_FOX_TILE_VARIANCE,
   SAKURA_MIN_STARS,
   SAKURA_STAR_VARIANCE,
+  SCORE_PER_STAR,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
   SWAP_ANIM_MS,
@@ -102,7 +103,7 @@ function computeCascadeSteps(
 
     for (const match of matches) {
       const n = match.positions.length;
-      baseScoreDelta += n * (n + 2);
+      baseScoreDelta += 2 * n * (n + 2);
       const chargeBonus =
         match.element === lastMatchElement
           ? SPIRIT_CHARGE_PER_MATCH * consecutiveSameElement
@@ -325,7 +326,7 @@ export function useGameState(zenMode = false) {
             ...prev,
             board: steps[0].clearedBoard,
             combo: newCombo,
-            scoreFlash: makeScoreFlash(steps[0], scoreDelta),
+            scoreFlash: makeScoreFlash(steps[0], scoreDelta + steps[0].starsDelta * SCORE_PER_STAR),
             phase: "clearing",
           };
         });
@@ -342,9 +343,12 @@ export function useGameState(zenMode = false) {
           return {
             ...prev,
             board: step.filledBoard,
-            score: prev.score + Math.round(step.baseScoreDelta * comboMult),
+            score: prev.score + Math.round(step.baseScoreDelta * comboMult) + step.starsDelta * SCORE_PER_STAR,
             stars: prev.stars + step.starsDelta,
-            spiritCharge: applyChargeDeltas(prev.spiritCharge, step.spiritDelta),
+            spiritCharge: applyChargeDeltas(
+              prev.spiritCharge,
+              step.spiritDelta,
+            ),
             lastMatchElement: step.lastMatchElement,
             consecutiveSameElement: step.consecutiveSameElement,
             lastElectricCol: step.lastElectricCol,
@@ -373,7 +377,7 @@ export function useGameState(zenMode = false) {
               ...prev,
               board: steps[nextIdx].clearedBoard,
               combo: newCombo,
-              scoreFlash: makeScoreFlash(steps[nextIdx], scoreDelta),
+              scoreFlash: makeScoreFlash(steps[nextIdx], scoreDelta + steps[nextIdx].starsDelta * SCORE_PER_STAR),
               phase: "clearing",
             };
           });
@@ -558,12 +562,13 @@ export function useGameState(zenMode = false) {
           ...prev,
           board: steps[0].clearedBoard,
           spiritCharge: newCharge,
+          score: prev.score + scoreDelta + starsDelta * SCORE_PER_STAR,
           stars: prev.stars + starsDelta,
           isDarkTheme,
           isTimeSlow,
           timeLeft,
           combo: newCombo,
-          scoreFlash: makeScoreFlash(steps[0], scoreDelta),
+          scoreFlash: makeScoreFlash(steps[0], scoreDelta + starsDelta * SCORE_PER_STAR),
           phase: "clearing",
         };
       });
@@ -573,6 +578,7 @@ export function useGameState(zenMode = false) {
         ...prev,
         board,
         spiritCharge: newCharge,
+        score: prev.score + starsDelta * SCORE_PER_STAR,
         stars: prev.stars + starsDelta,
         isDarkTheme,
         isTimeSlow,
