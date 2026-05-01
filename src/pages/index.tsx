@@ -1,12 +1,16 @@
 import { Moon, Settings, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  NIGHT_FOX_TIME_BONUS_MS,
   SHOW_HINTS_INITIALLY,
   ZEN_MODE_ON_INITIALLY,
 } from "~/shared/config/game-config";
+import { startThemeTransition } from "~/shared/lib/theme-transition";
 import { Button } from "~/shared/ui/button";
 import { TimerBar } from "~/widgets/timer-bar";
+import {
+  useDarkMode,
+  useThemeTransitionActive,
+} from "../features/dark-mode/use-dark-mode";
 import { useGameState } from "../features/game-session";
 import {
   DropdownMenu,
@@ -26,21 +30,40 @@ import { SpiritPanel } from "../widgets/spirit-panel";
 export function MainPage() {
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
-  // missing key → "true" (dark by default for new users)
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem("kitsune_dark_mode") !== "false",
-  );
+  const [darkMode, setDarkMode] = useDarkMode();
+  const themeTransitioning = useThemeTransitionActive();
 
+  const [menuOpen, setMenuOpen] = useState(false);
+  const pendingMenuCloseRef = useRef(false);
   useEffect(() => {
-    localStorage.setItem("kitsune_dark_mode", String(darkMode));
-  }, [darkMode]);
+    if (!themeTransitioning && pendingMenuCloseRef.current) {
+      pendingMenuCloseRef.current = false;
+      setMenuOpen(false);
+    }
+  }, [themeTransitioning]);
+  const handleMenuOpenChange = (open: boolean) => {
+    if (!open && themeTransitioning) {
+      pendingMenuCloseRef.current = true;
+      return;
+    }
+    setMenuOpen(open);
+  };
 
   const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
     useGameState(zenMode);
 
   const effectiveDark = darkMode !== state.isNight;
+  const firstRun = useRef(true);
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", effectiveDark);
+    const apply = () => {
+      document.documentElement.classList.toggle("dark", effectiveDark);
+    };
+    if (firstRun.current) {
+      firstRun.current = false;
+      apply();
+      return;
+    }
+    startThemeTransition(apply);
   }, [effectiveDark]);
 
   return (
@@ -54,7 +77,7 @@ export function MainPage() {
             </span>
             <span className="sm:hidden">Kitsune</span>
           </h1>
-          <DropdownMenu>
+          <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
             <DropdownMenuTrigger
               className="absolute top-3 right-3"
               render={
@@ -63,7 +86,10 @@ export function MainPage() {
                 </Button>
               }
             />
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent
+              align="end"
+              className="[view-transition-name:settings-menu]"
+            >
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Settings</DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -93,6 +119,7 @@ export function MainPage() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   closeOnClick={false}
+                  disabled={themeTransitioning}
                   onClick={() => setDarkMode((v) => !v)}
                   className="justify-between"
                 >
@@ -106,6 +133,7 @@ export function MainPage() {
                   </span>
                   <Switch
                     checked={darkMode}
+                    readOnly={themeTransitioning}
                     onCheckedChange={setDarkMode}
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -116,12 +144,6 @@ export function MainPage() {
         </div>
 
         <Hud score={state.score} combo={state.combo} stars={state.stars} />
-
-        {state.isNight && (
-          <div className="text-primary animate-pulse text-xs font-semibold">
-            🌙 Night Fox: +{NIGHT_FOX_TIME_BONUS_MS / 1000}s added
-          </div>
-        )}
 
         <div className="flex w-full flex-col items-center gap-3">
           <Board
