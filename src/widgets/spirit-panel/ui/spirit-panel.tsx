@@ -1,20 +1,20 @@
 import { motion } from "motion/react";
-import { FOX_DEFS, FoxSprite } from "../../../entities/fox";
+import { TILE_DEFS, TileSprite } from "../../../entities/tile";
 import { ELEMENTS, SPIRIT_MAX } from "../../../shared/config/game-config";
 import { cn } from "../../../shared/lib/utils";
-import type { FoxElement, SpiritCharge } from "../../../shared/types/game";
+import type { SpiritCharge, TileElement } from "../../../shared/types/game";
 import { Avatar, AvatarFallback } from "../../../shared/ui/avatar";
 
 interface SpiritPanelProps {
   spiritCharge: SpiritCharge;
-  onActivate: (element: FoxElement) => void;
+  onActivate: (element: TileElement) => void;
 }
 
 export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
   return (
     <div className="flex w-[min(90vw,800px)] justify-around gap-2 px-6 py-3 lg:h-full lg:gap-5 lg:py-9">
       {ELEMENTS.map((el) => {
-        const def = FOX_DEFS[el];
+        const def = TILE_DEFS[el];
         const charge = spiritCharge[el];
         const isReady = charge >= SPIRIT_MAX;
         const pct = Math.min(100, (charge / SPIRIT_MAX) * 100);
@@ -45,12 +45,12 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
             >
               <Avatar className="size-10 sm:size-12 lg:size-20">
                 <AvatarFallback className="bg-transparent p-0.5">
-                  <FoxSprite element={el} className="aspect-square w-8/10" />
+                  <TileSprite element={el} className="aspect-square w-8/10" />
                 </AvatarFallback>
               </Avatar>
             </motion.button>
 
-            <div className="flex h-1.5 w-10 overflow-hidden rounded-full bg-muted sm:w-12">
+            <div className="bg-muted flex h-1.5 w-10 overflow-hidden rounded-full sm:w-12">
               <motion.div
                 className="h-full rounded-full"
                 animate={{ width: `${pct}%` }}

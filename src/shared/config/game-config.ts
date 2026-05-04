@@ -1,4 +1,4 @@
-import type { FoxElement, SpiritCharge } from "../types/game";
+import type { SpiritCharge, TileElement } from "../types/game";
 
 // Grid
 export const GRID_COLS = 6;
@@ -20,12 +20,12 @@ export const COMBO_RESET_MS = 2_000;
 // Spirit / ultimates
 export const SPIRIT_MAX = 100;
 export const SPIRIT_CHARGE_PER_MATCH = 15;
-export const NIGHT_FOX_TIME_BONUS_MS = 15_000;
-export const NIGHT_FOX_ACTIVE_MS = 10_000;
-export const WHITE_FOX_MIN_TILES = 4;
-export const WHITE_FOX_TILE_VARIANCE = 3;
-export const RED_FOX_MIN_TILES = 3;
-export const RED_FOX_TILE_VARIANCE = 3;
+export const NIGHT_TIME_BONUS_MS = 15_000;
+export const NIGHT_ACTIVE_MS = 10_000;
+export const WHITE_MIN_TILES = 4;
+export const WHITE_TILE_VARIANCE = 3;
+export const RED_MIN_TILES = 3;
+export const RED_TILE_VARIANCE = 3;
 export const CHAOTIC_PATCH_SIZE = 3;
 export const SAKURA_MIN_STARS = 4;
 export const SAKURA_STAR_VARIANCE = 3;
@@ -46,7 +46,7 @@ export const SWAP_ANIM_MS = 230;
 export const CLEAR_ANIM_MS = 190;
 export const FALL_ANIM_MS = 330;
 
-export const ELEMENTS: FoxElement[] = [
+export const ELEMENTS: TileElement[] = [
   "ori",
   "green",
   "electric",

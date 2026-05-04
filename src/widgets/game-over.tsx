@@ -22,7 +22,7 @@ interface GameOverBlockProps {
 }
 
 const DEADLOCK_JOKES = [
-  "The foxes checked every tile — twice. Even the spirits gave up.",
+  "The cats checked every tile — twice. Even the spirits gave up.",
   "Congratulations! You've discovered a board state mathematically guaranteed to have zero moves. Science.",
   "A perfectly arranged prison. Not one swap leads anywhere. The universe wins.",
   "The board looked at itself in the mirror and decided: nope, no moves today.",

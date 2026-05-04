@@ -18,7 +18,7 @@ export function useThemeTransitionActive(): boolean {
   );
 }
 
-const STORAGE_KEY = "kitsune_dark_mode";
+const STORAGE_KEY = "dark_mode";
 
 export function useDarkMode(): [
   boolean,

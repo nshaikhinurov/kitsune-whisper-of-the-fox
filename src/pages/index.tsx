@@ -67,15 +67,25 @@ export function MainPage() {
   }, [effectiveDark]);
 
   return (
-    <main className="bg-background text-foreground relative min-h-screen p-3 md:p-8 xl:p-16">
+    <main
+      style={
+        {
+          "--dot-spacing": "40px",
+          "--dot-size": "1.5px",
+          "--dot-color":
+            "color-mix(in oklab, var(--foreground) 10%, transparent)",
+        } as React.CSSProperties
+      }
+      className="bg-background text-foreground relative min-h-screen bg-[radial-gradient(circle,var(--dot-color)_var(--dot-size),transparent_calc(var(--dot-size)+0.5px))] bg-size-[var(--dot-spacing)_var(--dot-spacing)] p-3 md:p-8 xl:p-16"
+    >
       <div className="mx-auto flex max-w-150 flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-200">
         <div className="flex w-full items-center justify-center">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl font-bold tracking-tight sm:text-3xl md:text-5xl">
-            <img src="/fox.svg" alt="Fox Spirit" className="h-full shrink-0" />
+            <img src="/creature.svg" alt="Spirit" className="h-full shrink-0" />
             <span className="hidden truncate sm:inline">
-              Kitsune: Whisper of the Fox
+              Nyota Paka: Purrrfect Match
             </span>
-            <span className="sm:hidden">Kitsune</span>
+            <span className="sm:hidden">Nyota Paka</span>
           </h1>
           <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
             <DropdownMenuTrigger

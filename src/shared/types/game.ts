@@ -1,4 +1,4 @@
-export type FoxElement =
+export type TileElement =
   | "ori"
   | "green"
   | "electric"
@@ -8,8 +8,8 @@ export type FoxElement =
 
 export type Rarity = "common" | "rare";
 
-export interface FoxDef {
-  element: FoxElement;
+export interface TileDef {
+  element: TileElement;
   name: string;
   rarity: Rarity;
   borderColor: string; // CSS hex color for tile border
@@ -20,7 +20,7 @@ export interface FoxDef {
 
 export interface TileState {
   tileId: string;
-  element: FoxElement;
+  element: TileElement;
   hasStar: boolean;
 }
 
@@ -33,10 +33,10 @@ export interface Position {
 
 export interface Match {
   positions: Position[];
-  element: FoxElement;
+  element: TileElement;
 }
 
-export type SpiritCharge = Record<FoxElement, number>;
+export type SpiritCharge = Record<TileElement, number>;
 
 export interface ScoreFlash {
   delta: number;
@@ -50,12 +50,12 @@ export interface GameState {
   score: number;
   timeLeft: number; // milliseconds remaining
   combo: number; // current cascade chain length
-  lastMatchElement: FoxElement | null;
+  lastMatchElement: TileElement | null;
   consecutiveSameElement: number;
   spiritCharge: SpiritCharge;
   stars: number; // collected stars total
   selected: Position | null; // first tile of a swap
-  isNight: boolean; // Night Fox ult active
+  isNight: boolean; // Night tile ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
   gameOverReason: "time" | "deadlock";
   lastElectricCol: number; // column of last matched electric tile

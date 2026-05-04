@@ -11,10 +11,10 @@ import {
   GRID_ROWS,
   HINT_IDLE_MS,
   INITIAL_SPIRIT_CHARGE,
-  NIGHT_FOX_ACTIVE_MS,
-  NIGHT_FOX_TIME_BONUS_MS,
-  RED_FOX_MIN_TILES,
-  RED_FOX_TILE_VARIANCE,
+  NIGHT_ACTIVE_MS,
+  NIGHT_TIME_BONUS_MS,
+  RED_MIN_TILES,
+  RED_TILE_VARIANCE,
   SAKURA_MIN_STARS,
   SAKURA_STAR_VARIANCE,
   SCORE_PER_STAR,
@@ -22,8 +22,8 @@ import {
   SPIRIT_MAX,
   SWAP_ANIM_MS,
   TIMER_TICK_MS,
-  WHITE_FOX_MIN_TILES,
-  WHITE_FOX_TILE_VARIANCE,
+  WHITE_MIN_TILES,
+  WHITE_TILE_VARIANCE,
 } from "../../../shared/config/game-config";
 import { Audition } from "../../../shared/lib/audition";
 import {
@@ -44,11 +44,11 @@ import {
 } from "../../../shared/lib/matches";
 import type {
   CellState,
-  FoxElement,
   GameState,
   Position,
   ScoreFlash,
   SpiritCharge,
+  TileElement,
 } from "../../../shared/types/game";
 
 // ---------------------------------------------------------------------------
@@ -60,8 +60,8 @@ interface CascadeStep {
   filledBoard: CellState[][]; // board after gravity + refill          (drives fall/entry anims)
   baseScoreDelta: number; // unmodified score; combo mult applied at display time
   starsDelta: number;
-  spiritDelta: Partial<Record<FoxElement, number>>;
-  lastMatchElement: FoxElement | null;
+  spiritDelta: Partial<Record<TileElement, number>>;
+  lastMatchElement: TileElement | null;
   consecutiveSameElement: number;
   lastElectricCol: number;
   matchedCentroid: { row: number; col: number };
@@ -70,7 +70,7 @@ interface CascadeStep {
 
 function computeCascadeSteps(
   initialBoard: CellState[][],
-  startLastElement: FoxElement | null,
+  startLastElement: TileElement | null,
   startConsecutive: number,
   startElectricCol: number,
 ): CascadeStep[] {
@@ -85,14 +85,14 @@ function computeCascadeSteps(
     if (matches.length === 0) break;
 
     // Dominant element for spirit charging
-    const elementCounts: Partial<Record<FoxElement, number>> = {};
+    const elementCounts: Partial<Record<TileElement, number>> = {};
     for (const match of matches) {
       elementCounts[match.element] =
         (elementCounts[match.element] ?? 0) + match.positions.length;
     }
     const dominant = Object.entries(elementCounts).sort(
       (a, b) => b[1] - a[1],
-    )[0][0] as FoxElement;
+    )[0][0] as TileElement;
 
     if (dominant === lastMatchElement) {
       consecutiveSameElement++;
@@ -104,7 +104,7 @@ function computeCascadeSteps(
     const matchedSet = positionsToSet(matches);
     let baseScoreDelta = 0;
     let starsDelta = 0;
-    const spiritDelta: Partial<Record<FoxElement, number>> = {};
+    const spiritDelta: Partial<Record<TileElement, number>> = {};
 
     for (const match of matches) {
       const n = match.positions.length;
@@ -135,7 +135,9 @@ function computeCascadeSteps(
     };
 
     const clearedBoard = board.map((row, r) =>
-      row.map((cell, c) => (matchedSet.has(posKey({ row: r, col: c })) ? null : cell)),
+      row.map((cell, c) =>
+        matchedSet.has(posKey({ row: r, col: c })) ? null : cell,
+      ),
     );
     const { board: filledBoard, deadlocked } = refillBoard(
       applyGravity(clearedBoard),
@@ -198,7 +200,7 @@ function makeScoreFlash(step: CascadeStep, scoreDelta: number): ScoreFlash {
 
 function applyChargeDeltas(
   current: SpiritCharge,
-  deltas: Partial<Record<FoxElement, number>>,
+  deltas: Partial<Record<TileElement, number>>,
 ): SpiritCharge {
   const next = { ...current };
   for (const el of ELEMENTS) {
@@ -254,14 +256,14 @@ export function useGameState(zenMode = false) {
   }, [state.phase]);
 
   // ---------------------------------------------------------------------------
-  // Night Fox auto-revert
+  // Night mode auto-revert
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
     if (!state.isNight) return;
     const id = setTimeout(() => {
       setState((prev) => ({ ...prev, isNight: false }));
-    }, NIGHT_FOX_ACTIVE_MS);
+    }, NIGHT_ACTIVE_MS);
     return () => clearTimeout(id);
   }, [state.isNight]);
 
@@ -277,7 +279,13 @@ export function useGameState(zenMode = false) {
         if (prev.phase === "gameOver") return prev;
         if (zenModeRef.current) return prev;
         const newTime = prev.timeLeft - TIMER_TICK_MS;
-        if (newTime <= 0) return { ...prev, timeLeft: 0, phase: "gameOver", gameOverReason: "time" };
+        if (newTime <= 0)
+          return {
+            ...prev,
+            timeLeft: 0,
+            phase: "gameOver",
+            gameOverReason: "time",
+          };
 
         if (prev.phase === "idle" && prev.hintPositions === null) {
           idleMsRef.current += TIMER_TICK_MS;
@@ -453,7 +461,7 @@ export function useGameState(zenMode = false) {
   // ---------------------------------------------------------------------------
 
   const activateUlt = useCallback(
-    (element: FoxElement) => {
+    (element: TileElement) => {
       const s = stateRef.current;
       if (s.phase !== "idle") return;
       if (s.spiritCharge[element] < SPIRIT_MAX) return;
@@ -469,8 +477,7 @@ export function useGameState(zenMode = false) {
         // Randomly re-rolls the element of N board tiles
         case "ori": {
           const count =
-            WHITE_FOX_MIN_TILES +
-            Math.floor(Math.random() * WHITE_FOX_TILE_VARIANCE);
+            WHITE_MIN_TILES + Math.floor(Math.random() * WHITE_TILE_VARIANCE);
           for (const { row, col } of pickRandomNonNullCells(board, count)) {
             const tile = board[row][col];
             if (tile)
@@ -484,13 +491,16 @@ export function useGameState(zenMode = false) {
         // Clears N random tiles and refills the board
         case "green": {
           const count =
-            RED_FOX_MIN_TILES +
-            Math.floor(Math.random() * RED_FOX_TILE_VARIANCE);
+            RED_MIN_TILES + Math.floor(Math.random() * RED_TILE_VARIANCE);
           for (const { row, col } of pickRandomNonNullCells(board, count)) {
             if (board[row][col]?.hasStar) starsDelta++;
             board[row][col] = null;
           }
-          ({ board, deadlocked: ultDeadlocked } = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS));
+          ({ board, deadlocked: ultDeadlocked } = refillBoard(
+            applyGravity(board),
+            GRID_ROWS,
+            GRID_COLS,
+          ));
           break;
         }
         // Wipes the entire column of the last electric match and refills
@@ -500,7 +510,11 @@ export function useGameState(zenMode = false) {
             if (board[r][col]?.hasStar) starsDelta++;
             board[r][col] = null;
           }
-          ({ board, deadlocked: ultDeadlocked } = refillBoard(applyGravity(board), GRID_ROWS, GRID_COLS));
+          ({ board, deadlocked: ultDeadlocked } = refillBoard(
+            applyGravity(board),
+            GRID_ROWS,
+            GRID_COLS,
+          ));
           break;
         }
         // Shuffles tiles inside a randomly placed NxN patch
@@ -521,10 +535,7 @@ export function useGameState(zenMode = false) {
         // Activates night theme and adds bonus time, capped at the game limit
         case "night": {
           isNight = true;
-          timeLeft = Math.min(
-            timeLeft + NIGHT_FOX_TIME_BONUS_MS,
-            GAME_DURATION_MS,
-          );
+          timeLeft = Math.min(timeLeft + NIGHT_TIME_BONUS_MS, GAME_DURATION_MS);
           break;
         }
         // Collects N random starred tiles and strips their star (scoring them)

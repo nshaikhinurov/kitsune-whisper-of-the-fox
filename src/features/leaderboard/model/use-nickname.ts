@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-const STORAGE_KEY = "kitsune_leaderboard_nickname";
+const STORAGE_KEY = "leaderboard_nickname";
 
 export function useNickname() {
   const [nickname, setNickname] = useState<string>(

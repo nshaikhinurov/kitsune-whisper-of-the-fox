@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
-import { FOX_DEFS } from "../../../entities/fox";
+import { TILE_DEFS } from "../../../entities/tile";
 import { Audition } from "../../../shared/lib/audition";
 import type { CellState, Position } from "../../../shared/types/game";
-import { FoxTile } from "./fox-tile";
+import { Tile } from "./tile";
 import { useTileSwipe } from "./use-tile-swipe";
 
 interface CellProps {
@@ -26,7 +26,7 @@ export function Cell({
 }: CellProps) {
   const hintColor =
     tile !== null
-      ? FOX_DEFS[tile.element].accentColor
+      ? TILE_DEFS[tile.element].accentColor
       : "rgba(255,255,255,0.6)";
   const showHint = isHint && !isSelected;
 
@@ -88,7 +88,7 @@ export function Cell({
             }
             style={{ zIndex: isSelected ? 10 : 0 }}
           >
-            <FoxTile tile={tile} />
+            <Tile tile={tile} />
           </motion.div>
         )}
       </AnimatePresence>

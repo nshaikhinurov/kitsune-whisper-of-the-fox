@@ -1,6 +1,6 @@
-import type { FoxDef, FoxElement } from "../../../shared/types/game";
+import type { TileDef, TileElement } from "../../../shared/types/game";
 
-export interface FoxColors {
+export interface TileColors {
   /** Darker body patches — cls-1 */
   primary: string;
   /** Lighter body patches — cls-2 */
@@ -9,7 +9,7 @@ export interface FoxColors {
   dark: string;
 }
 
-export const FOX_COLORS: Record<FoxElement, FoxColors> = {
+export const TILE_COLORS: Record<TileElement, TileColors> = {
   ori: {
     primary: "oklch(60% 0.16 58)",
     secondary: "oklch(75% 0.10 58)",
@@ -42,59 +42,59 @@ export const FOX_COLORS: Record<FoxElement, FoxColors> = {
   },
 };
 
-export const FOX_DEFS: Record<FoxElement, FoxDef> = {
+export const TILE_DEFS: Record<TileElement, TileDef> = {
   ori: {
     element: "ori",
-    name: "Ori Fox",
+    name: "Ori",
     rarity: "common",
     borderColor: "#94a3b8",
     textColor: "#334155",
-    accentColor: FOX_COLORS.ori.primary,
+    accentColor: TILE_COLORS.ori.primary,
     ultDescription: "Changes random tiles to random elements",
   },
   green: {
     element: "green",
-    name: "Green Fox",
+    name: "Green",
     rarity: "common",
     borderColor: "#b91c1c",
     textColor: "#ffffff",
-    accentColor: FOX_COLORS.green.primary,
+    accentColor: TILE_COLORS.green.primary,
     ultDescription: "Destroys random tiles (claws them away)",
   },
   electric: {
     element: "electric",
-    name: "Electric Fox",
+    name: "Electric",
     rarity: "common",
     borderColor: "#ca8a04",
     textColor: "#713f12",
-    accentColor: FOX_COLORS.electric.primary,
+    accentColor: TILE_COLORS.electric.primary,
     ultDescription: "Removes entire column",
   },
   chaotic: {
     element: "chaotic",
-    name: "Chaotic Fox",
+    name: "Chaotic",
     rarity: "common",
     borderColor: "#6d28d9",
     textColor: "#ffffff",
-    accentColor: FOX_COLORS.chaotic.primary,
+    accentColor: TILE_COLORS.chaotic.primary,
     ultDescription: "Shuffles a region of tiles",
   },
   night: {
     element: "night",
-    name: "Night Fox",
+    name: "Night",
     rarity: "rare",
     borderColor: "#eab308",
     textColor: "#eab308",
-    accentColor: FOX_COLORS.night.primary,
+    accentColor: TILE_COLORS.night.primary,
     ultDescription: "Dark theme + extra time",
   },
   sakura: {
     element: "sakura",
-    name: "Sakura Fox",
+    name: "Sakura",
     rarity: "rare",
     borderColor: "#db2777",
     textColor: "#ffffff",
-    accentColor: FOX_COLORS.sakura.primary,
+    accentColor: TILE_COLORS.sakura.primary,
     ultDescription: "Collects stars from random tiles",
   },
 };

@@ -1,13 +1,13 @@
-import type { FoxElement } from "../../../shared/types/game";
-import { FOX_COLORS } from "../model/fox-defs";
+import type { TileElement } from "../../../shared/types/game";
+import { TILE_COLORS } from "../model/tile-defs";
 
-interface FoxSpriteProps {
-  element: FoxElement;
+interface TileSpriteProps {
+  element: TileElement;
   className?: string;
 }
 
-export function FoxSprite({ element, className }: FoxSpriteProps) {
-  const { primary, secondary, dark } = FOX_COLORS[element];
+export function TileSprite({ element, className }: TileSpriteProps) {
+  const { primary, secondary, dark } = TILE_COLORS[element];
 
   return (
     <svg
@@ -16,17 +16,17 @@ export function FoxSprite({ element, className }: FoxSpriteProps) {
       className={className}
       style={
         {
-          "--fox-primary": primary,
-          "--fox-secondary": secondary,
-          "--fox-dark": dark,
+          "--primary": primary,
+          "--secondary": secondary,
+          "--dark": dark,
         } as React.CSSProperties
       }
     >
       <defs>
         <style>{`
-          .cls-1 { fill: var(--fox-primary, #986bac); }
-          .cls-2 { fill: var(--fox-secondary, #b18ec1); }
-          .cls-3 { fill: var(--fox-dark, #0f172a); }
+          .cls-1 { fill: var(--primary, #986bac); }
+          .cls-2 { fill: var(--secondary, #b18ec1); }
+          .cls-3 { fill: var(--dark, #0f172a); }
         `}</style>
       </defs>
       <g>
