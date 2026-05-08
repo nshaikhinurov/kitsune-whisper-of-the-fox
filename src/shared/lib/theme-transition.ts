@@ -46,7 +46,7 @@ export function startThemeTransition(mutate: () => void): void {
     const size = Math.max(window.innerWidth, window.innerHeight) * 2;
     document.documentElement.animate(
       {
-        maskImage: [`url(/creature.svg)`, `url(/creature.svg)`],
+        maskImage: [`url(/ori-cat.svg)`, `url(/ori-cat.svg)`],
         maskPosition: [`50% 50%`, `50% 50%`],
         maskRepeat: [`no-repeat`, `no-repeat`],
         maskSize: [`0px`, `${size}px`],

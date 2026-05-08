@@ -32,7 +32,7 @@ export function LeaderboardPanel({
       >
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-2xl font-bold">
-            <img src="/creature.svg" alt="" className="h-6" />
+            <img src="/ori-cat.svg" alt="" className="h-6" />
             Leaderboard
           </h2>
           <DialogClose
