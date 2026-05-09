@@ -95,6 +95,6 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#db2777",
     textColor: "#ffffff",
     accentColor: TILE_COLORS.sakura.primary,
-    ultDescription: "Collects stars from random tiles",
+    ultDescription: "Collects hearts from random tiles",
   },
 };

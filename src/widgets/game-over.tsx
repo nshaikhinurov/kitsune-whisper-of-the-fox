@@ -9,13 +9,13 @@ import type { GameMode } from "../shared/types/leaderboard";
 import { Button } from "../shared/ui/button";
 import { CoinIcon } from "../shared/ui/coin-icon";
 import { Dialog, DialogContent } from "../shared/ui/dialog";
+import { HeartIcon } from "../shared/ui/heart-icon";
 import { Input } from "../shared/ui/input";
-import { StarIcon } from "../shared/ui/star-icon";
 
 interface GameOverBlockProps {
   open: boolean;
   score: number;
-  stars: number;
+  hearts: number;
   mode: GameMode;
   reason?: "time" | "deadlock";
   onReset: () => void;
@@ -35,7 +35,7 @@ function pickDeadlockJoke() {
 export const GameOverBlock = ({
   open,
   score,
-  stars,
+  hearts,
   mode,
   reason = "time",
   onReset,
@@ -45,7 +45,7 @@ export const GameOverBlock = ({
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const handleSubmit = () => {
-    void submit({ nickname, score, stars, mode });
+    void submit({ nickname, score, hearts, mode });
   };
 
   return (
@@ -97,8 +97,8 @@ export const GameOverBlock = ({
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
             >
-              <StarIcon className="size-8" />
-              {stars}
+              <HeartIcon className="size-8" />
+              {hearts}
             </motion.p>
           </div>
 

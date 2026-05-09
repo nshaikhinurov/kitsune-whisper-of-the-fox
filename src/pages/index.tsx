@@ -153,7 +153,7 @@ export function MainPage() {
           </DropdownMenu>
         </div>
 
-        <Hud score={state.score} combo={state.combo} stars={state.stars} />
+        <Hud score={state.score} combo={state.combo} hearts={state.hearts} />
 
         <div className="flex w-full flex-col items-center gap-3">
           <Board
@@ -176,7 +176,7 @@ export function MainPage() {
         <GameOverBlock
           open={state.phase === "gameOver"}
           score={state.score}
-          stars={state.stars}
+          hearts={state.hearts}
           mode={zenMode ? "zen" : "normal"}
           reason={state.gameOverReason}
           onReset={resetGame}

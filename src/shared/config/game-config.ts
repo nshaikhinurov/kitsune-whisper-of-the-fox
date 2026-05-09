@@ -13,7 +13,7 @@ export const TIME_LOW_MS = 10_000;
 
 // Scoring
 export const SCORE_PER_TILE = 10;
-export const SCORE_PER_STAR = 50;
+export const SCORE_PER_HEART = 50;
 export const COMBO_MULT_STEP = 0.1;
 export const COMBO_RESET_MS = 2_000;
 
@@ -27,11 +27,11 @@ export const WHITE_TILE_VARIANCE = 3;
 export const RED_MIN_TILES = 3;
 export const RED_TILE_VARIANCE = 3;
 export const CHAOTIC_PATCH_SIZE = 3;
-export const SAKURA_MIN_STARS = 4;
-export const SAKURA_STAR_VARIANCE = 3;
+export const SAKURA_MIN_HEARTS = 4;
+export const SAKURA_HEART_VARIANCE = 3;
 
 // Board generation
-export const STAR_SPAWN_CHANCE = 0.12;
+export const HEART_SPAWN_CHANCE = 1;
 export const MIN_MATCH_LENGTH = 3;
 export const BOARD_MATCH_REMOVAL_ATTEMPTS = 100;
 export const BOARD_GEN_ATTEMPTS = 50;

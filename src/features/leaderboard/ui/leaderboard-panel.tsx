@@ -4,7 +4,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { LeaderboardEntry } from "../../../shared/types/leaderboard";
 import { CoinIcon } from "../../../shared/ui/coin-icon";
 import { Dialog, DialogClose, DialogContent } from "../../../shared/ui/dialog";
-import { StarIcon } from "../../../shared/ui/star-icon";
+import { HeartIcon } from "../../../shared/ui/heart-icon";
 
 interface LeaderboardPanelProps {
   open: boolean;
@@ -50,7 +50,7 @@ export function LeaderboardPanel({
             <CoinIcon className="h-3 w-3" />
             Score
           </span>
-          <span className="text-center">Stars</span>
+          <span className="text-center">Hearts</span>
           <span className="hidden text-center sm:block">Mode</span>
         </div>
 
@@ -98,8 +98,8 @@ export function LeaderboardPanel({
                     {entry.score.toLocaleString()}
                   </span>
                   <span className="text-foreground/80 text-center text-xs">
-                    <StarIcon className="mr-0.5 inline h-3 w-3 align-baseline" />
-                    {entry.stars}
+                    <HeartIcon className="mr-0.5 inline h-3 w-3 align-baseline" />
+                    {entry.hearts}
                   </span>
                   <span className="text-muted-foreground hidden text-center text-xs sm:block">
                     {entry.mode === "zen" ? "Zen" : "90s"}

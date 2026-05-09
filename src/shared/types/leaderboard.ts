@@ -5,7 +5,7 @@ export interface LeaderboardEntry {
   _creationTime: number;
   nickname: string;
   score: number;
-  stars: number;
+  hearts: number;
   mode: GameMode;
   createdAt: number;
 }

@@ -11,7 +11,7 @@ export const submitScore = mutation({
   args: {
     nickname: v.string(),
     score: v.number(),
-    stars: v.number(),
+    hearts: v.number(),
     mode: v.union(v.literal("normal"), v.literal("zen")),
   },
   handler: async (ctx, args) => {
@@ -20,8 +20,8 @@ export const submitScore = mutation({
       throw new Error("Nickname must be 1–24 characters");
     if (args.score < 0 || args.score > 1_000_000)
       throw new Error("Score out of range");
-    if (args.stars < 0 || args.stars > 1000)
-      throw new Error("Stars out of range");
+    if (args.hearts < 0 || args.hearts > 1000)
+      throw new Error("Hearts out of range");
     return ctx.db.insert("leaderboard", {
       ...args,
       nickname: trimmed,

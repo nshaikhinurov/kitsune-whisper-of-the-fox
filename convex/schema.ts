@@ -5,7 +5,7 @@ export default defineSchema({
   leaderboard: defineTable({
     nickname: v.string(),
     score: v.number(),
-    stars: v.number(),
+    hearts: v.number(),
     mode: v.union(v.literal("normal"), v.literal("zen")),
     createdAt: v.number(),
   }).index("by_score", ["score"]),

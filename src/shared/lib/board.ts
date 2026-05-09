@@ -3,7 +3,7 @@ import {
   BOARD_MATCH_REMOVAL_ATTEMPTS,
   BOARD_REFILL_ATTEMPTS,
   ELEMENTS,
-  STAR_SPAWN_CHANCE,
+  HEART_SPAWN_CHANCE,
 } from "../config/game-config";
 import type { CellState, Position, TileState } from "../types/game";
 import { findMatches, hasPossibleMove } from "./matches";
@@ -12,7 +12,7 @@ function randomTile(): TileState {
   return {
     tileId: crypto.randomUUID(),
     element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
-    hasStar: Math.random() < STAR_SPAWN_CHANCE,
+    hasHeart: Math.random() < HEART_SPAWN_CHANCE,
   };
 }
 

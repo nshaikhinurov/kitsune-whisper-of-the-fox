@@ -15,9 +15,9 @@ import {
   NIGHT_TIME_BONUS_MS,
   RED_MIN_TILES,
   RED_TILE_VARIANCE,
-  SAKURA_MIN_STARS,
-  SAKURA_STAR_VARIANCE,
-  SCORE_PER_STAR,
+  SAKURA_MIN_HEARTS,
+  SAKURA_HEART_VARIANCE,
+  SCORE_PER_HEART,
   SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
   SWAP_ANIM_MS,
@@ -59,7 +59,7 @@ interface CascadeStep {
   clearedBoard: CellState[][]; // board with matched tiles set to null  (drives exit anims)
   filledBoard: CellState[][]; // board after gravity + refill          (drives fall/entry anims)
   baseScoreDelta: number; // unmodified score; combo mult applied at display time
-  starsDelta: number;
+  heartsDelta: number;
   spiritDelta: Partial<Record<TileElement, number>>;
   lastMatchElement: TileElement | null;
   consecutiveSameElement: number;
@@ -103,7 +103,7 @@ function computeCascadeSteps(
 
     const matchedSet = positionsToSet(matches);
     let baseScoreDelta = 0;
-    let starsDelta = 0;
+    let heartsDelta = 0;
     const spiritDelta: Partial<Record<TileElement, number>> = {};
 
     for (const match of matches) {
@@ -120,7 +120,7 @@ function computeCascadeSteps(
     for (const key of matchedSet) {
       const { row, col } = parseKey(key);
       const tile = board[row][col];
-      if (tile?.hasStar) starsDelta++;
+      if (tile?.hasHeart) heartsDelta++;
       if (tile?.element === "electric") lastElectricCol = col;
     }
 
@@ -149,7 +149,7 @@ function computeCascadeSteps(
       clearedBoard,
       filledBoard,
       baseScoreDelta,
-      starsDelta,
+      heartsDelta,
       spiritDelta,
       lastMatchElement,
       consecutiveSameElement,
@@ -178,7 +178,7 @@ function makeInitialState(): GameState {
     lastMatchElement: null,
     consecutiveSameElement: 0,
     spiritCharge: { ...INITIAL_SPIRIT_CHARGE },
-    stars: 0,
+    hearts: 0,
     selected: null,
     isNight: false,
     phase: "idle",
@@ -225,7 +225,7 @@ export function useGameState(zenMode = false) {
   // Cascade queue — not in state since changes don't need re-renders
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
-  const prevStarsRef = useRef(0);
+  const prevHeartsRef = useRef(0);
   const idleMsRef = useRef(0);
   const comboResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -243,11 +243,11 @@ export function useGameState(zenMode = false) {
   }, []);
 
   useEffect(() => {
-    if (state.stars > prevStarsRef.current) {
-      Audition.starCollected();
+    if (state.hearts > prevHeartsRef.current) {
+      Audition.heartCollected();
     }
-    prevStarsRef.current = state.stars;
-  }, [state.stars]);
+    prevHeartsRef.current = state.hearts;
+  }, [state.hearts]);
 
   useEffect(() => {
     if (state.phase === "clearing") {
@@ -339,7 +339,7 @@ export function useGameState(zenMode = false) {
             combo: newCombo,
             scoreFlash: makeScoreFlash(
               steps[0],
-              scoreDelta + steps[0].starsDelta * SCORE_PER_STAR,
+              scoreDelta + steps[0].heartsDelta * SCORE_PER_HEART,
             ),
             phase: "clearing",
           };
@@ -360,8 +360,8 @@ export function useGameState(zenMode = false) {
             score:
               prev.score +
               Math.round(step.baseScoreDelta * comboMult) +
-              step.starsDelta * SCORE_PER_STAR,
-            stars: prev.stars + step.starsDelta,
+              step.heartsDelta * SCORE_PER_HEART,
+            hearts: prev.hearts + step.heartsDelta,
             spiritCharge: applyChargeDeltas(
               prev.spiritCharge,
               step.spiritDelta,
@@ -396,7 +396,7 @@ export function useGameState(zenMode = false) {
               combo: newCombo,
               scoreFlash: makeScoreFlash(
                 steps[nextIdx],
-                scoreDelta + steps[nextIdx].starsDelta * SCORE_PER_STAR,
+                scoreDelta + steps[nextIdx].heartsDelta * SCORE_PER_HEART,
               ),
               phase: "clearing",
             };
@@ -468,7 +468,7 @@ export function useGameState(zenMode = false) {
 
       const newCharge = { ...s.spiritCharge, [element]: 0 };
       let board = s.board.map((row) => [...row]);
-      let starsDelta = 0;
+      let heartsDelta = 0;
       let isNight = s.isNight;
       let timeLeft = s.timeLeft;
       let ultDeadlocked = false;
@@ -493,7 +493,7 @@ export function useGameState(zenMode = false) {
           const count =
             RED_MIN_TILES + Math.floor(Math.random() * RED_TILE_VARIANCE);
           for (const { row, col } of pickRandomNonNullCells(board, count)) {
-            if (board[row][col]?.hasStar) starsDelta++;
+            if (board[row][col]?.hasHeart) heartsDelta++;
             board[row][col] = null;
           }
           ({ board, deadlocked: ultDeadlocked } = refillBoard(
@@ -507,7 +507,7 @@ export function useGameState(zenMode = false) {
         case "electric": {
           const col = s.lastElectricCol;
           for (let r = 0; r < GRID_ROWS; r++) {
-            if (board[r][col]?.hasStar) starsDelta++;
+            if (board[r][col]?.hasHeart) heartsDelta++;
             board[r][col] = null;
           }
           ({ board, deadlocked: ultDeadlocked } = refillBoard(
@@ -538,29 +538,29 @@ export function useGameState(zenMode = false) {
           timeLeft = Math.min(timeLeft + NIGHT_TIME_BONUS_MS, GAME_DURATION_MS);
           break;
         }
-        // Collects N random starred tiles and strips their star (scoring them)
+        // Collects N random hearted tiles and strips their heart (scoring them)
         case "sakura": {
-          const starPositions: Position[] = [];
+          const heartPositions: Position[] = [];
           for (let r = 0; r < GRID_ROWS; r++)
             for (let c = 0; c < GRID_COLS; c++)
-              if (board[r][c]?.hasStar) starPositions.push({ row: r, col: c });
+              if (board[r][c]?.hasHeart) heartPositions.push({ row: r, col: c });
           const count = Math.min(
-            SAKURA_MIN_STARS + Math.floor(Math.random() * SAKURA_STAR_VARIANCE),
-            starPositions.length,
+            SAKURA_MIN_HEARTS + Math.floor(Math.random() * SAKURA_HEART_VARIANCE),
+            heartPositions.length,
           );
           // Partial Fisher-Yates: j drawn from [i, length) keeps selection uniform
           for (let i = 0; i < count; i++) {
             const j =
-              i + Math.floor(Math.random() * (starPositions.length - i));
-            [starPositions[i], starPositions[j]] = [
-              starPositions[j],
-              starPositions[i],
+              i + Math.floor(Math.random() * (heartPositions.length - i));
+            [heartPositions[i], heartPositions[j]] = [
+              heartPositions[j],
+              heartPositions[i],
             ];
           }
           for (let i = 0; i < count; i++) {
-            const { row, col } = starPositions[i];
-            starsDelta++;
-            board[row][col] = { ...board[row][col]!, hasStar: false };
+            const { row, col } = heartPositions[i];
+            heartsDelta++;
+            board[row][col] = { ...board[row][col]!, hasHeart: false };
           }
           break;
         }
@@ -585,14 +585,14 @@ export function useGameState(zenMode = false) {
             ...prev,
             board: steps[0].clearedBoard,
             spiritCharge: newCharge,
-            score: prev.score + scoreDelta + starsDelta * SCORE_PER_STAR,
-            stars: prev.stars + starsDelta,
+            score: prev.score + scoreDelta + heartsDelta * SCORE_PER_HEART,
+            hearts: prev.hearts + heartsDelta,
             isNight,
             timeLeft,
             combo: newCombo,
             scoreFlash: makeScoreFlash(
               steps[0],
-              scoreDelta + starsDelta * SCORE_PER_STAR,
+              scoreDelta + heartsDelta * SCORE_PER_HEART,
             ),
             phase: "clearing",
           };
@@ -603,8 +603,8 @@ export function useGameState(zenMode = false) {
           ...prev,
           board,
           spiritCharge: newCharge,
-          score: prev.score + starsDelta * SCORE_PER_STAR,
-          stars: prev.stars + starsDelta,
+          score: prev.score + heartsDelta * SCORE_PER_HEART,
+          hearts: prev.hearts + heartsDelta,
           isNight,
           timeLeft,
           phase: "gameOver",
@@ -615,8 +615,8 @@ export function useGameState(zenMode = false) {
           ...prev,
           board,
           spiritCharge: newCharge,
-          score: prev.score + starsDelta * SCORE_PER_STAR,
-          stars: prev.stars + starsDelta,
+          score: prev.score + heartsDelta * SCORE_PER_HEART,
+          hearts: prev.hearts + heartsDelta,
           isNight,
           timeLeft,
           phase: "idle",

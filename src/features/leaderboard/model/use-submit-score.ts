@@ -8,7 +8,7 @@ type SubmitStatus = "idle" | "submitting" | "success" | "error";
 interface SubmitPayload {
   nickname: string;
   score: number;
-  stars: number;
+  hearts: number;
   mode: GameMode;
 }
 

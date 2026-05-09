@@ -21,7 +21,7 @@ export interface TileDef {
 export interface TileState {
   tileId: string;
   element: TileElement;
-  hasStar: boolean;
+  hasHeart: boolean;
 }
 
 export type CellState = TileState | null; // null = hole
@@ -53,7 +53,7 @@ export interface GameState {
   lastMatchElement: TileElement | null;
   consecutiveSameElement: number;
   spiritCharge: SpiritCharge;
-  stars: number; // collected stars total
+  hearts: number; // collected hearts total
   selected: Position | null; // first tile of a swap
   isNight: boolean; // Night tile ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";

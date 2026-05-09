@@ -46,7 +46,7 @@ export function Cell({
       className="relative h-full w-full cursor-grab touch-none select-none"
     >
       {/* Empty hole background */}
-      <div className="border-border/40 bg-background/60 absolute inset-0 rounded-md sm:rounded-lg" />
+      <div className="border-border absolute inset-0 rounded-md border sm:rounded-lg" />
 
       <AnimatePresence>
         {tile !== null && (
