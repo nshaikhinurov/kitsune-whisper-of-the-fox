@@ -1,9 +1,10 @@
 import { motion } from "motion/react";
-import { TILE_DEFS, TileSprite } from "../../../entities/tile";
+import { TILE_DEFS } from "../../../entities/tile";
 import { ELEMENTS, SPIRIT_MAX } from "../../../shared/config/game-config";
 import { cn } from "../../../shared/lib/utils";
 import type { SpiritCharge, TileElement } from "../../../shared/types/game";
 import { Avatar, AvatarFallback } from "../../../shared/ui/avatar";
+import { PawIcon } from "../../../shared/ui/paw-icon";
 
 interface SpiritPanelProps {
   spiritCharge: SpiritCharge;
@@ -45,7 +46,10 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
             >
               <Avatar className="size-10 sm:size-12 lg:size-20">
                 <AvatarFallback className="bg-transparent p-0.5">
-                  <TileSprite element={el} className="aspect-square w-8/10" />
+                  <PawIcon
+                    className="aspect-square w-8/10"
+                    style={{ color: def.accentColor }}
+                  />
                 </AvatarFallback>
               </Avatar>
             </motion.button>
