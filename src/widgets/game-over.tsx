@@ -92,7 +92,7 @@ export const GameOverBlock = ({
 
             <motion.p
               key={score}
-              className="text-primary flex items-center gap-1 text-4xl font-bold"
+              className="flex items-center gap-1 text-4xl font-bold text-[#ce505a]"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 300 }}

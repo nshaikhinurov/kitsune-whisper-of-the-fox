@@ -46,7 +46,7 @@ export function Cell({
       className="relative h-full w-full cursor-grab touch-none select-none"
     >
       {/* Empty hole background */}
-      <div className="border-border absolute inset-0 rounded-md border sm:rounded-lg" />
+      <div className="absolute inset-0 rounded-md sm:rounded-lg" />
 
       <AnimatePresence>
         {tile !== null && (
@@ -60,9 +60,9 @@ export function Cell({
               opacity: 1,
               boxShadow: showHint
                 ? [
-                    "none",
-                    `0 0 0 3px ${hintColor}, 0 0 18px ${hintColor}`,
-                    "none",
+                    `0 0 0 0px ${hintColor}, 0 0 0px ${hintColor}`,
+                    `0 0 0 5px ${hintColor}, 0 0 18px ${hintColor}`,
+                    `0 0 0 0px ${hintColor}, 0 0 0px ${hintColor}`,
                   ]
                 : "none",
             }}
