@@ -1,10 +1,5 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { useLocalStorage } from "usehooks-ts";
 import {
   isThemeTransitionActive,
   subscribeThemeTransition,
@@ -24,13 +19,7 @@ export function useDarkMode(): [
   boolean,
   (next: boolean | ((v: boolean) => boolean)) => void,
 ] {
-  const [darkMode, setDarkMode] = useState(
-    () => localStorage.getItem(STORAGE_KEY) !== "false",
-  );
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, String(darkMode));
-  }, [darkMode]);
+  const [darkMode, setDarkMode] = useLocalStorage(STORAGE_KEY, true);
 
   const lockedRef = useRef(false);
   useEffect(

@@ -31,7 +31,7 @@ export const SAKURA_MIN_HEARTS = 4;
 export const SAKURA_HEART_VARIANCE = 3;
 
 // Board generation
-export const HEART_SPAWN_CHANCE = 1;
+export const HEART_SPAWN_CHANCE = 0.12;
 export const MIN_MATCH_LENGTH = 3;
 export const BOARD_MATCH_REMOVAL_ATTEMPTS = 100;
 export const BOARD_GEN_ATTEMPTS = 50;

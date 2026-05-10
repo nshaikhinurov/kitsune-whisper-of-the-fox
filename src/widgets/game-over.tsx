@@ -68,7 +68,7 @@ export const GameOverBlock = ({
           showCloseButton={false}
           className="border-border bg-card text-card-foreground flex max-w-[min(90vw,22rem)] flex-col items-center gap-4 rounded-2xl shadow-2xl"
         >
-          <h2 className="text-3xl font-bold">
+          <h2 className="font-sushi text-4xl">
             {reason === "deadlock" ? "Deadlock!" : "Time's up"}
           </h2>
 
@@ -81,7 +81,7 @@ export const GameOverBlock = ({
           <div className="flex justify-between gap-10">
             <motion.p
               key={score}
-              className="text-primary flex items-center gap-1 text-4xl font-bold"
+              className="text-primary font-sushi flex items-center gap-1 text-4xl"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
@@ -92,7 +92,7 @@ export const GameOverBlock = ({
 
             <motion.p
               key={score}
-              className="flex items-center gap-1 text-4xl font-bold text-[#ce505a]"
+              className="font-sushi flex items-center gap-1 text-4xl text-heart"
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 300 }}

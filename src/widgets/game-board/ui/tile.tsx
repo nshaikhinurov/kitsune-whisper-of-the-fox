@@ -1,6 +1,6 @@
-import { TILE_DEFS, TileSprite } from "../../../entities/tile";
-import type { TileState } from "../../../shared/types/game";
-import { HeartIcon } from "../../../shared/ui/heart-icon";
+import { TILE_DEFS, TileSprite } from "~/entities/tile";
+import type { TileState } from "~/shared/types/game";
+import { HeartIcon } from "~/shared/ui/heart-icon";
 
 interface TileProps {
   tile: TileState;

@@ -1,7 +1,7 @@
 import { useMutation } from "convex/react";
 import { useCallback, useState } from "react";
 import { api } from "../../../../convex/_generated/api";
-import type { GameMode } from "../../../shared/types/leaderboard";
+import type { GameMode } from "~/shared/types/leaderboard";
 
 type SubmitStatus = "idle" | "submitting" | "success" | "error";
 

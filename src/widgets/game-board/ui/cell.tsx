@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
-import { TILE_DEFS } from "../../../entities/tile";
-import { Audition } from "../../../shared/lib/audition";
-import type { CellState, Position } from "../../../shared/types/game";
+import { TILE_DEFS } from "~/entities/tile";
+import { Audition } from "~/shared/lib/audition";
+import type { CellState, Position } from "~/shared/types/game";
 import { Tile } from "./tile";
 import { useTileSwipe } from "./use-tile-swipe";
 

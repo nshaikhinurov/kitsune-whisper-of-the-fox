@@ -1,11 +1,11 @@
 import { LayoutGroup, motion } from "motion/react";
 import { useEffect, useRef } from "react";
-import { GRID_COLS, GRID_ROWS } from "../../../shared/config/game-config";
+import { GRID_COLS, GRID_ROWS } from "~/shared/config/game-config";
 import type {
   CellState,
   Position,
   ScoreFlash,
-} from "../../../shared/types/game";
+} from "~/shared/types/game";
 import { Cell } from "./cell";
 
 interface BoardProps {

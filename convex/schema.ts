@@ -9,4 +9,13 @@ export default defineSchema({
     mode: v.union(v.literal("normal"), v.literal("zen")),
     createdAt: v.number(),
   }).index("by_score", ["score"]),
+
+  chat: defineTable({
+    clientId: v.string(),
+    nickname: v.string(),
+    content: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_clientId_and_createdAt", ["clientId", "createdAt"]),
 });

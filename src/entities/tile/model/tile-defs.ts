@@ -1,4 +1,4 @@
-import type { TileDef, TileElement } from "../../../shared/types/game";
+import type { TileDef, TileElement } from "~/shared/types/game";
 
 export interface TileColors {
   /** Darker body patches — cls-1 */

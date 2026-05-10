@@ -1,10 +1,10 @@
 import { motion } from "motion/react";
-import { TILE_DEFS } from "../../../entities/tile";
-import { ELEMENTS, SPIRIT_MAX } from "../../../shared/config/game-config";
-import { cn } from "../../../shared/lib/utils";
-import type { SpiritCharge, TileElement } from "../../../shared/types/game";
-import { Avatar, AvatarFallback } from "../../../shared/ui/avatar";
-import { PawIcon } from "../../../shared/ui/paw-icon";
+import { TILE_DEFS } from "~/entities/tile";
+import { ELEMENTS, SPIRIT_MAX } from "~/shared/config/game-config";
+import { cn } from "~/shared/lib/utils";
+import type { SpiritCharge, TileElement } from "~/shared/types/game";
+import { Avatar, AvatarFallback } from "~/shared/ui/avatar";
+import { PawIcon } from "~/shared/ui/paw-icon";
 
 interface SpiritPanelProps {
   spiritCharge: SpiritCharge;

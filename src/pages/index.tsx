@@ -1,4 +1,4 @@
-import { Moon, Settings, Sun } from "lucide-react";
+import { MessageCircle, Moon, Settings, Sun } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
   SHOW_HINTS_INITIALLY,
@@ -7,6 +7,7 @@ import {
 import { startThemeTransition } from "~/shared/lib/theme-transition";
 import { Button } from "~/shared/ui/button";
 import { TimerBar } from "~/widgets/timer-bar";
+import { ChatPanel } from "../features/chat";
 import {
   useDarkMode,
   useThemeTransitionActive,
@@ -47,6 +48,7 @@ export function MainPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const [chatOpen, setChatOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const pendingMenuCloseRef = useRef(false);
   useEffect(() => {
@@ -64,13 +66,12 @@ export function MainPage() {
   };
 
   const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
-    useGameState(zenMode);
+    useGameState(zenMode, chatOpen);
 
-  const effectiveDark = darkMode !== state.isNight;
   const firstRun = useRef(true);
   useEffect(() => {
     const apply = () => {
-      document.documentElement.classList.toggle("dark", effectiveDark);
+      document.documentElement.classList.toggle("dark", darkMode);
     };
     if (firstRun.current) {
       firstRun.current = false;
@@ -78,7 +79,7 @@ export function MainPage() {
       return;
     }
     startThemeTransition(apply);
-  }, [effectiveDark]);
+  }, [darkMode]);
 
   return (
     <main
@@ -95,10 +96,24 @@ export function MainPage() {
       <div className="mx-auto flex max-w-150 flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-200">
         <div className="flex w-full items-center justify-center">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl sm:text-3xl md:text-5xl">
-            <img src="/ori-cat.svg" alt="Ori cat" className="h-full" />
+            <img src="/imgs/ori-cat.svg" alt="Ori cat" className="h-full" />
 
-            <img src="/logo.svg" alt="Purrrfect Match" className="h-full" />
+            <img
+              src="/imgs/logo.svg"
+              alt="Purrrfect Match"
+              className="h-full"
+            />
           </h1>
+          <Button
+            variant="ghost"
+            size="icon-lg"
+            className="absolute top-3 right-14"
+            onClick={() => setChatOpen(true)}
+            aria-label="Open chat"
+          >
+            <MessageCircle className="size-6" />
+          </Button>
+
           <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
             <DropdownMenuTrigger
               className="absolute top-3 right-3"
@@ -194,6 +209,8 @@ export function MainPage() {
           onReset={resetGame}
         />
       </div>
+
+      <ChatPanel open={chatOpen} onOpenChange={setChatOpen} />
     </main>
   );
 }

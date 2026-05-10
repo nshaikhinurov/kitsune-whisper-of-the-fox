@@ -1,10 +1,10 @@
 import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
+import { CoinIcon } from "~/shared/ui/coin-icon";
 import { api } from "../../../../convex/_generated/api";
-import type { LeaderboardEntry } from "../../../shared/types/leaderboard";
-import { CoinIcon } from "../../../shared/ui/coin-icon";
-import { Dialog, DialogClose, DialogContent } from "../../../shared/ui/dialog";
-import { HeartIcon } from "../../../shared/ui/heart-icon";
+import type { LeaderboardEntry } from "~/shared/types/leaderboard";
+import { Dialog, DialogContent } from "~/shared/ui/dialog";
+import { HeartIcon } from "~/shared/ui/heart-icon";
 
 interface LeaderboardPanelProps {
   open: boolean;
@@ -26,21 +26,12 @@ export function LeaderboardPanel({
         if (!isOpen) onClose();
       }}
     >
-      <DialogContent
-        showCloseButton={false}
-        className="border-border bg-card text-card-foreground flex max-h-[80vh] max-w-[min(95vw,28rem)] flex-col gap-4 overflow-hidden rounded-2xl p-4 shadow-2xl sm:p-6"
-      >
+      <DialogContent className="border-border bg-card text-card-foreground flex max-h-[80vh] max-w-[min(95vw,32rem)] flex-col gap-4 overflow-hidden rounded-2xl p-4 shadow-2xl sm:p-6">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-2xl font-bold">
-            <img src="/ori-cat.svg" alt="" className="h-6" />
+          <h2 className="font-sushi flex items-baseline gap-2 text-3xl font-normal">
+            <img src="/imgs/ori-cat.svg" alt="" className="h-6" />
             Leaderboard
           </h2>
-          <DialogClose
-            className="text-muted-foreground hover:text-foreground text-xl leading-none transition-colors"
-            aria-label="Close leaderboard"
-          >
-            ✕
-          </DialogClose>
         </div>
 
         <div className="text-muted-foreground grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] gap-1.5 px-1 text-xs tracking-wide uppercase sm:grid-cols-[2rem_1fr_5rem_3rem_3rem] sm:gap-2">

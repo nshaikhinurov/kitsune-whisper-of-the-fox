@@ -1,7 +1,7 @@
 import { useDrag } from "@use-gesture/react";
 import { useRef } from "react";
-import { GRID_COLS, GRID_ROWS } from "../../../shared/config/game-config";
-import type { Position } from "../../../shared/types/game";
+import { GRID_COLS, GRID_ROWS } from "~/shared/config/game-config";
+import type { Position } from "~/shared/types/game";
 
 const SWIPE_THRESHOLD_RATIO = 0.3;
 

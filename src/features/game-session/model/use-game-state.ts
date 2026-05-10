@@ -24,8 +24,8 @@ import {
   TIMER_TICK_MS,
   WHITE_MIN_TILES,
   WHITE_TILE_VARIANCE,
-} from "../../../shared/config/game-config";
-import { Audition } from "../../../shared/lib/audition";
+} from "~/shared/config/game-config";
+import { Audition } from "~/shared/lib/audition";
 import {
   applyGravity,
   createBoard,
@@ -34,14 +34,14 @@ import {
   refillBoard,
   shuffleRegion,
   swapTiles,
-} from "../../../shared/lib/board";
+} from "~/shared/lib/board";
 import {
   findFirstHintMove,
   findMatches,
   parseKey,
   positionsToSet,
   posKey,
-} from "../../../shared/lib/matches";
+} from "~/shared/lib/matches";
 import type {
   CellState,
   GameState,
@@ -49,7 +49,7 @@ import type {
   ScoreFlash,
   SpiritCharge,
   TileElement,
-} from "../../../shared/types/game";
+} from "~/shared/types/game";
 
 // ---------------------------------------------------------------------------
 // Cascade step — one iteration of: clear matches → gravity → refill
@@ -213,10 +213,12 @@ function applyChargeDeltas(
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useGameState(zenMode = false) {
+export function useGameState(zenMode = false, paused = false) {
   const [state, setState] = useState<GameState>(makeInitialState);
   const zenModeRef = useRef(zenMode);
   zenModeRef.current = zenMode;
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
 
   // Stable ref so callbacks always read fresh state without stale closures
   const stateRef = useRef(state);
@@ -277,7 +279,7 @@ export function useGameState(zenMode = false) {
     const id = setInterval(() => {
       setState((prev) => {
         if (prev.phase === "gameOver") return prev;
-        if (zenModeRef.current) return prev;
+        if (zenModeRef.current || pausedRef.current) return prev;
         const newTime = prev.timeLeft - TIMER_TICK_MS;
         if (newTime <= 0)
           return {
@@ -503,9 +505,9 @@ export function useGameState(zenMode = false) {
           ));
           break;
         }
-        // Wipes the entire column of the last electric match and refills
+        // Wipes a random column and refills
         case "electric": {
-          const col = s.lastElectricCol;
+          const col = Math.floor(Math.random() * GRID_COLS);
           for (let r = 0; r < GRID_ROWS; r++) {
             if (board[r][col]?.hasHeart) heartsDelta++;
             board[r][col] = null;

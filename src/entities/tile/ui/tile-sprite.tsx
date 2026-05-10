@@ -1,4 +1,4 @@
-import type { TileElement } from "../../../shared/types/game";
+import type { TileElement } from "~/shared/types/game";
 
 interface TileSpriteProps {
   element: TileElement;
@@ -8,7 +8,7 @@ interface TileSpriteProps {
 export function TileSprite({ element, className }: TileSpriteProps) {
   return (
     <img
-      src={`/${element}-cat.svg`}
+      src={`/imgs/${element}-cat.svg`}
       alt={element}
       draggable={false}
       className={`pointer-events-none${className ? ` ${className}` : ""}`}

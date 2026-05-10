@@ -9,11 +9,9 @@ export function TimerBar({ timeLeft }: TimerBarProps) {
   const timeLeftPercentage = Math.max(0, timeLeft / GAME_DURATION_MS);
   const secondsLeft = Math.ceil(timeLeft / 1000);
 
-  // oklch: lime at 100% → red at 0%
-  const hue = 30 + 110 * timeLeftPercentage;
-  const lightness = 0.65;
-  const chroma = 0.26;
-  const barColor = `oklch(${lightness.toFixed(3)} ${chroma} ${hue.toFixed(1)})`;
+  const fullColor = "oklch(0.829 0.1712 81.04)";
+  const zeroColor = "oklch(0.6005 0.1597 18.62)";
+  const barColor = `color-mix(in oklch, ${fullColor} ${(timeLeftPercentage * 100).toFixed(1)}%, ${zeroColor})`;
 
   return (
     <div className="flex w-full items-center gap-3">
@@ -27,7 +25,7 @@ export function TimerBar({ timeLeft }: TimerBarProps) {
       </div>
       <motion.span
         key={secondsLeft}
-        className="w-10 shrink-0 text-right text-3xl font-bold tabular-nums"
+        className="font-sushi w-10 shrink-0 text-right text-3xl font-bold tabular-nums"
         style={{ color: barColor }}
         animate={timeLeft <= 10000 ? { scale: [1, 1.2, 1] } : {}}
         transition={{ duration: 0.3 }}

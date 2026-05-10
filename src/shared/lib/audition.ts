@@ -3,7 +3,7 @@ function play(src: string) {
 }
 
 export const Audition = {
-  tileSelect: () => play("/tile-select.mp3"),
-  heartCollected: () => play("/heart-collected.mp3"),
-  tilesMatched: () => play("/tiles-matched.mp3"),
+  tileSelect: () => play("/sounds/tile-select.mp3"),
+  heartCollected: () => play("/sounds/heart-collected.mp3"),
+  tilesMatched: () => play("/sounds/tiles-matched.mp3"),
 };

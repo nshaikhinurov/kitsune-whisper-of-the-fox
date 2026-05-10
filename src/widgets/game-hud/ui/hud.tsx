@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
-import { CoinIcon } from "../../../shared/ui/coin-icon";
-import { HeartIcon } from "../../../shared/ui/heart-icon";
+import { CoinIcon } from "~/shared/ui/coin-icon";
+import { HeartIcon } from "~/shared/ui/heart-icon";
 
 interface HudProps {
   score: number;
@@ -10,7 +10,7 @@ interface HudProps {
 
 export function Hud({ score, combo, hearts }: HudProps) {
   return (
-    <div className="text-card-foreground bg-muted flex w-full items-center justify-between gap-2 rounded-xl p-3 px-5 text-4xl font-bold backdrop-blur sm:gap-4">
+    <div className="text-card-foreground bg-muted font-sushi flex w-full items-center justify-between gap-2 rounded-xl p-3 px-5 text-4xl backdrop-blur sm:gap-4">
       <motion.div
         key={score}
         className="flex items-center gap-2.5 tabular-nums"
@@ -34,7 +34,7 @@ export function Hud({ score, combo, hearts }: HudProps) {
         </motion.div>
       )}
 
-      <div className="flex flex-col items-center">
+      <div className="text-heart flex flex-col items-center">
         <motion.div
           key={hearts}
           className="flex items-center gap-2.5 tabular-nums"
