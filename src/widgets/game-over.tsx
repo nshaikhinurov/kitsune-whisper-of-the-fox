@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Audition } from "../shared/lib/audition";
 import {
   LeaderboardPanel,
   useNickname,
@@ -41,7 +42,14 @@ export const GameOverBlock = ({
   onReset,
 }: GameOverBlockProps) => {
   const { nickname, updateNickname } = useNickname();
-  const { submit, status, submittedId, errorMessage } = useSubmitScore();
+  const { submit, reset, status, submittedId, errorMessage } = useSubmitScore();
+
+  useEffect(() => {
+    if (open) {
+      reset();
+      if (reason === "time") Audition.timerEnded();
+    }
+  }, [open, reason, reset]);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const handleSubmit = () => {
@@ -60,6 +68,7 @@ export const GameOverBlock = ({
 
       <Dialog
         open={open}
+        disablePointerDismissal
         onOpenChange={(isOpen) => {
           if (!isOpen) onReset();
         }}

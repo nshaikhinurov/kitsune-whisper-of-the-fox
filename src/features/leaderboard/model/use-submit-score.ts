@@ -18,6 +18,12 @@ export function useSubmitScore() {
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const reset = useCallback(() => {
+    setStatus("idle");
+    setSubmittedId(null);
+    setErrorMessage(null);
+  }, []);
+
   const submit = useCallback(
     async (payload: SubmitPayload) => {
       if (status === "submitting") return;
@@ -37,5 +43,5 @@ export function useSubmitScore() {
     [status, submitMutation],
   );
 
-  return { submit, status, submittedId, errorMessage };
+  return { submit, reset, status, submittedId, errorMessage };
 }

@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
 import { TILE_DEFS } from "~/entities/tile";
-import { Audition } from "~/shared/lib/audition";
 import type { CellState, Position } from "~/shared/types/game";
 import { Tile } from "./tile";
 import { useTileSwipe } from "./use-tile-swipe";
@@ -31,9 +30,6 @@ export function Cell({
   const showHint = isHint && !isSelected;
 
   const handleDragSource = (p: Position | null) => {
-    if (p !== null) {
-      Audition.tileSelect();
-    }
     onDragSource(p);
   };
 

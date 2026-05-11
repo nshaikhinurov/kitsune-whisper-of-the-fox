@@ -257,6 +257,10 @@ export function useGameState(zenMode = false, paused = false) {
     }
   }, [state.phase]);
 
+  useEffect(() => {
+    if (state.combo > 1) Audition.comboHappened(state.combo);
+  }, [state.combo]);
+
   // ---------------------------------------------------------------------------
   // Night mode auto-revert
   // ---------------------------------------------------------------------------
@@ -444,8 +448,12 @@ export function useGameState(zenMode = false, paused = false) {
       s.lastElectricCol,
     );
 
-    if (steps.length === 0) return;
+    if (steps.length === 0) {
+      Audition.tilesNotMatched();
+      return;
+    }
 
+    Audition.tileSwiped();
     cascadeStepsRef.current = steps;
     cascadeIdxRef.current = 0;
 
