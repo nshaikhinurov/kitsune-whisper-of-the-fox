@@ -13,6 +13,12 @@ function getOrCreateClientId(): string {
   return id;
 }
 
+function regenerateClientId(): string {
+  const id = crypto.randomUUID();
+  localStorage.setItem(CLIENT_ID_KEY, id);
+  return id;
+}
+
 export function getChatClientId(): string {
   return getOrCreateClientId();
 }
@@ -24,6 +30,7 @@ export function useChatNickname() {
 
   const setNickname = useCallback(
     (name: string) => {
+      regenerateClientId();
       setNicknameState(name);
     },
     [setNicknameState],

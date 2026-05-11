@@ -21,7 +21,7 @@ export function useSendMessage() {
           content,
         });
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Failed to send message.";
+        const msg = e instanceof Error ? e.message : "Не удалось отправить сообщение.";
         setError(msg);
         throw e;
       }

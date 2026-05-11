@@ -19,7 +19,7 @@ export function MessageBubble({ msg, isOwn }: MessageBubbleProps) {
     <div className="flex flex-col items-start gap-0.5">
       <div
         className={cn(
-          "text-foreground flex max-w-[85%] flex-col gap-1 rounded-2xl rounded-tl-sm p-3 leading-relaxed wrap-break-word",
+          "text-foreground flex max-w-[85%] min-w-[40%] flex-col gap-1 rounded-2xl rounded-tl-sm p-3 leading-relaxed wrap-break-word",
           isOwn ? "bg-primary/15" : "bg-muted",
         )}
       >

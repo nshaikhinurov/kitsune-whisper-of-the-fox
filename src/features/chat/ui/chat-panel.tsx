@@ -23,8 +23,8 @@ function formatDateBadge(ts: number) {
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate();
-  if (sameDay(d, today)) return "Today";
-  if (sameDay(d, yesterday)) return "Yesterday";
+  if (sameDay(d, today)) return "Сегодня";
+  if (sameDay(d, yesterday)) return "Вчера";
   return d.toLocaleDateString([], { month: "long", day: "numeric" });
 }
 
@@ -87,7 +87,7 @@ export function ChatPanel({ open, onOpenChange }: ChatPanelProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="flex w-80 flex-col gap-0 text-base">
         <SheetTitle className="border-border flex h-16 items-center border-b p-4">
-          Live Chat
+          Живой коточат
         </SheetTitle>
         <div className="flex h-full flex-1 flex-col overflow-hidden">
           <div
@@ -96,12 +96,12 @@ export function ChatPanel({ open, onOpenChange }: ChatPanelProps) {
           >
             {messages === undefined && (
               <p className="text-muted-foreground animate-pulse py-8 text-center text-sm">
-                Loading…
+                Загрузка…
               </p>
             )}
             {messages?.length === 0 && (
               <p className="text-muted-foreground py-8 text-center text-sm">
-                No messages yet — say hello!
+                Сообщений пока нет — поздоровайся!
               </p>
             )}
             {messages?.map((msg, i) => {
@@ -128,7 +128,7 @@ export function ChatPanel({ open, onOpenChange }: ChatPanelProps) {
                 onClick={clearError}
                 className="shrink-0 font-medium hover:underline"
               >
-                Dismiss
+                Закрыть
               </button>
             </div>
           )}
@@ -139,44 +139,45 @@ export function ChatPanel({ open, onOpenChange }: ChatPanelProps) {
               className="border-border flex flex-col gap-2 border-t px-4 py-3"
             >
               <p className="text-muted-foreground">
-                Choose a nickname to start chatting:
+                Введи никнейм, чтобы начать общение:
               </p>
               <div className="flex items-center gap-2">
                 <Input
                   value={nicknameInput}
                   onChange={(e) => setNicknameInput(e.target.value)}
-                  placeholder="Your nickname"
+                  placeholder="Ваш никнейм"
                   maxLength={24}
                   className="flex-1"
                   autoFocus
                 />
                 <Button
                   type="submit"
-                  size="sm"
                   disabled={nicknameInput.trim().length === 0}
                 >
-                  Set
+                  Задать
                 </Button>
               </div>
             </form>
           ) : (
             <div className="border-border flex flex-col gap-2 border-t px-4 py-3">
               <span className="text-muted-foreground">
-                Chatting as{" "}
+                В чате как{" "}
                 <Tooltip>
                   <TooltipTrigger
                     render={
                       <Button
                         variant="link"
-                        size="sm"
-                        className={cn("font-semibold", clientColor(myClientId))}
+                        className={cn(
+                          "px-0 text-base font-semibold",
+                          clientColor(myClientId),
+                        )}
                         onClick={clearNickname}
                       >
                         {nickname}
                       </Button>
                     }
                   />
-                  <TooltipContent>Change nickname</TooltipContent>
+                  <TooltipContent>Сменить никнейм</TooltipContent>
                 </Tooltip>
               </span>
               <div className="relative">
@@ -187,7 +188,7 @@ export function ChatPanel({ open, onOpenChange }: ChatPanelProps) {
                       setDraft(e.target.value);
                   }}
                   onKeyDown={handleKeyDown}
-                  placeholder="Say something… (Enter to send)"
+                  placeholder="Сообщение…"
                   rows={3}
                   className="py-2 pr-10 text-sm"
                   disabled={sending}

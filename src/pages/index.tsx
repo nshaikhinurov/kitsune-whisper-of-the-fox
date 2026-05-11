@@ -1,4 +1,4 @@
-import { MessageCircle, Moon, Settings, Sun } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
   SHOW_HINTS_INITIALLY,
@@ -8,31 +8,22 @@ import { startThemeTransition } from "~/shared/lib/theme-transition";
 import { Button } from "~/shared/ui/button";
 import { TimerBar } from "~/widgets/timer-bar";
 import { ChatPanel } from "../features/chat";
-import {
-  useDarkMode,
-  useThemeTransitionActive,
-} from "../features/dark-mode/use-dark-mode";
+import { useDarkMode } from "../features/dark-mode/use-dark-mode";
 import { useGameState } from "../features/game-session";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../shared/ui/dropdown-menu";
-import { Switch } from "../shared/ui/switch";
+import { LeaderboardPanel } from "../features/leaderboard";
 import { Board } from "../widgets/game-board";
 import { Hud } from "../widgets/game-hud";
 import { GameOverBlock } from "../widgets/game-over";
+import { SettingsMenu } from "../widgets/settings-menu";
 import { SpiritPanel } from "../widgets/spirit-panel";
 
 export function MainPage() {
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
   const [darkMode, setDarkMode] = useDarkMode();
-  const themeTransitioning = useThemeTransitionActive();
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -43,27 +34,13 @@ export function MainPage() {
         return;
       if (e.key === "z" || e.key === "Z") setZenMode((v) => !v);
       if (e.key === "h" || e.key === "H") setShowHints((v) => !v);
+      if (e.key === "l" || e.key === "L") setLeaderboardOpen((v) => !v);
+      if (e.key === "d" || e.key === "D" || e.key === "в" || e.key === "В")
+        setDarkMode((v) => !v);
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const [chatOpen, setChatOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const pendingMenuCloseRef = useRef(false);
-  useEffect(() => {
-    if (!themeTransitioning && pendingMenuCloseRef.current) {
-      pendingMenuCloseRef.current = false;
-      setMenuOpen(false);
-    }
-  }, [themeTransitioning]);
-  const handleMenuOpenChange = (open: boolean) => {
-    if (!open && themeTransitioning) {
-      pendingMenuCloseRef.current = true;
-      return;
-    }
-    setMenuOpen(open);
-  };
+  }, [setDarkMode]);
 
   const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
     useGameState(zenMode, chatOpen);
@@ -97,7 +74,6 @@ export function MainPage() {
         <div className="flex w-full items-center justify-center">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl sm:text-3xl md:text-5xl">
             <img src="/imgs/ori-cat.svg" alt="Ori cat" className="h-full" />
-
             <img
               src="/imgs/logo.svg"
               alt="Purrrfect Match"
@@ -109,75 +85,20 @@ export function MainPage() {
             size="icon-lg"
             className="absolute top-3 right-14"
             onClick={() => setChatOpen(true)}
-            aria-label="Open chat"
+            aria-label="Открыть чат"
           >
             <MessageCircle className="size-6" />
           </Button>
 
-          <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
-            <DropdownMenuTrigger
-              className="absolute top-3 right-3"
-              render={
-                <Button variant={"ghost"} size={"icon-lg"}>
-                  <Settings className="size-6" />
-                </Button>
-              }
-            />
-            <DropdownMenuContent
-              align="end"
-              className="[view-transition-name:settings-menu]"
-            >
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Settings</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  closeOnClick={false}
-                  onClick={() => setZenMode((v) => !v)}
-                  className="justify-between"
-                >
-                  Zen mode
-                  <Switch
-                    checked={zenMode}
-                    onCheckedChange={setZenMode}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  closeOnClick={false}
-                  onClick={() => setShowHints((v) => !v)}
-                  className="justify-between"
-                >
-                  Show hints
-                  <Switch
-                    checked={showHints}
-                    onCheckedChange={setShowHints}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  closeOnClick={false}
-                  disabled={themeTransitioning}
-                  onClick={() => setDarkMode((v) => !v)}
-                  className="justify-between"
-                >
-                  <span className="flex items-center gap-2">
-                    {darkMode ? (
-                      <Moon className="size-4" />
-                    ) : (
-                      <Sun className="size-4" />
-                    )}
-                    Dark mode
-                  </span>
-                  <Switch
-                    checked={darkMode}
-                    readOnly={themeTransitioning}
-                    onCheckedChange={setDarkMode}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <SettingsMenu
+            zenMode={zenMode}
+            onZenModeChange={setZenMode}
+            showHints={showHints}
+            onShowHintsChange={setShowHints}
+            darkMode={darkMode}
+            onDarkModeChange={setDarkMode}
+            onLeaderboardOpen={() => setLeaderboardOpen(true)}
+          />
         </div>
 
         <Hud score={state.score} combo={state.combo} hearts={state.hearts} />
@@ -211,6 +132,10 @@ export function MainPage() {
       </div>
 
       <ChatPanel open={chatOpen} onOpenChange={setChatOpen} />
+      <LeaderboardPanel
+        open={leaderboardOpen}
+        onClose={() => setLeaderboardOpen(false)}
+      />
     </main>
   );
 }

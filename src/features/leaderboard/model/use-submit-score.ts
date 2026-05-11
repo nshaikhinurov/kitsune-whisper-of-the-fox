@@ -35,7 +35,7 @@ export function useSubmitScore() {
         setStatus("success");
       } catch (err) {
         setErrorMessage(
-          err instanceof Error ? err.message : "Failed to submit",
+          err instanceof Error ? err.message : "Не удалось отправить результат",
         );
         setStatus("error");
       }
