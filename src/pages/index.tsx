@@ -71,7 +71,7 @@ export function MainPage() {
       className="bg-background text-foreground relative min-h-screen bg-[radial-gradient(circle,var(--dot-color)_var(--dot-size),transparent_calc(var(--dot-size)+0.5px))] bg-size-[var(--dot-spacing)_var(--dot-spacing)] p-3 md:p-5 xl:p-8"
     >
       <div className="mx-auto flex max-w-150 flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-200">
-        <div className="flex w-full items-center justify-center">
+        <div className="flex w-full items-center justify-start sm:justify-center">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl sm:text-3xl md:text-5xl">
             <img src="/imgs/ori-cat.svg" alt="Ori cat" className="h-full" />
             <img

@@ -135,6 +135,10 @@
   }
   html {
     @apply font-sans;
+    overscroll-behavior: none;
+  }
+  body {
+    overscroll-behavior: none;
   }
 }
 

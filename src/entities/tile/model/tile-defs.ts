@@ -50,6 +50,8 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#94a3b8",
     textColor: "#334155",
     accentColor: TILE_COLORS.ori.primary,
+    catDark: "#e17100",
+    catLight: "#ffb900",
     ultDescription: "Changes random tiles to random elements",
   },
   green: {
@@ -59,6 +61,8 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#b91c1c",
     textColor: "#ffffff",
     accentColor: TILE_COLORS.green.primary,
+    catDark: "#009a72",
+    catLight: "#9fd9c3",
     ultDescription: "Destroys random tiles (claws them away)",
   },
   electric: {
@@ -68,6 +72,8 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#ca8a04",
     textColor: "#713f12",
     accentColor: TILE_COLORS.electric.primary,
+    catDark: "#008bd0",
+    catLight: "#6cb8e5",
     ultDescription: "Removes entire column",
   },
   chaotic: {
@@ -77,6 +83,8 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#6d28d9",
     textColor: "#ffffff",
     accentColor: TILE_COLORS.chaotic.primary,
+    catDark: "#bf5297",
+    catLight: "#db94bd",
     ultDescription: "Shuffles a region of tiles",
   },
   night: {
@@ -86,6 +94,8 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#eab308",
     textColor: "#eab308",
     accentColor: TILE_COLORS.night.primary,
+    catDark: "#372aac",
+    catLight: "#a3b3ff",
     ultDescription: "Dark theme + extra time",
   },
   sakura: {
@@ -95,6 +105,8 @@ export const TILE_DEFS: Record<TileElement, TileDef> = {
     borderColor: "#db2777",
     textColor: "#ffffff",
     accentColor: TILE_COLORS.sakura.primary,
+    catDark: "#ce505a",
+    catLight: "#e69495",
     ultDescription: "Collects hearts from random tiles",
   },
 };

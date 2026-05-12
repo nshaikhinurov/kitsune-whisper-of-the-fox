@@ -15,6 +15,8 @@ export interface TileDef {
   borderColor: string; // CSS hex color for tile border
   textColor: string; // CSS hex color for text/emoji
   accentColor: string; // CSS hex color for spirit charge bar
+  catDark: string; // dark color extracted from cat SVG (paw + border)
+  catLight: string; // light color extracted from cat SVG (circle background)
   ultDescription: string;
 }
 

@@ -33,9 +33,9 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
               animate={{
                 boxShadow: isReady
                   ? [
-                      `0 0 6px 2px ${def.accentColor}`,
-                      `0 0 14px 4px ${def.accentColor}`,
-                      `0 0 6px 2px ${def.accentColor}`,
+                      `0 0 6px 2px ${def.catLight}`,
+                      `0 0 14px 4px ${def.catLight}`,
+                      `0 0 6px 2px ${def.catLight}`,
                     ]
                   : "none",
                 scale: isReady ? [1, 1.08, 1] : 1,
@@ -44,11 +44,17 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
               onClick={() => isReady && onActivate(el)}
               disabled={!isReady}
             >
-              <Avatar className="size-10 sm:size-12 lg:size-20">
+              <Avatar
+                className="size-10 sm:size-12 lg:size-20"
+                style={{
+                  backgroundColor: def.catLight,
+                  border: `2px solid ${def.catDark}`,
+                }}
+              >
                 <AvatarFallback className="bg-transparent p-0.5">
                   <PawIcon
                     className="aspect-square w-8/10"
-                    style={{ color: def.accentColor }}
+                    style={{ color: def.catDark }}
                   />
                 </AvatarFallback>
               </Avatar>
