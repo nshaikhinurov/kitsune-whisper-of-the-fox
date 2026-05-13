@@ -73,6 +73,7 @@ function computeCascadeSteps(
   startLastElement: TileElement | null,
   startConsecutive: number,
   startElectricCol: number,
+  zenMode = false,
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
   let board = initialBoard;
@@ -143,6 +144,7 @@ function computeCascadeSteps(
       applyGravity(clearedBoard),
       GRID_ROWS,
       GRID_COLS,
+      zenMode,
     );
 
     steps.push({
@@ -450,6 +452,7 @@ export function useGameState(zenMode = false, paused = false) {
       s.lastMatchElement,
       s.consecutiveSameElement,
       s.lastElectricCol,
+      zenModeRef.current,
     );
 
     if (steps.length === 0) {
@@ -515,6 +518,7 @@ export function useGameState(zenMode = false, paused = false) {
             applyGravity(board),
             GRID_ROWS,
             GRID_COLS,
+            zenModeRef.current,
           ));
           break;
         }
@@ -529,6 +533,7 @@ export function useGameState(zenMode = false, paused = false) {
             applyGravity(board),
             GRID_ROWS,
             GRID_COLS,
+            zenModeRef.current,
           ));
           break;
         }
@@ -586,6 +591,7 @@ export function useGameState(zenMode = false, paused = false) {
         s.lastMatchElement,
         s.consecutiveSameElement,
         s.lastElectricCol,
+        zenModeRef.current,
       );
 
       if (steps.length > 0) {

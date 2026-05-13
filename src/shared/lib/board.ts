@@ -82,28 +82,32 @@ export function refillBoard(
   board: CellState[][],
   rows: number,
   cols: number,
+  skipMoveCheck = false,
 ): { board: CellState[][]; deadlocked: boolean } {
   const next: CellState[][] = Array.from({ length: rows }, (_, r) =>
     Array.from({ length: cols }, (_, c) => board[r][c]),
   );
 
-  const newPositions: Position[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      if (next[r][c] === null) {
-        next[r][c] = randomTile();
-        newPositions.push({ row: r, col: c });
-      }
+      if (next[r][c] === null) next[r][c] = randomTile();
     }
   }
 
-  // Re-roll only newly added tiles until a possible move exists
-  let attempts = 0;
-  while (!hasPossibleMove(next) && attempts < BOARD_REFILL_ATTEMPTS) {
-    for (const { row, col } of newPositions) {
-      next[row][col] = randomTile();
+  if (!skipMoveCheck) {
+    // Re-roll only newly added tiles until a possible move exists
+    const newPositions: Position[] = [];
+    for (let r = 0; r < rows; r++)
+      for (let c = 0; c < cols; c++)
+        if (board[r][c] === null) newPositions.push({ row: r, col: c });
+
+    let attempts = 0;
+    while (!hasPossibleMove(next) && attempts < BOARD_REFILL_ATTEMPTS) {
+      for (const { row, col } of newPositions) {
+        next[row][col] = randomTile();
+      }
+      attempts++;
     }
-    attempts++;
   }
 
   return { board: next, deadlocked: !hasPossibleMove(next) };

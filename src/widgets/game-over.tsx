@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { Gamepad2, Trophy } from "lucide-react";
 import { useEffect } from "react";
 import { Audition } from "~/shared/lib/audition";
 import type { GameMode } from "~/shared/types/leaderboard";
@@ -23,9 +24,15 @@ interface GameOverBlockProps {
 }
 
 const DEADLOCK_JOKES = [
-  "Коты проверили каждую клетку — дважды. Даже духи сдались.",
-  "Поздравляем! Вы обнаружили состояние поля, математически гарантированно лишённое ходов. Наука.",
-  "Идеально упорядоченная тюрьма. Ни один обмен никуда не ведёт. Вселенная побеждает.",
+  "Коты проверили каждую клетку — дважды. Даже духи сдались",
+  "Поздравляем! Вы обнаружили состояние поля, математически гарантированно лишённое ходов. Наука",
+  "Поле достигло просветления. Оно больше не нуждается в вас",
+  "Духи ушли медитировать. Ходов не завезли",
+  "Статистически это почти невозможно. Поздравляем с невозможным!",
+  "Коты устроили забастовку. Переговоры зашли в тупик",
+  "Поле заперто изнутри. Ключ потерян. Ори не отвечает на звонки",
+  "Коты сложили лапки. В буквальном смысле",
+  "Это редкое достижение. К сожалению, разблокировать его нельзя",
 ];
 
 function pickDeadlockJoke() {
@@ -61,7 +68,10 @@ export const GameOverBlock = ({
         <LeaderboardPanel
           open={showLeaderboard}
           highlightId={submittedId}
-          onClose={() => { reset(); onReset(); }}
+          onClose={() => {
+            reset();
+            onReset();
+          }}
         />
       )}
 
@@ -81,7 +91,7 @@ export const GameOverBlock = ({
           </h2>
 
           {reason === "deadlock" && (
-            <p className="text-muted-foreground text-center text-sm italic">
+            <p className="text-muted-foreground text-center text-sm text-balance italic">
               {pickDeadlockJoke()}
             </p>
           )}
@@ -129,9 +139,10 @@ export const GameOverBlock = ({
                   className="w-full"
                   onClick={handleSubmit}
                   disabled={
-                    status === "submitting" || nickname.trim().length === 0 || score === 0
+                    status === "submitting" || nickname.trim().length === 0
                   }
                 >
+                  <Trophy className="size-4" />
                   {status === "submitting"
                     ? "Отправка…"
                     : "Добавить в таблицу лидеров"}
@@ -145,6 +156,7 @@ export const GameOverBlock = ({
           </div>
 
           <Button className="mt-1 w-full" onClick={onReset}>
+            <Gamepad2 className="size-4" />
             Играть снова
           </Button>
         </DialogContent>

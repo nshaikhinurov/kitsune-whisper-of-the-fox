@@ -45,6 +45,15 @@ export function MainPage() {
   const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
     useGameState(zenMode, chatOpen);
 
+  const zenModeInitialized = useRef(false);
+  useEffect(() => {
+    if (!zenModeInitialized.current) {
+      zenModeInitialized.current = true;
+      return;
+    }
+    resetGame();
+  }, [zenMode]);
+
   const firstRun = useRef(true);
   useEffect(() => {
     const apply = () => {

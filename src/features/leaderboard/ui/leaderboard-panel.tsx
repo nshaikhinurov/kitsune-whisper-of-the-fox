@@ -34,17 +34,6 @@ export function LeaderboardPanel({
           </h2>
         </div>
 
-        <div className="text-muted-foreground grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] gap-1.5 px-1 text-sm tracking-wide uppercase sm:grid-cols-[1rem_1fr_5rem_5rem_3rem] sm:gap-2">
-          <span className="text-right">#</span>
-          <span>Игрок</span>
-          <span className="flex items-center justify-end gap-0.5">
-            <CoinIcon className="h-3 w-3" />
-            Очки
-          </span>
-          <span className="text-center">Сердечки</span>
-          <span className="hidden text-center sm:block">Режим</span>
-        </div>
-
         <div className="flex flex-col gap-1 overflow-y-auto pr-1">
           {scores === undefined && (
             <div className="text-muted-foreground animate-pulse py-8 text-center">
@@ -65,7 +54,7 @@ export function LeaderboardPanel({
                 <motion.div
                   key={entry._id}
                   layout
-                  className={`grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] items-center gap-1.5 rounded-lg px-1 py-1.5 text-sm tabular-nums transition-colors sm:grid-cols-[1rem_1fr_5rem_5rem_3rem] sm:gap-2 ${
+                  className={`grid grid-cols-[1.5rem_1fr_4.5rem_2.5rem] items-center gap-1.5 rounded-lg px-1 py-1.5 text-sm tabular-nums transition-colors sm:grid-cols-[1rem_1fr_5rem_5rem] sm:gap-2 ${
                     isHighlighted
                       ? "border border-yellow-500/40 bg-yellow-500/20"
                       : "hover:bg-muted/50"
@@ -91,9 +80,6 @@ export function LeaderboardPanel({
                   <span className="text-heart flex items-center justify-end gap-1 font-bold">
                     <HeartIcon className="size-3.5" />
                     {entry.hearts}
-                  </span>
-                  <span className="text-muted-foreground hidden text-center text-xs sm:block">
-                    {entry.mode === "zen" ? "Дзен" : "90с"}
                   </span>
                 </motion.div>
               );
