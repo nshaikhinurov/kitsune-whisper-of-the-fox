@@ -118,7 +118,7 @@ export function MainPage() {
             onActivate={activateUlt}
           />
 
-          {!zenMode && <TimerBar timeLeft={state.timeLeft} />}
+          {!zenMode && <TimerBar timeLeft={state.timeLeft} started={state.timerStarted} />}
         </div>
 
         <GameOverBlock

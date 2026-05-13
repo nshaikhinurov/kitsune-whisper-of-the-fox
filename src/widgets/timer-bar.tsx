@@ -3,9 +3,10 @@ import { GAME_DURATION_MS } from "~/shared/config/game-config";
 
 interface TimerBarProps {
   timeLeft: number;
+  started?: boolean;
 }
 
-export function TimerBar({ timeLeft }: TimerBarProps) {
+export function TimerBar({ timeLeft, started = true }: TimerBarProps) {
   const timeLeftPercentage = Math.max(0, timeLeft / GAME_DURATION_MS);
   const secondsLeft = Math.ceil(timeLeft / 1000);
 
@@ -27,8 +28,14 @@ export function TimerBar({ timeLeft }: TimerBarProps) {
         key={secondsLeft}
         className="font-sushi w-10 shrink-0 text-right text-3xl font-bold tabular-nums"
         style={{ color: barColor }}
-        animate={timeLeft <= 10000 ? { scale: [1, 1.2, 1] } : {}}
-        transition={{ duration: 0.3 }}
+        animate={
+          !started
+            ? { opacity: [1, 0.4, 1] }
+            : timeLeft <= 10000
+              ? { scale: [1, 1.2, 1] }
+              : {}
+        }
+        transition={!started ? { duration: 1, repeat: Infinity } : { duration: 0.3 }}
       >
         {secondsLeft}
       </motion.span>

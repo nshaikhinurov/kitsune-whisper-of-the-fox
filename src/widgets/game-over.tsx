@@ -61,7 +61,7 @@ export const GameOverBlock = ({
         <LeaderboardPanel
           open={showLeaderboard}
           highlightId={submittedId}
-          onClose={reset}
+          onClose={() => { reset(); onReset(); }}
         />
       )}
 
@@ -129,7 +129,7 @@ export const GameOverBlock = ({
                   className="w-full"
                   onClick={handleSubmit}
                   disabled={
-                    status === "submitting" || nickname.trim().length === 0
+                    status === "submitting" || nickname.trim().length === 0 || score === 0
                   }
                 >
                   {status === "submitting"

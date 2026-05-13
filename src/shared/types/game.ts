@@ -51,6 +51,7 @@ export interface GameState {
   board: CellState[][]; // rows × cols
   score: number;
   timeLeft: number; // milliseconds remaining
+  timerStarted: boolean; // true after first successful swap
   combo: number; // current cascade chain length
   lastMatchElement: TileElement | null;
   consecutiveSameElement: number;

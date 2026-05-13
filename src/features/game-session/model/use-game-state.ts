@@ -174,6 +174,7 @@ function makeInitialState(): GameState {
     board: createBoard(GRID_ROWS, GRID_COLS),
     score: 0,
     timeLeft: GAME_DURATION_MS,
+    timerStarted: false,
     combo: 0,
     lastMatchElement: null,
     consecutiveSameElement: 0,
@@ -284,6 +285,7 @@ export function useGameState(zenMode = false, paused = false) {
       setState((prev) => {
         if (prev.phase === "gameOver") return prev;
         if (pausedRef.current) return prev;
+        if (!prev.timerStarted) return prev;
 
         const isZen = zenModeRef.current;
         const newTime = isZen ? prev.timeLeft : prev.timeLeft - TIMER_TICK_MS;
@@ -464,6 +466,7 @@ export function useGameState(zenMode = false, paused = false) {
       board: swapped,
       selected: null,
       hintPositions: null,
+      timerStarted: true,
       phase: "swapping",
     }));
   }, []);
