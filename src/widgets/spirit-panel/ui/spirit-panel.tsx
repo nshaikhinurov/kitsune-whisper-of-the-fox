@@ -21,21 +21,18 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
         const pct = Math.min(100, (charge / SPIRIT_MAX) * 100);
 
         return (
-          <div
-            key={el}
-            className="flex flex-col items-center gap-1.5 lg:h-20 lg:gap-3"
-          >
+          <div key={el} className="flex flex-col items-center">
             <motion.button
               className={cn(
                 "rounded-full border-0 bg-transparent p-0",
-                isReady ? "cursor-pointer" : "cursor-not-allowed opacity-70",
+                isReady ? "cursor-pointer" : "cursor-not-allowed",
               )}
               animate={{
                 boxShadow: isReady
                   ? [
-                      `0 0 6px 2px ${def.catLight}`,
-                      `0 0 14px 4px ${def.catLight}`,
-                      `0 0 6px 2px ${def.catLight}`,
+                      `0 0 6px 2px ${def.catDark}`,
+                      `0 0 14px 4px ${def.catDark}`,
+                      `0 0 6px 2px ${def.catDark}`,
                     ]
                   : "none",
                 scale: isReady ? [1, 1.08, 1] : 1,
@@ -44,30 +41,37 @@ export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
               onClick={() => isReady && onActivate(el)}
               disabled={!isReady}
             >
-              <Avatar
-                className="size-10 sm:size-12 lg:size-20"
-                style={{
-                  backgroundColor: def.catLight,
-                  border: `2px solid ${def.catDark}`,
-                }}
-              >
-                <AvatarFallback className="bg-transparent p-0.5">
-                  <PawIcon
-                    className="aspect-square w-8/10"
-                    style={{ color: def.catDark }}
-                  />
-                </AvatarFallback>
-              </Avatar>
-            </motion.button>
+              <div className="relative size-10 sm:size-12 lg:size-20">
+                {/* Grayscale base layer */}
+                <Avatar className="absolute inset-0 size-full border-7 border-mauve-300 bg-mauve-100 dark:border-mauve-800 dark:bg-mauve-900">
+                  <AvatarFallback className="bg-transparent p-0.5">
+                    <PawIcon className="aspect-square w-8/10 text-mauve-300 dark:text-mauve-800" />
+                  </AvatarFallback>
+                </Avatar>
 
-            <div className="bg-muted flex h-1.5 w-10 overflow-hidden rounded-full sm:w-12">
-              <motion.div
-                className="h-full rounded-full"
-                animate={{ width: `${pct}%` }}
-                transition={{ type: "spring", stiffness: 120, damping: 20 }}
-                style={{ backgroundColor: def.accentColor }}
-              />
-            </div>
+                {/* Color fill rising from the bottom */}
+                <motion.div
+                  className="absolute inset-0"
+                  animate={{ clipPath: `inset(${100 - pct}% 0 0 0)` }}
+                  transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                >
+                  <Avatar
+                    className="size-full"
+                    style={{
+                      backgroundColor: def.catLight,
+                      border: `7px solid ${def.catDark}`,
+                    }}
+                  >
+                    <AvatarFallback className="bg-transparent p-0.5">
+                      <PawIcon
+                        className="aspect-square w-8/10"
+                        style={{ color: def.catDark }}
+                      />
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+              </div>
+            </motion.button>
           </div>
         );
       })}

@@ -283,9 +283,11 @@ export function useGameState(zenMode = false, paused = false) {
     const id = setInterval(() => {
       setState((prev) => {
         if (prev.phase === "gameOver") return prev;
-        if (zenModeRef.current || pausedRef.current) return prev;
-        const newTime = prev.timeLeft - TIMER_TICK_MS;
-        if (newTime <= 0)
+        if (pausedRef.current) return prev;
+
+        const isZen = zenModeRef.current;
+        const newTime = isZen ? prev.timeLeft : prev.timeLeft - TIMER_TICK_MS;
+        if (!isZen && newTime <= 0)
           return {
             ...prev,
             timeLeft: 0,

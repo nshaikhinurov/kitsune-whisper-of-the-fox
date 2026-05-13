@@ -6,10 +6,8 @@ export const GRID_ROWS = 6;
 
 // Timer
 export const ZEN_MODE_ON_INITIALLY = false;
-export const GAME_DURATION_MS = 25_000;
+export const GAME_DURATION_MS = 60_000;
 export const TIMER_TICK_MS = 100;
-export const TIME_WARNING_MS = 30_000;
-export const TIME_LOW_MS = 10_000;
 
 // Scoring
 export const SCORE_PER_TILE = 10;
