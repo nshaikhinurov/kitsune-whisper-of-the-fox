@@ -1,5 +1,5 @@
-import { motion } from "motion/react";
 import { Gamepad2, Trophy } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect } from "react";
 import { Audition } from "~/shared/lib/audition";
 import type { GameMode } from "~/shared/types/leaderboard";
@@ -68,6 +68,7 @@ export const GameOverBlock = ({
         <LeaderboardPanel
           open={showLeaderboard}
           highlightId={submittedId}
+          mode={mode}
           onClose={() => {
             reset();
             onReset();
@@ -87,7 +88,7 @@ export const GameOverBlock = ({
           className="border-border bg-card text-card-foreground flex max-w-[min(90vw,22rem)] flex-col items-center gap-4 rounded-2xl shadow-2xl"
         >
           <h2 className="text-4xl font-bold">
-            {reason === "deadlock" ? "Тупик!" : "Время вышло"}
+            {reason === "deadlock" ? "Ходы закончились!" : "Время вышло!"}
           </h2>
 
           {reason === "deadlock" && (

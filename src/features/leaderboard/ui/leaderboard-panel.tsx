@@ -1,6 +1,7 @@
 import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
-import type { LeaderboardEntry } from "~/shared/types/leaderboard";
+import type { GameMode, LeaderboardEntry } from "~/shared/types/leaderboard";
+import { Badge } from "~/shared/ui/badge";
 import { CoinIcon } from "~/shared/ui/coin-icon";
 import { Dialog, DialogContent } from "~/shared/ui/dialog";
 import { HeartIcon } from "~/shared/ui/heart-icon";
@@ -10,14 +11,19 @@ interface LeaderboardPanelProps {
   open: boolean;
   onClose: () => void;
   highlightId?: string | null;
+  mode: GameMode;
 }
 
 export function LeaderboardPanel({
   open,
   onClose,
   highlightId,
+  mode,
 }: LeaderboardPanelProps) {
-  const scores = useQuery(api.leaderboard.getTopScores, open ? {} : "skip");
+  const scores = useQuery(
+    api.leaderboard.getTopScores,
+    open ? { mode } : "skip",
+  );
 
   return (
     <Dialog
@@ -28,9 +34,10 @@ export function LeaderboardPanel({
     >
       <DialogContent className="border-border bg-card text-card-foreground flex max-h-[80vh] max-w-[min(95vw,32rem)] flex-col gap-4 overflow-hidden rounded-2xl p-4 shadow-2xl sm:p-6">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-baseline gap-2 text-3xl font-bold">
+          <h2 className="flex items-center gap-2 text-2xl font-bold">
             <img src="/imgs/ori-cat.svg" alt="" className="h-6" />
             Таблица лидеров
+            {mode === "zen" && <Badge variant="default">Дзен</Badge>}
           </h2>
         </div>
 

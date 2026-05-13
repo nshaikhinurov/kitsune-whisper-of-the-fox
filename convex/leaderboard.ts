@@ -2,9 +2,13 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const getTopScores = query({
-  args: {},
-  handler: async (ctx) =>
-    ctx.db.query("leaderboard").withIndex("by_score").order("desc").take(20),
+  args: { mode: v.union(v.literal("normal"), v.literal("zen")) },
+  handler: async (ctx, args) =>
+    ctx.db
+      .query("leaderboard")
+      .withIndex("by_mode_and_score", (q) => q.eq("mode", args.mode))
+      .order("desc")
+      .take(20),
 });
 
 export const submitScore = mutation({

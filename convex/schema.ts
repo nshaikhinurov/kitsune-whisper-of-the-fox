@@ -8,7 +8,9 @@ export default defineSchema({
     hearts: v.number(),
     mode: v.union(v.literal("normal"), v.literal("zen")),
     createdAt: v.number(),
-  }).index("by_score", ["score"]),
+  })
+    .index("by_score", ["score"])
+    .index("by_mode_and_score", ["mode", "score"]),
 
   chat: defineTable({
     clientId: v.string(),

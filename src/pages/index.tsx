@@ -143,6 +143,7 @@ export function MainPage() {
       <ChatPanel open={chatOpen} onOpenChange={setChatOpen} />
       <LeaderboardPanel
         open={leaderboardOpen}
+        mode={zenMode ? "zen" : "normal"}
         onClose={() => setLeaderboardOpen(false)}
       />
     </main>
