@@ -47,7 +47,7 @@ export function useTileSwipe(
         swipeFiredRef.current = false;
       }
     },
-    { pointer: { touch: true }, filterTaps: true, preventScrollAxis: "xy" },
+    { pointer: { touch: true }, filterTaps: true },
   );
 
   return { ref, bind };
