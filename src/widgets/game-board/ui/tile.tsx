@@ -20,7 +20,7 @@ export function Tile({ tile }: TileProps) {
       />
 
       {tile.hasHeart && (
-        <HeartIcon className="absolute top-2 left-1/2 aspect-square w-6 -translate-x-1/2 animate-pulse" />
+        <HeartIcon className="absolute top-[6.67%] left-1/2 aspect-square w-1/5 -translate-x-1/2 animate-pulse" />
       )}
     </div>
   );

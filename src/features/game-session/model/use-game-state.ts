@@ -230,6 +230,7 @@ export function useGameState(zenMode = false, paused = false) {
   // Cascade queue — not in state since changes don't need re-renders
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
+  const queuedSwapRef = useRef<{ from: Position; to: Position } | null>(null);
   const prevHeartsRef = useRef(0);
   const idleMsRef = useRef(0);
   const comboResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
@@ -322,6 +323,15 @@ export function useGameState(zenMode = false, paused = false) {
       setState((prev) =>
         prev.hintPositions !== null ? { ...prev, hintPositions: null } : prev,
       );
+    }
+  }, [state.phase]);
+
+  // Drain queued swap (set while a prior cascade was animating) on idle
+  useEffect(() => {
+    if (state.phase === "idle" && queuedSwapRef.current) {
+      const { from, to } = queuedSwapRef.current;
+      queuedSwapRef.current = null;
+      swipeSwap(from, to);
     }
   }, [state.phase]);
 
@@ -443,8 +453,31 @@ export function useGameState(zenMode = false, paused = false) {
 
   const swipeSwap = useCallback((from: Position, to: Position) => {
     const s = stateRef.current;
-    if (s.phase !== "idle") return;
     if (!isAdjacent(from, to)) return;
+
+    if (s.phase !== "idle") {
+      // Allow swiping tiles that won't move for the remainder of the current
+      // cascade. A cell is "frozen" iff its tileId in the currently displayed
+      // board matches its tileId in the final post-cascade board.
+      const steps = cascadeStepsRef.current;
+      if (steps.length === 0) return;
+      const finalBoard = steps[steps.length - 1].filledBoard;
+      const fromTile = s.board[from.row]?.[from.col];
+      const toTile = s.board[to.row]?.[to.col];
+      const fromFinal = finalBoard[from.row]?.[from.col];
+      const toFinal = finalBoard[to.row]?.[to.col];
+      if (
+        fromTile &&
+        toTile &&
+        fromFinal &&
+        toFinal &&
+        fromTile.tileId === fromFinal.tileId &&
+        toTile.tileId === toFinal.tileId
+      ) {
+        queuedSwapRef.current = { from, to };
+      }
+      return;
+    }
 
     const swapped = swapTiles(s.board, from, to);
     const steps = computeCascadeSteps(
@@ -582,6 +615,28 @@ export function useGameState(zenMode = false, paused = false) {
             heartsDelta++;
             board[row][col] = { ...board[row][col]!, hasHeart: false };
           }
+          // Spawn fresh hearts on heartless tiles using the same range
+          const heartlessPositions: Position[] = [];
+          for (let r = 0; r < GRID_ROWS; r++)
+            for (let c = 0; c < GRID_COLS; c++)
+              if (board[r][c] && !board[r][c]!.hasHeart)
+                heartlessPositions.push({ row: r, col: c });
+          const spawnCount = Math.min(
+            SAKURA_MIN_HEARTS + Math.floor(Math.random() * SAKURA_HEART_VARIANCE),
+            heartlessPositions.length,
+          );
+          for (let i = 0; i < spawnCount; i++) {
+            const j =
+              i + Math.floor(Math.random() * (heartlessPositions.length - i));
+            [heartlessPositions[i], heartlessPositions[j]] = [
+              heartlessPositions[j],
+              heartlessPositions[i],
+            ];
+          }
+          for (let i = 0; i < spawnCount; i++) {
+            const { row, col } = heartlessPositions[i];
+            board[row][col] = { ...board[row][col]!, hasHeart: true };
+          }
           break;
         }
       }
@@ -610,6 +665,7 @@ export function useGameState(zenMode = false, paused = false) {
             hearts: prev.hearts + heartsDelta,
             isNight,
             timeLeft,
+            timerStarted: true,
             combo: newCombo,
             scoreFlash: makeScoreFlash(
               steps[0],
@@ -628,6 +684,7 @@ export function useGameState(zenMode = false, paused = false) {
           hearts: prev.hearts + heartsDelta,
           isNight,
           timeLeft,
+          timerStarted: true,
           phase: "gameOver",
           gameOverReason: "deadlock",
         }));
@@ -640,6 +697,7 @@ export function useGameState(zenMode = false, paused = false) {
           hearts: prev.hearts + heartsDelta,
           isNight,
           timeLeft,
+          timerStarted: true,
           phase: "idle",
         }));
       }
@@ -658,6 +716,7 @@ export function useGameState(zenMode = false, paused = false) {
     }
     cascadeStepsRef.current = [];
     cascadeIdxRef.current = 0;
+    queuedSwapRef.current = null;
     setState(makeInitialState());
   }, []);
 
