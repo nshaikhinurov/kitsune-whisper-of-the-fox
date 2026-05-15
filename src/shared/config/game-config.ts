@@ -44,6 +44,14 @@ export const SWAP_ANIM_MS = 230;
 export const CLEAR_ANIM_MS = 190;
 export const FALL_ANIM_MS = 330;
 
+// Tile motion durations (seconds — consumed directly by Motion transitions)
+export const TILE_LAYOUT_DURATION = 0.2; // swap / fall sliding
+export const TILE_SCALE_DURATION = 0.18; // select / entry pop
+export const TILE_OPACITY_DURATION = 0.15; // fade in
+export const TILE_BOXSHADOW_DURATION = 0.18; // non-hint shadow settle
+export const TILE_HINT_PULSE_DURATION = 0.9; // looped hint glow
+export const TILE_EXIT_DURATION = 0.15; // disappearance on clear
+
 export const ELEMENTS: TileElement[] = [
   "ori",
   "green",

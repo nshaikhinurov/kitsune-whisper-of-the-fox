@@ -182,7 +182,7 @@ function makeInitialState(): GameState {
     consecutiveSameElement: 0,
     spiritCharge: { ...INITIAL_SPIRIT_CHARGE },
     hearts: 0,
-    selected: null,
+    dragSource: null,
     isNight: false,
     phase: "idle",
     gameOverReason: "time",
@@ -448,7 +448,7 @@ export function useGameState(zenMode = false, paused = false) {
 
   const setDragSource = useCallback((pos: Position | null) => {
     idleMsRef.current = 0;
-    setState((prev) => ({ ...prev, selected: pos, hintPositions: null }));
+    setState((prev) => ({ ...prev, dragSource: pos, hintPositions: null }));
   }, []);
 
   const swipeSwap = useCallback((from: Position, to: Position) => {
@@ -500,7 +500,7 @@ export function useGameState(zenMode = false, paused = false) {
     setState((prev) => ({
       ...prev,
       board: swapped,
-      selected: null,
+      dragSource: null,
       hintPositions: null,
       timerStarted: true,
       phase: "swapping",

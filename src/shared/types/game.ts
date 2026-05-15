@@ -57,7 +57,7 @@ export interface GameState {
   consecutiveSameElement: number;
   spiritCharge: SpiritCharge;
   hearts: number; // collected hearts total
-  selected: Position | null; // first tile of a swap
+  dragSource: Position | null; // tile currently being dragged for a swipe
   isNight: boolean; // Night tile ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
   gameOverReason: "time" | "deadlock";

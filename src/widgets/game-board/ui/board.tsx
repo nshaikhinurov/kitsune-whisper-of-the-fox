@@ -10,7 +10,7 @@ import { Cell } from "./cell";
 
 interface BoardProps {
   board: CellState[][];
-  selected: Position | null;
+  dragSource: Position | null;
   hintPositions: [Position, Position] | null;
   scoreFlash: ScoreFlash | null;
   onSwipe: (from: Position, to: Position) => void;
@@ -19,7 +19,7 @@ interface BoardProps {
 
 export function Board({
   board,
-  selected,
+  dragSource,
   hintPositions,
   scoreFlash,
   onSwipe,
@@ -54,8 +54,10 @@ export function Board({
               const pos: Position = { row: r, col: c };
               const key = `${r},${c}`;
               const tile = board[r]?.[c] ?? null;
-              const isSelected =
-                selected !== null && selected.row === r && selected.col === c;
+              const isDragSource =
+                dragSource !== null &&
+                dragSource.row === r &&
+                dragSource.col === c;
               const isHint =
                 hintPositions !== null &&
                 hintPositions.some((p) => p.row === r && p.col === c);
@@ -67,7 +69,7 @@ export function Board({
                   key={key}
                   tile={tile}
                   pos={pos}
-                  isSelected={isSelected}
+                  isDragSource={isDragSource}
                   isHint={isHint}
                   isNew={isNew}
                   onSwipe={onSwipe}

@@ -115,7 +115,7 @@ export function MainPage() {
         <div className="flex w-full flex-col items-center gap-3">
           <Board
             board={state.board}
-            selected={state.selected}
+            dragSource={state.dragSource}
             hintPositions={showHints ? state.hintPositions : null}
             scoreFlash={state.scoreFlash}
             onSwipe={swipeSwap}
