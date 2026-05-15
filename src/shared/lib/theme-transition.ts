@@ -52,7 +52,7 @@ export function startThemeTransition(mutate: () => void): void {
         maskSize: [`0px`, `${size}px`],
       },
       {
-        duration: 500,
+        duration: 1500,
         easing: "cubic-bezier(0.4, 0, 0.2, 1)",
         pseudoElement: "::view-transition-new(root)",
       },
