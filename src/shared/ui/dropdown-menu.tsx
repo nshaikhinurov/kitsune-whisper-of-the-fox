@@ -22,14 +22,18 @@ function DropdownMenuContent({
   side = "bottom",
   sideOffset = 4,
   className,
+  backdrop = false,
   ...props
 }: MenuPrimitive.Popup.Props &
   Pick<
     MenuPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
-  >) {
+  > & { backdrop?: boolean }) {
   return (
     <MenuPrimitive.Portal>
+      {backdrop && (
+        <MenuPrimitive.Backdrop className="fixed inset-0 z-40 bg-black/30 transition-opacity duration-100 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-sm" />
+      )}
       <MenuPrimitive.Positioner
         className="isolate z-50 outline-none"
         align={align}

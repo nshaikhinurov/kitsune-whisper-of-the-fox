@@ -557,6 +557,7 @@ export function useGameState(zenMode = false, paused = false) {
         }
         // Wipes a random column and refills
         case "electric": {
+          Audition.electricUlt();
           const col = Math.floor(Math.random() * GRID_COLS);
           for (let r = 0; r < GRID_ROWS; r++) {
             if (board[r][col]?.hasHeart) heartsDelta++;

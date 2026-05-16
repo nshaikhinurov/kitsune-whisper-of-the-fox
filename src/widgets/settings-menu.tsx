@@ -1,8 +1,7 @@
-import { Lightbulb, Moon, Settings, Sun, Trophy, Wind } from "lucide-react";
+import { Lightbulb, Moon, Settings, Sun, Wind } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useThemeTransitionActive } from "~/features/dark-mode/use-dark-mode";
 import { Button } from "~/shared/ui/button";
-import { Kbd } from "~/shared/ui/kbd";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/shared/ui/dropdown-menu";
+import { Kbd } from "~/shared/ui/kbd";
 import { Switch } from "~/shared/ui/switch";
 
 interface SettingsMenuProps {
@@ -21,7 +21,7 @@ interface SettingsMenuProps {
   onShowHintsChange: (v: boolean) => void;
   darkMode: boolean;
   onDarkModeChange: (v: boolean) => void;
-  onLeaderboardOpen: () => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function SettingsMenu({
@@ -31,7 +31,7 @@ export function SettingsMenu({
   onShowHintsChange,
   darkMode,
   onDarkModeChange,
-  onLeaderboardOpen,
+  onOpenChange,
 }: SettingsMenuProps) {
   const themeTransitioning = useThemeTransitionActive();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,35 +50,23 @@ export function SettingsMenu({
       return;
     }
     setMenuOpen(open);
+    onOpenChange?.(open);
   };
 
   return (
     <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
       <DropdownMenuTrigger
-        className="absolute top-3 right-3"
         render={
-          <Button variant="ghost" size="icon-lg">
+          <Button variant="default" size="icon-lg">
             <Settings className="size-6" />
           </Button>
         }
       />
       <DropdownMenuContent
         align="end"
+        backdrop
         className="w-auto max-w-none [view-transition-name:settings-menu]"
       >
-        <DropdownMenuGroup>
-          <DropdownMenuItem
-            onClick={onLeaderboardOpen}
-            className="justify-between"
-          >
-            <span className="flex items-center gap-2">
-              <Trophy className="size-4" />
-              Таблица лидеров
-            </span>
-            <Kbd className="hidden sm:inline-flex">L</Kbd>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuLabel>Настройки</DropdownMenuLabel>
           <DropdownMenuSeparator />

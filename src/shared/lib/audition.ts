@@ -5,6 +5,7 @@ const sources = {
   tilesMatched: "/sounds/tiles-matched.mp3",
   timerEnded: "/sounds/timer-ended.mp3",
   combo: "/sounds/combo.mp3",
+  electricUlt: "/sounds/tydysh.mp3",
 } as const;
 
 type SoundKey = keyof typeof sources;
@@ -32,4 +33,5 @@ export const Audition = {
   comboHappened: (combo: number) => {
     if (combo % 3 === 0) play("combo");
   },
+  electricUlt: () => play("electricUlt"),
 };

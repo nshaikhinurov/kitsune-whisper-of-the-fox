@@ -10,12 +10,12 @@ interface HudProps {
 
 export function Hud({ score, combo, hearts }: HudProps) {
   return (
-    <div className="text-card-foreground bg-muted font-sushi flex w-full items-center justify-between gap-2 rounded-xl p-3 px-5 text-4xl backdrop-blur sm:gap-4">
+    <div className="dark:text-primary bg-muted font-sushi flex w-full items-center justify-between gap-2 rounded-xl p-3 px-5 text-4xl text-[#e17100] backdrop-blur sm:gap-4">
       <motion.div
         key={score}
         className="flex items-center gap-2.5 tabular-nums"
-        initial={{ scale: 1.3, color: "#facc15" }}
-        animate={{ scale: 1, color: "var(--card-foreground)" }}
+        initial={{ scale: 1.3 }}
+        animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
       >
         <CoinIcon className="size-8" />

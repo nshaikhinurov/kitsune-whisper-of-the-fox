@@ -1,4 +1,4 @@
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Trophy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
   SHOW_HINTS_INITIALLY,
@@ -24,6 +24,7 @@ export function MainPage() {
 
   const [chatOpen, setChatOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -43,7 +44,7 @@ export function MainPage() {
   }, [setDarkMode]);
 
   const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
-    useGameState(zenMode, chatOpen);
+    useGameState(zenMode, chatOpen || leaderboardOpen || settingsOpen);
 
   const zenModeInitialized = useRef(false);
   useEffect(() => {
@@ -80,7 +81,7 @@ export function MainPage() {
       className="bg-background text-foreground relative min-h-screen bg-[radial-gradient(circle,var(--dot-color)_var(--dot-size),transparent_calc(var(--dot-size)+0.5px))] bg-size-[var(--dot-spacing)_var(--dot-spacing)] p-3 md:p-5 xl:p-8"
     >
       <div className="mx-auto flex max-w-150 flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-200">
-        <div className="flex w-full items-center justify-start sm:justify-center">
+        <div className="flex w-full items-center justify-between">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl sm:text-3xl md:text-5xl">
             <img src="/imgs/logo-cat.svg" alt="Ori cat" className="h-full" />
             <img
@@ -89,25 +90,36 @@ export function MainPage() {
               className="h-full"
             />
           </h1>
-          <Button
-            variant="ghost"
-            size="icon-lg"
-            className="absolute top-3 right-14"
-            onClick={() => setChatOpen(true)}
-            aria-label="Открыть чат"
-          >
-            <MessageCircle className="size-6" />
-          </Button>
 
-          <SettingsMenu
-            zenMode={zenMode}
-            onZenModeChange={setZenMode}
-            showHints={showHints}
-            onShowHintsChange={setShowHints}
-            darkMode={darkMode}
-            onDarkModeChange={setDarkMode}
-            onLeaderboardOpen={() => setLeaderboardOpen(true)}
-          />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="default"
+              size="icon-lg"
+              onClick={() => setLeaderboardOpen(true)}
+              aria-label="Таблица лидеров"
+            >
+              <Trophy className="size-6" />
+            </Button>
+
+            <Button
+              variant="default"
+              size="icon-lg"
+              onClick={() => setChatOpen(true)}
+              aria-label="Открыть чат"
+            >
+              <MessageCircle className="size-6" />
+            </Button>
+
+            <SettingsMenu
+              zenMode={zenMode}
+              onZenModeChange={setZenMode}
+              showHints={showHints}
+              onShowHintsChange={setShowHints}
+              darkMode={darkMode}
+              onDarkModeChange={setDarkMode}
+              onOpenChange={setSettingsOpen}
+            />
+          </div>
         </div>
 
         <Hud score={state.score} combo={state.combo} hearts={state.hearts} />
@@ -127,7 +139,9 @@ export function MainPage() {
             onActivate={activateUlt}
           />
 
-          {!zenMode && <TimerBar timeLeft={state.timeLeft} started={state.timerStarted} />}
+          {!zenMode && (
+            <TimerBar timeLeft={state.timeLeft} started={state.timerStarted} />
+          )}
         </div>
 
         <GameOverBlock
