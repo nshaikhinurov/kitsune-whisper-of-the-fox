@@ -9,3 +9,10 @@ export interface LeaderboardEntry {
   mode: GameMode;
   createdAt: number;
 }
+
+export interface RankContext {
+  rank: number;
+  slice: { rank: number; entry: LeaderboardEntry }[];
+  hasGapAbove: boolean;
+  hasMoreBelow: boolean;
+}

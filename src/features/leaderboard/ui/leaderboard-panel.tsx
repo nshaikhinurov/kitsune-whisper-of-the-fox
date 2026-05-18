@@ -1,7 +1,11 @@
 import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "~/shared/lib/utils";
-import type { GameMode, LeaderboardEntry } from "~/shared/types/leaderboard";
+import type {
+  GameMode,
+  LeaderboardEntry,
+  RankContext,
+} from "~/shared/types/leaderboard";
 import { Badge } from "~/shared/ui/badge";
 import { CoinIcon } from "~/shared/ui/coin-icon";
 import { CrownIcon } from "~/shared/ui/crown-icon";
@@ -9,12 +13,73 @@ import { Dialog, DialogContent } from "~/shared/ui/dialog";
 import { HeartIcon } from "~/shared/ui/heart-icon";
 import { ScrollArea } from "~/shared/ui/scroll-area";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface LeaderboardPanelProps {
   open: boolean;
   onClose: () => void;
   highlightId?: string | null;
   mode: GameMode;
+}
+
+function LeaderboardRow({
+  entry,
+  rank,
+  isHighlighted,
+}: {
+  entry: LeaderboardEntry;
+  rank: number;
+  isHighlighted: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "grid min-h-11 grid-cols-[1.5rem_1fr_5rem_5rem] items-center gap-3 rounded-lg px-3 py-2 tabular-nums transition-colors",
+        {
+          "bg-yellow-400/25 inset-ring-3 inset-ring-yellow-400": rank === 1,
+          "bg-neutral-400/25 inset-ring-3 inset-ring-neutral-400": rank === 2,
+          "bg-amber-700/25 inset-ring-3 inset-ring-amber-700": rank === 3,
+          "hover:bg-muted/50": rank > 3 && !isHighlighted,
+          "border border-yellow-500/40 bg-yellow-500/20": isHighlighted,
+        },
+      )}
+    >
+      <span
+        className={cn(
+          "text-muted-foreground flex items-center justify-end text-lg font-extrabold",
+          {
+            "text-yellow-500 dark:text-yellow-400": rank === 1,
+            "text-neutral-500 dark:text-neutral-400": rank === 2,
+            "text-amber-700": rank === 3,
+          },
+        )}
+      >
+        {rank <= 3 ? <CrownIcon className="size-5" /> : rank}
+      </span>
+      <span className="truncate font-medium">{entry.nickname}</span>
+      <span className="flex items-center justify-end gap-2 font-bold">
+        <CoinIcon className="size-5" />
+        {entry.score.toLocaleString()}
+      </span>
+      <span
+        className={cn(
+          "flex items-center justify-end gap-2 font-bold",
+          rank > 3 && "text-heart",
+        )}
+      >
+        <HeartIcon className="size-5" />
+        {entry.hearts}
+      </span>
+    </div>
+  );
+}
+
+function Ellipsis() {
+  return (
+    <div className="text-muted-foreground py-1 text-center text-lg leading-none font-extrabold tracking-widest select-none">
+      ⋮
+    </div>
+  );
 }
 
 export function LeaderboardPanel({
@@ -27,6 +92,14 @@ export function LeaderboardPanel({
     api.leaderboard.getTopScores,
     open ? { mode } : "skip",
   );
+
+  // Only relevant for a just-submitted run that landed outside the top 20.
+  const rankContext = useQuery(
+    api.leaderboard.getRankContext,
+    open && highlightId
+      ? { entryId: highlightId as Id<"leaderboard">, mode }
+      : "skip",
+  ) as RankContext | null | undefined;
 
   return (
     <Dialog
@@ -60,65 +133,40 @@ export function LeaderboardPanel({
               {scores?.map((entry: LeaderboardEntry, idx: number) => {
                 const isHighlighted =
                   highlightId != null && entry._id === highlightId;
-                const rank = idx + 1;
                 return (
                   <motion.div
                     key={entry._id}
                     layout
-                    className={cn(
-                      "grid min-h-11 grid-cols-[1.5rem_1fr_5rem_5rem] items-center gap-3 rounded-lg px-3 py-2 tabular-nums transition-colors",
-                      {
-                        "bg-yellow-400/25 inset-ring-3 inset-ring-yellow-400":
-                          rank === 1,
-                        "bg-neutral-400/25 inset-ring-3 inset-ring-neutral-400":
-                          rank === 2,
-                        "bg-amber-700/25 inset-ring-3 inset-ring-amber-700":
-                          rank === 3,
-                        "hover:bg-muted/50": rank > 3 && !isHighlighted,
-                        "border border-yellow-500/40 bg-yellow-500/20":
-                          isHighlighted,
-                      },
-                    )}
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                   >
-                    <span
-                      className={cn(
-                        "text-muted-foreground flex items-center justify-end text-lg font-extrabold",
-                        {
-                          "text-yellow-500 dark:text-yellow-400": rank === 1,
-                          "text-neutral-500 dark:text-neutral-400": rank === 2,
-                          "text-amber-700": rank === 3,
-                        },
-                      )}
-                    >
-                      {rank <= 3 ? <CrownIcon className="size-5" /> : rank}
-                    </span>
-                    <span className="truncate font-medium">
-                      {entry.nickname}
-                    </span>
-                    <span
-                      className={
-                        "flex items-center justify-end gap-2 font-bold"
-                      }
-                    >
-                      <CoinIcon className="size-5" />
-                      {entry.score.toLocaleString()}
-                    </span>
-                    <span
-                      className={cn(
-                        "flex items-center justify-end gap-2 font-bold",
-                        rank > 3 && "text-heart",
-                      )}
-                    >
-                      <HeartIcon className="size-5" />
-                      {entry.hearts}
-                    </span>
+                    <LeaderboardRow
+                      entry={entry}
+                      rank={idx + 1}
+                      isHighlighted={isHighlighted}
+                    />
                   </motion.div>
                 );
               })}
             </AnimatePresence>
+
+            {rankContext && rankContext.slice.length > 0 && (
+              <>
+                {rankContext.hasGapAbove && <Ellipsis />}
+                {rankContext.slice.map(({ rank, entry }) => (
+                  <LeaderboardRow
+                    key={entry._id}
+                    entry={entry}
+                    rank={rank}
+                    isHighlighted={
+                      highlightId != null && entry._id === highlightId
+                    }
+                  />
+                ))}
+                {rankContext.hasMoreBelow && <Ellipsis />}
+              </>
+            )}
           </div>
         </ScrollArea>
 
