@@ -407,8 +407,11 @@ export function applySwap(
   );
   if (steps.length === 0) return { ok: false, reason: "no-match", steps: [] };
 
-  maybeResetCombo(s, t);
-  s.board = swapped;
+  // The hook increments a swap's combo in the "swapping" phase — SWAP_ANIM_MS
+  // after the input fires — so the previous action's combo-reset timer races
+  // that delayed bump, not the raw input. Check the reset boundary at the same
+  // virtual instant or the server keeps a combo the client already cleared.
+  maybeResetCombo(s, t + SWAP_ANIM_MS);
   s.timerStarted = true;
 
   // "swapping" -> "clearing" -> "falling" loop. combo increments once per step
@@ -429,6 +432,11 @@ export function applySwap(
 
   s.comboResetAt =
     lastClearingStart(t, true, steps.length) + COMBO_RESET_MS;
+
+  // Settle the board to the final post-cascade state (matches the hook ending
+  // at steps[last].filledBoard). Without this every later move would replay on
+  // a stale pre-cascade board and the server score would diverge from the UI.
+  s.board = steps[steps.length - 1].filledBoard;
 
   if (steps[steps.length - 1].deadlocked) {
     s.over = true;
@@ -482,7 +490,6 @@ export function applyUlt(
       eff.heartsDelta * SCORE_PER_HEART;
     s.hearts += eff.heartsDelta;
     s.spiritCharge = newCharge;
-    s.board = steps[0].clearedBoard;
 
     for (let k = 0; k < steps.length; k++) {
       if (k > 0) s.combo += 1;
@@ -500,6 +507,10 @@ export function applyUlt(
 
     s.comboResetAt =
       lastClearingStart(t, false, steps.length) + COMBO_RESET_MS;
+
+    // Settle to the final post-cascade board (the hook ends at the last
+    // step's filledBoard); otherwise later moves replay on a stale board.
+    s.board = steps[steps.length - 1].filledBoard;
 
     if (steps[steps.length - 1].deadlocked) {
       s.over = true;

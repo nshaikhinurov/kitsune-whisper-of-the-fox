@@ -1,9 +1,17 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
-// Two suites with different runtimes:
+// Three suites with different runtimes:
 // - engine: pure TS, no DOM/Convex runtime → fast Node env.
 // - convex: convex-test mutation/query tests → edge-runtime (per Convex
 //   guidelines; convex-test needs it).
+// - client: drives the real React hook (jsdom + fake timers) to guard
+//   client/server scoring parity against the engine's replay().
+const alias = {
+  "~": path.resolve(__dirname, "./src"),
+  "@engine": path.resolve(__dirname, "./convex/engine"),
+};
+
 export default defineConfig({
   test: {
     projects: [
@@ -21,6 +29,15 @@ export default defineConfig({
           exclude: ["convex/engine/__tests__/**"],
           environment: "edge-runtime",
           server: { deps: { inline: ["convex-test"] } },
+        },
+      },
+      {
+        resolve: { alias },
+        test: {
+          name: "client",
+          include: ["src/**/*.test.{ts,tsx}"],
+          environment: "jsdom",
+          setupFiles: ["./src/test/setup-client.ts"],
         },
       },
     ],
