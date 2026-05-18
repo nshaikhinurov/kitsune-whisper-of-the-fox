@@ -1,10 +1,15 @@
-export type TileElement =
-  | "ori"
-  | "green"
-  | "electric"
-  | "chaotic"
-  | "night"
-  | "sakura";
+// Pure game value types now live in the deterministic engine (single source of
+// truth shared with the server). UI-only types stay here.
+export type {
+  CellState,
+  Match,
+  Position,
+  SpiritCharge,
+  TileElement,
+  TileState,
+} from "@engine/types";
+
+import type { CellState, Position, SpiritCharge, TileElement } from "@engine/types";
 
 export type Rarity = "common" | "rare";
 
@@ -19,26 +24,6 @@ export interface TileDef {
   catLight: string; // light color extracted from cat SVG (circle background)
   ultDescription: string;
 }
-
-export interface TileState {
-  tileId: string;
-  element: TileElement;
-  hasHeart: boolean;
-}
-
-export type CellState = TileState | null; // null = hole
-
-export interface Position {
-  row: number;
-  col: number;
-}
-
-export interface Match {
-  positions: Position[];
-  element: TileElement;
-}
-
-export type SpiritCharge = Record<TileElement, number>;
 
 export interface ScoreFlash {
   delta: number;

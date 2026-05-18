@@ -22,7 +22,8 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "~/*": ["./src/*"]
+      "~/*": ["./src/*"],
+      "@engine/*": ["./convex/engine/*"]
     }
   },
   "include": ["src", "convex/_generated"]

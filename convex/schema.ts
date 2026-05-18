@@ -8,9 +8,19 @@ export default defineSchema({
     hearts: v.number(),
     mode: v.union(v.literal("normal"), v.literal("zen")),
     createdAt: v.number(),
+    // Set when server replay validation failed. Absent = not flagged (legacy
+    // rows stay visible). Flagged rows are hidden from the public top.
+    flagged: v.optional(v.boolean()),
   })
     .index("by_score", ["score"])
     .index("by_mode_and_score", ["mode", "score"]),
+
+  gameSessions: defineTable({
+    seed: v.number(),
+    mode: v.union(v.literal("normal"), v.literal("zen")),
+    startedAt: v.number(),
+    status: v.union(v.literal("active"), v.literal("submitted")),
+  }),
 
   chat: defineTable({
     clientId: v.string(),

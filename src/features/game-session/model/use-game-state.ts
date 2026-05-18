@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  CHAOTIC_PATCH_SIZE,
   CLEAR_ANIM_MS,
   COMBO_MULT_STEP,
   COMBO_RESET_MS,
-  ELEMENTS,
   FALL_ANIM_MS,
   GAME_DURATION_MS,
   GRID_COLS,
@@ -12,168 +10,42 @@ import {
   HINT_IDLE_MS,
   INITIAL_SPIRIT_CHARGE,
   NIGHT_ACTIVE_MS,
-  NIGHT_TIME_BONUS_MS,
-  RED_MIN_TILES,
-  RED_TILE_VARIANCE,
-  SAKURA_MIN_HEARTS,
-  SAKURA_HEART_VARIANCE,
   SCORE_PER_HEART,
-  SPIRIT_CHARGE_PER_MATCH,
   SPIRIT_MAX,
   SWAP_ANIM_MS,
   TIMER_TICK_MS,
-  WHITE_MIN_TILES,
-  WHITE_TILE_VARIANCE,
 } from "~/shared/config/game-config";
 import { Audition } from "~/shared/lib/audition";
 import {
-  applyGravity,
   createBoard,
+  createTileFactory,
   isAdjacent,
-  pickRandomNonNullCells,
-  refillBoard,
-  shuffleRegion,
   swapTiles,
+  type TileFactory,
 } from "~/shared/lib/board";
+import { findFirstHintMove } from "~/shared/lib/matches";
 import {
-  findFirstHintMove,
-  findMatches,
-  parseKey,
-  positionsToSet,
-  posKey,
-} from "~/shared/lib/matches";
+  applyChargeDeltas,
+  applyUltEffect,
+  type CascadeStep,
+  computeCascadeSteps,
+  type ReplayAction,
+} from "@engine/engine";
+import { createRng, type Rng } from "@engine/rng";
 import type {
-  CellState,
   GameState,
   Position,
   ScoreFlash,
-  SpiritCharge,
   TileElement,
 } from "~/shared/types/game";
-
-// ---------------------------------------------------------------------------
-// Cascade step — one iteration of: clear matches → gravity → refill
-// ---------------------------------------------------------------------------
-
-interface CascadeStep {
-  clearedBoard: CellState[][]; // board with matched tiles set to null  (drives exit anims)
-  filledBoard: CellState[][]; // board after gravity + refill          (drives fall/entry anims)
-  baseScoreDelta: number; // unmodified score; combo mult applied at display time
-  heartsDelta: number;
-  spiritDelta: Partial<Record<TileElement, number>>;
-  lastMatchElement: TileElement | null;
-  consecutiveSameElement: number;
-  lastElectricCol: number;
-  matchedCentroid: { row: number; col: number };
-  deadlocked?: boolean;
-}
-
-function computeCascadeSteps(
-  initialBoard: CellState[][],
-  startLastElement: TileElement | null,
-  startConsecutive: number,
-  startElectricCol: number,
-  zenMode = false,
-): CascadeStep[] {
-  const steps: CascadeStep[] = [];
-  let board = initialBoard;
-  let lastMatchElement = startLastElement;
-  let consecutiveSameElement = startConsecutive;
-  let lastElectricCol = startElectricCol;
-
-  while (true) {
-    const matches = findMatches(board);
-    if (matches.length === 0) break;
-
-    // Dominant element for spirit charging
-    const elementCounts: Partial<Record<TileElement, number>> = {};
-    for (const match of matches) {
-      elementCounts[match.element] =
-        (elementCounts[match.element] ?? 0) + match.positions.length;
-    }
-    const dominant = Object.entries(elementCounts).sort(
-      (a, b) => b[1] - a[1],
-    )[0][0] as TileElement;
-
-    if (dominant === lastMatchElement) {
-      consecutiveSameElement++;
-    } else {
-      consecutiveSameElement = 1;
-      lastMatchElement = dominant;
-    }
-
-    const matchedSet = positionsToSet(matches);
-    let baseScoreDelta = 0;
-    let heartsDelta = 0;
-    const spiritDelta: Partial<Record<TileElement, number>> = {};
-
-    for (const match of matches) {
-      const n = match.positions.length;
-      baseScoreDelta += 2 * n * (n + 2);
-      const chargeBonus =
-        match.element === lastMatchElement
-          ? SPIRIT_CHARGE_PER_MATCH * consecutiveSameElement
-          : SPIRIT_CHARGE_PER_MATCH;
-      spiritDelta[match.element] =
-        (spiritDelta[match.element] ?? 0) + chargeBonus;
-    }
-
-    for (const key of matchedSet) {
-      const { row, col } = parseKey(key);
-      const tile = board[row][col];
-      if (tile?.hasHeart) heartsDelta++;
-      if (tile?.element === "electric") lastElectricCol = col;
-    }
-
-    const matchedPositions = [...matchedSet].map(parseKey);
-    const matchedCentroid = {
-      row:
-        matchedPositions.reduce((s, p) => s + p.row, 0) /
-        matchedPositions.length,
-      col:
-        matchedPositions.reduce((s, p) => s + p.col, 0) /
-        matchedPositions.length,
-    };
-
-    const clearedBoard = board.map((row, r) =>
-      row.map((cell, c) =>
-        matchedSet.has(posKey({ row: r, col: c })) ? null : cell,
-      ),
-    );
-    const { board: filledBoard, deadlocked } = refillBoard(
-      applyGravity(clearedBoard),
-      GRID_ROWS,
-      GRID_COLS,
-      zenMode,
-    );
-
-    steps.push({
-      clearedBoard,
-      filledBoard,
-      baseScoreDelta,
-      heartsDelta,
-      spiritDelta,
-      lastMatchElement,
-      consecutiveSameElement,
-      lastElectricCol,
-      matchedCentroid,
-      deadlocked,
-    });
-
-    if (deadlocked) break;
-    board = filledBoard;
-  }
-
-  return steps;
-}
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeInitialState(): GameState {
+function makeInitialState(makeTile: TileFactory): GameState {
   return {
-    board: createBoard(GRID_ROWS, GRID_COLS),
+    board: createBoard(GRID_ROWS, GRID_COLS, makeTile),
     score: 0,
     timeLeft: GAME_DURATION_MS,
     timerStarted: false,
@@ -201,33 +73,52 @@ function makeScoreFlash(step: CascadeStep, scoreDelta: number): ScoreFlash {
   };
 }
 
-function applyChargeDeltas(
-  current: SpiritCharge,
-  deltas: Partial<Record<TileElement, number>>,
-): SpiritCharge {
-  const next = { ...current };
-  for (const el of ELEMENTS) {
-    next[el] = Math.min(SPIRIT_MAX, next[el] + (deltas[el] ?? 0));
-  }
-  return next;
-}
-
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useGameState(zenMode = false, paused = false) {
-  const [state, setState] = useState<GameState>(makeInitialState);
+export function useGameState(
+  zenMode = false,
+  paused = false,
+  seed = 1,
+  gameId: string | null = null,
+) {
+  // Per-game deterministic context. The seeded RNG + tile factory are the same
+  // ones the server replay will use, so the recorded action log fully
+  // reproduces the game.
+  const rngRef = useRef<Rng | null>(null);
+  const makeTileRef = useRef<TileFactory | null>(null);
+  if (!makeTileRef.current) {
+    rngRef.current = createRng(seed);
+    makeTileRef.current = createTileFactory(rngRef.current);
+  }
+
+  const [state, setState] = useState<GameState>(() =>
+    makeInitialState(makeTileRef.current!),
+  );
   const zenModeRef = useRef(zenMode);
   zenModeRef.current = zenMode;
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
 
-  // Stable ref so callbacks always read fresh state without stale closures
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  // Cascade queue — not in state since changes don't need re-renders
+  // Action log + game clock — `t` is ms since game start (combo reset is
+  // real-time, so this is wall-clock relative). Surfaced for score submission.
+  const seedRef = useRef(seed);
+  const gameIdRef = useRef(gameId);
+  gameIdRef.current = gameId;
+  const actionLogRef = useRef<ReplayAction[]>([]);
+  const gameStartRef = useRef<number>(
+    typeof performance !== "undefined" ? performance.now() : Date.now(),
+  );
+  const nowT = useCallback(() => {
+    const now =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    return Math.round(now - gameStartRef.current);
+  }, []);
+
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
   const queuedSwapRef = useRef<{ from: Position; to: Position } | null>(null);
@@ -237,7 +128,6 @@ export function useGameState(zenMode = false, paused = false) {
     null,
   );
 
-  // Cancels any pending combo-reset and starts a fresh 2-second window.
   const scheduleComboReset = useCallback(() => {
     if (comboResetTimeoutRef.current !== null) {
       clearTimeout(comboResetTimeoutRef.current);
@@ -247,6 +137,29 @@ export function useGameState(zenMode = false, paused = false) {
       comboResetTimeoutRef.current = null;
     }, COMBO_RESET_MS);
   }, []);
+
+  const startFreshGame = useCallback((nextSeed: number) => {
+    if (comboResetTimeoutRef.current !== null) {
+      clearTimeout(comboResetTimeoutRef.current);
+      comboResetTimeoutRef.current = null;
+    }
+    rngRef.current = createRng(nextSeed);
+    makeTileRef.current = createTileFactory(rngRef.current);
+    cascadeStepsRef.current = [];
+    cascadeIdxRef.current = 0;
+    queuedSwapRef.current = null;
+    actionLogRef.current = [];
+    gameStartRef.current =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    setState(makeInitialState(makeTileRef.current));
+  }, []);
+
+  // A new server-issued seed means a new game.
+  useEffect(() => {
+    if (seedRef.current === seed) return;
+    seedRef.current = seed;
+    startFreshGame(seed);
+  }, [seed, startFreshGame]);
 
   useEffect(() => {
     if (state.hearts > prevHeartsRef.current) {
@@ -337,10 +250,6 @@ export function useGameState(zenMode = false, paused = false) {
 
   // ---------------------------------------------------------------------------
   // Phase-driven animation sequencing
-  //
-  // "swapping"  → wait SWAP_ANIM_MS  → show clearedBoard[0]  → "clearing"
-  // "clearing"  → wait CLEAR_ANIM_MS → show filledBoard[i]   → "falling"
-  // "falling"   → wait FALL_ANIM_MS  → next step or finish   → "clearing" | "idle" | "gameOver"
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
@@ -404,7 +313,6 @@ export function useGameState(zenMode = false, paused = false) {
         const nextIdx = cascadeIdxRef.current + 1;
 
         if (nextIdx < steps.length) {
-          // More cascade steps — advance to next clear
           cascadeIdxRef.current = nextIdx;
           setState((prev) => {
             const newCombo = prev.combo + 1;
@@ -425,7 +333,6 @@ export function useGameState(zenMode = false, paused = false) {
           });
           scheduleComboReset();
         } else {
-          // Cascade fully done
           const lastStep = steps[cascadeIdxRef.current];
           if (lastStep?.deadlocked) {
             setState((prev) => ({
@@ -440,7 +347,7 @@ export function useGameState(zenMode = false, paused = false) {
       }, FALL_ANIM_MS);
       return () => clearTimeout(id);
     }
-  }, [state.phase]);
+  }, [state.phase, scheduleComboReset]);
 
   // ---------------------------------------------------------------------------
   // swipeSwap / setDragSource
@@ -456,9 +363,6 @@ export function useGameState(zenMode = false, paused = false) {
     if (!isAdjacent(from, to)) return;
 
     if (s.phase !== "idle") {
-      // Allow swiping tiles that won't move for the remainder of the current
-      // cascade. A cell is "frozen" iff its tileId in the currently displayed
-      // board matches its tileId in the final post-cascade board.
       const steps = cascadeStepsRef.current;
       if (steps.length === 0) return;
       const finalBoard = steps[steps.length - 1].filledBoard;
@@ -485,6 +389,7 @@ export function useGameState(zenMode = false, paused = false) {
       s.lastMatchElement,
       s.consecutiveSameElement,
       s.lastElectricCol,
+      makeTileRef.current!,
       zenModeRef.current,
     );
 
@@ -494,6 +399,7 @@ export function useGameState(zenMode = false, paused = false) {
     }
 
     Audition.tileSwiped();
+    actionLogRef.current.push({ t: nowT(), type: "swap", from, to });
     cascadeStepsRef.current = steps;
     cascadeIdxRef.current = 0;
 
@@ -505,7 +411,7 @@ export function useGameState(zenMode = false, paused = false) {
       timerStarted: true,
       phase: "swapping",
     }));
-  }, []);
+  }, [nowT]);
 
   // ---------------------------------------------------------------------------
   // activateUlt
@@ -518,137 +424,28 @@ export function useGameState(zenMode = false, paused = false) {
       if (s.spiritCharge[element] < SPIRIT_MAX) return;
 
       const newCharge = { ...s.spiritCharge, [element]: 0 };
-      let board = s.board.map((row) => [...row]);
-      let heartsDelta = 0;
-      let isNight = s.isNight;
-      let timeLeft = s.timeLeft;
-      let ultDeadlocked = false;
+      if (element === "electric") Audition.electricUlt();
 
-      switch (element) {
-        // Randomly re-rolls the element of N board tiles
-        case "ori": {
-          const count =
-            WHITE_MIN_TILES + Math.floor(Math.random() * WHITE_TILE_VARIANCE);
-          for (const { row, col } of pickRandomNonNullCells(board, count)) {
-            const tile = board[row][col];
-            if (tile)
-              board[row][col] = {
-                ...tile,
-                element: ELEMENTS[Math.floor(Math.random() * ELEMENTS.length)],
-              };
-          }
-          break;
-        }
-        // Clears N random tiles and refills the board
-        case "green": {
-          const count =
-            RED_MIN_TILES + Math.floor(Math.random() * RED_TILE_VARIANCE);
-          for (const { row, col } of pickRandomNonNullCells(board, count)) {
-            if (board[row][col]?.hasHeart) heartsDelta++;
-            board[row][col] = null;
-          }
-          ({ board, deadlocked: ultDeadlocked } = refillBoard(
-            applyGravity(board),
-            GRID_ROWS,
-            GRID_COLS,
-            zenModeRef.current,
-          ));
-          break;
-        }
-        // Wipes a random column and refills
-        case "electric": {
-          Audition.electricUlt();
-          const col = Math.floor(Math.random() * GRID_COLS);
-          for (let r = 0; r < GRID_ROWS; r++) {
-            if (board[r][col]?.hasHeart) heartsDelta++;
-            board[r][col] = null;
-          }
-          ({ board, deadlocked: ultDeadlocked } = refillBoard(
-            applyGravity(board),
-            GRID_ROWS,
-            GRID_COLS,
-            zenModeRef.current,
-          ));
-          break;
-        }
-        // Shuffles tiles inside a randomly placed NxN patch
-        case "chaotic": {
-          const startRow = Math.floor(
-            Math.random() * (GRID_ROWS - CHAOTIC_PATCH_SIZE + 1),
-          );
-          const startCol = Math.floor(
-            Math.random() * (GRID_COLS - CHAOTIC_PATCH_SIZE + 1),
-          );
-          const positions: Position[] = [];
-          for (let r = startRow; r < startRow + CHAOTIC_PATCH_SIZE; r++)
-            for (let c = startCol; c < startCol + CHAOTIC_PATCH_SIZE; c++)
-              positions.push({ row: r, col: c });
-          board = shuffleRegion(board, positions);
-          break;
-        }
-        // Activates night theme and adds bonus time, capped at the game limit
-        case "night": {
-          isNight = true;
-          timeLeft = Math.min(timeLeft + NIGHT_TIME_BONUS_MS, GAME_DURATION_MS);
-          break;
-        }
-        // Collects N random hearted tiles and strips their heart (scoring them)
-        case "sakura": {
-          const heartPositions: Position[] = [];
-          for (let r = 0; r < GRID_ROWS; r++)
-            for (let c = 0; c < GRID_COLS; c++)
-              if (board[r][c]?.hasHeart) heartPositions.push({ row: r, col: c });
-          const count = Math.min(
-            SAKURA_MIN_HEARTS + Math.floor(Math.random() * SAKURA_HEART_VARIANCE),
-            heartPositions.length,
-          );
-          // Partial Fisher-Yates: j drawn from [i, length) keeps selection uniform
-          for (let i = 0; i < count; i++) {
-            const j =
-              i + Math.floor(Math.random() * (heartPositions.length - i));
-            [heartPositions[i], heartPositions[j]] = [
-              heartPositions[j],
-              heartPositions[i],
-            ];
-          }
-          for (let i = 0; i < count; i++) {
-            const { row, col } = heartPositions[i];
-            heartsDelta++;
-            board[row][col] = { ...board[row][col]!, hasHeart: false };
-          }
-          // Spawn fresh hearts on heartless tiles using the same range
-          const heartlessPositions: Position[] = [];
-          for (let r = 0; r < GRID_ROWS; r++)
-            for (let c = 0; c < GRID_COLS; c++)
-              if (board[r][c] && !board[r][c]!.hasHeart)
-                heartlessPositions.push({ row: r, col: c });
-          const spawnCount = Math.min(
-            SAKURA_MIN_HEARTS + Math.floor(Math.random() * SAKURA_HEART_VARIANCE),
-            heartlessPositions.length,
-          );
-          for (let i = 0; i < spawnCount; i++) {
-            const j =
-              i + Math.floor(Math.random() * (heartlessPositions.length - i));
-            [heartlessPositions[i], heartlessPositions[j]] = [
-              heartlessPositions[j],
-              heartlessPositions[i],
-            ];
-          }
-          for (let i = 0; i < spawnCount; i++) {
-            const { row, col } = heartlessPositions[i];
-            board[row][col] = { ...board[row][col]!, hasHeart: true };
-          }
-          break;
-        }
-      }
+      const eff = applyUltEffect(
+        element,
+        s.board,
+        s.isNight,
+        s.timeLeft,
+        makeTileRef.current!,
+        rngRef.current!,
+        zenModeRef.current,
+      );
 
       const steps = computeCascadeSteps(
-        board,
+        eff.board,
         s.lastMatchElement,
         s.consecutiveSameElement,
         s.lastElectricCol,
+        makeTileRef.current!,
         zenModeRef.current,
       );
+
+      actionLogRef.current.push({ t: nowT(), type: "ult", element });
 
       if (steps.length > 0) {
         cascadeStepsRef.current = steps;
@@ -662,29 +459,29 @@ export function useGameState(zenMode = false, paused = false) {
             ...prev,
             board: steps[0].clearedBoard,
             spiritCharge: newCharge,
-            score: prev.score + scoreDelta + heartsDelta * SCORE_PER_HEART,
-            hearts: prev.hearts + heartsDelta,
-            isNight,
-            timeLeft,
+            score: prev.score + scoreDelta + eff.heartsDelta * SCORE_PER_HEART,
+            hearts: prev.hearts + eff.heartsDelta,
+            isNight: eff.isNight,
+            timeLeft: eff.timeLeft,
             timerStarted: true,
             combo: newCombo,
             scoreFlash: makeScoreFlash(
               steps[0],
-              scoreDelta + heartsDelta * SCORE_PER_HEART,
+              scoreDelta + eff.heartsDelta * SCORE_PER_HEART,
             ),
             phase: "clearing",
           };
         });
         scheduleComboReset();
-      } else if (ultDeadlocked) {
+      } else if (eff.deadlocked) {
         setState((prev) => ({
           ...prev,
-          board,
+          board: eff.board,
           spiritCharge: newCharge,
-          score: prev.score + heartsDelta * SCORE_PER_HEART,
-          hearts: prev.hearts + heartsDelta,
-          isNight,
-          timeLeft,
+          score: prev.score + eff.heartsDelta * SCORE_PER_HEART,
+          hearts: prev.hearts + eff.heartsDelta,
+          isNight: eff.isNight,
+          timeLeft: eff.timeLeft,
           timerStarted: true,
           phase: "gameOver",
           gameOverReason: "deadlock",
@@ -692,18 +489,18 @@ export function useGameState(zenMode = false, paused = false) {
       } else {
         setState((prev) => ({
           ...prev,
-          board,
+          board: eff.board,
           spiritCharge: newCharge,
-          score: prev.score + heartsDelta * SCORE_PER_HEART,
-          hearts: prev.hearts + heartsDelta,
-          isNight,
-          timeLeft,
+          score: prev.score + eff.heartsDelta * SCORE_PER_HEART,
+          hearts: prev.hearts + eff.heartsDelta,
+          isNight: eff.isNight,
+          timeLeft: eff.timeLeft,
           timerStarted: true,
           phase: "idle",
         }));
       }
     },
-    [scheduleComboReset],
+    [nowT, scheduleComboReset],
   );
 
   // ---------------------------------------------------------------------------
@@ -711,15 +508,16 @@ export function useGameState(zenMode = false, paused = false) {
   // ---------------------------------------------------------------------------
 
   const resetGame = useCallback(() => {
-    if (comboResetTimeoutRef.current !== null) {
-      clearTimeout(comboResetTimeoutRef.current);
-      comboResetTimeoutRef.current = null;
-    }
-    cascadeStepsRef.current = [];
-    cascadeIdxRef.current = 0;
-    queuedSwapRef.current = null;
-    setState(makeInitialState());
-  }, []);
+    startFreshGame(seedRef.current);
+  }, [startFreshGame]);
 
-  return { state, swipeSwap, setDragSource, activateUlt, resetGame };
+  return {
+    state,
+    swipeSwap,
+    setDragSource,
+    activateUlt,
+    resetGame,
+    gameId: gameIdRef.current,
+    getActionLog: useCallback(() => actionLogRef.current.slice(), []),
+  };
 }

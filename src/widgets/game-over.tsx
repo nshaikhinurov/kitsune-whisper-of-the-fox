@@ -1,6 +1,7 @@
 import { Gamepad2, Trophy } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect } from "react";
+import type { ReplayAction } from "@engine/engine";
 import { Audition } from "~/shared/lib/audition";
 import type { GameMode } from "~/shared/types/leaderboard";
 import { Button } from "~/shared/ui/button";
@@ -16,9 +17,12 @@ import {
 
 interface GameOverBlockProps {
   open: boolean;
+  // Displayed for UX only — the stored score is the server replay's.
   score: number;
   hearts: number;
   mode: GameMode;
+  gameId: string | null;
+  getActionLog: () => ReplayAction[];
   reason?: "time" | "deadlock";
   onReset: () => void;
 }
@@ -44,6 +48,8 @@ export const GameOverBlock = ({
   score,
   hearts,
   mode,
+  gameId,
+  getActionLog,
   reason = "time",
   onReset,
 }: GameOverBlockProps) => {
@@ -59,7 +65,7 @@ export const GameOverBlock = ({
   }, [open, reason, reset]);
 
   const handleSubmit = () => {
-    void submit({ nickname, score, hearts, mode });
+    void submit({ gameId, nickname, actions: getActionLog() });
   };
 
   return (

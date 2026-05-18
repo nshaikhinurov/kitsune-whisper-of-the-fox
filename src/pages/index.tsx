@@ -1,9 +1,13 @@
+import { useMutation } from "convex/react";
 import { MessageCircle, Trophy } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { api } from "../../convex/_generated/api";
 import {
   SHOW_HINTS_INITIALLY,
   ZEN_MODE_ON_INITIALLY,
 } from "~/shared/config/game-config";
+import { randomSeed } from "@engine/rng";
+import type { GameMode } from "~/shared/types/leaderboard";
 import { startThemeTransition } from "~/shared/lib/theme-transition";
 import { Button } from "~/shared/ui/button";
 import { TimerBar } from "~/widgets/timer-bar";
@@ -43,8 +47,45 @@ export function MainPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [setDarkMode]);
 
-  const { state, swipeSwap, setDragSource, activateUlt, resetGame } =
-    useGameState(zenMode, chatOpen || leaderboardOpen || settingsOpen);
+  const startGame = useMutation(api.sessions.startGame);
+  const [session, setSession] = useState<{
+    gameId: string | null;
+    seed: number;
+  }>(() => ({ gameId: null, seed: randomSeed() }));
+
+  // A new game asks the server for a seed. If the request fails the game still
+  // plays with a local seed (such a run will be flagged at submit in Phase 2).
+  const newSession = useCallback(
+    async (mode: GameMode) => {
+      try {
+        const res = await startGame({ mode });
+        setSession({ gameId: res.gameId, seed: res.seed });
+      } catch {
+        setSession({ gameId: null, seed: randomSeed() });
+      }
+    },
+    [startGame],
+  );
+
+  const sessionInitialized = useRef(false);
+  useEffect(() => {
+    if (sessionInitialized.current) return;
+    sessionInitialized.current = true;
+    void newSession(ZEN_MODE_ON_INITIALLY ? "zen" : "normal");
+  }, [newSession]);
+
+  const { state, swipeSwap, setDragSource, activateUlt, gameId, getActionLog } =
+    useGameState(
+      zenMode,
+      chatOpen || leaderboardOpen || settingsOpen,
+      session.seed,
+      session.gameId,
+    );
+
+  const handleNewGame = useCallback(
+    () => void newSession(zenMode ? "zen" : "normal"),
+    [newSession, zenMode],
+  );
 
   const zenModeInitialized = useRef(false);
   useEffect(() => {
@@ -52,8 +93,8 @@ export function MainPage() {
       zenModeInitialized.current = true;
       return;
     }
-    resetGame();
-  }, [zenMode]);
+    void newSession(zenMode ? "zen" : "normal");
+  }, [zenMode, newSession]);
 
   const firstRun = useRef(true);
   useEffect(() => {
@@ -149,8 +190,10 @@ export function MainPage() {
           score={state.score}
           hearts={state.hearts}
           mode={zenMode ? "zen" : "normal"}
+          gameId={gameId}
+          getActionLog={getActionLog}
           reason={state.gameOverReason}
-          onReset={resetGame}
+          onReset={handleNewGame}
         />
       </div>
 
