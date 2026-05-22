@@ -11,6 +11,10 @@ export default defineSchema({
     // Set when server replay validation failed. Absent = not flagged (legacy
     // rows stay visible). Flagged rows are hidden from the public top.
     flagged: v.optional(v.boolean()),
+    // Human-readable reason a run was flagged/banned (e.g. "rule:no-match",
+    // "timeline:gap-too-small", "wall-clock", "shape", "duplicate-session").
+    // Absent when the run passed validation. Multiple reasons are "; "-joined.
+    flagReason: v.optional(v.string()),
   })
     .index("by_score", ["score"])
     .index("by_mode_and_score", ["mode", "score"]),

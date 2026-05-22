@@ -98,12 +98,17 @@ export const submitRun = mutation({
       await ctx.db.patch(args.gameId, { status: "submitted" });
     }
 
-    const flagged =
-      r.invalid ||
-      r.timelineInvalid ||
-      wallInvalid ||
-      shapeInvalid ||
-      alreadySubmitted;
+    // Collect every reason the run failed validation so the ban is auditable,
+    // not just a yes/no flag. Each check contributes a prefixed tag.
+    const reasons: string[] = [];
+    if (r.invalid) reasons.push(`rule:${r.invalidReason ?? "unknown"}`);
+    if (r.timelineInvalid)
+      reasons.push(`timeline:${r.timelineReason ?? "unknown"}`);
+    if (wallInvalid) reasons.push("wall-clock");
+    if (shapeInvalid) reasons.push("shape");
+    if (alreadySubmitted) reasons.push("duplicate-session");
+
+    const flagged = reasons.length > 0;
 
     return ctx.db.insert("leaderboard", {
       nickname,
@@ -112,6 +117,7 @@ export const submitRun = mutation({
       mode: session.mode,
       createdAt: Date.now(),
       flagged,
+      ...(flagged ? { flagReason: reasons.join("; ") } : {}),
     });
   },
 });

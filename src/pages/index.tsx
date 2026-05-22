@@ -1,16 +1,16 @@
+import { randomSeed } from "@engine/rng";
 import { useMutation } from "convex/react";
 import { MessageCircle, Trophy } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "../../convex/_generated/api";
 import {
   SHOW_HINTS_INITIALLY,
   ZEN_MODE_ON_INITIALLY,
 } from "~/shared/config/game-config";
-import { randomSeed } from "@engine/rng";
-import type { GameMode } from "~/shared/types/leaderboard";
 import { startThemeTransition } from "~/shared/lib/theme-transition";
+import type { GameMode } from "~/shared/types/leaderboard";
 import { Button } from "~/shared/ui/button";
 import { TimerBar } from "~/widgets/timer-bar";
+import { api } from "../../convex/_generated/api";
 import { ChatPanel } from "../features/chat";
 import { useDarkMode } from "../features/dark-mode/use-dark-mode";
 import { useGameState } from "../features/game-session";
@@ -20,32 +20,17 @@ import { Hud } from "../widgets/game-hud";
 import { GameOverBlock } from "../widgets/game-over";
 import { SettingsMenu } from "../widgets/settings-menu";
 import { SpiritPanel } from "../widgets/spirit-panel";
+import { StartMenu } from "../widgets/start-menu";
 
 export function MainPage() {
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
+  const [gameStarted, setGameStarted] = useState(false);
   const [darkMode, setDarkMode] = useDarkMode();
 
   const [chatOpen, setChatOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      )
-        return;
-      if (e.key === "z" || e.key === "Z") setZenMode((v) => !v);
-      if (e.key === "h" || e.key === "H") setShowHints((v) => !v);
-      if (e.key === "l" || e.key === "L") setLeaderboardOpen((v) => !v);
-      if (e.key === "d" || e.key === "D" || e.key === "в" || e.key === "В")
-        setDarkMode((v) => !v);
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setDarkMode]);
 
   const startGame = useMutation(api.sessions.startGame);
   const [session, setSession] = useState<{
@@ -67,17 +52,48 @@ export function MainPage() {
     [startGame],
   );
 
-  const sessionInitialized = useRef(false);
+  // The session starts only once the player picks a mode in the start menu.
+  const startedRef = useRef(false);
+  const handleStartGame = useCallback(
+    (mode: GameMode) => {
+      setZenMode(mode === "zen");
+      setGameStarted(true);
+      startedRef.current = true;
+      void newSession(mode);
+    },
+    [newSession],
+  );
+
+  // Toggling the mode mid-game restarts the session in the new mode.
+  const handleZenModeChange = useCallback(
+    (next: boolean) => {
+      setZenMode(next);
+      if (startedRef.current) void newSession(next ? "zen" : "normal");
+    },
+    [newSession],
+  );
+
   useEffect(() => {
-    if (sessionInitialized.current) return;
-    sessionInitialized.current = true;
-    void newSession(ZEN_MODE_ON_INITIALLY ? "zen" : "normal");
-  }, [newSession]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
+      if (e.key === "z" || e.key === "Z") handleZenModeChange(!zenMode);
+      if (e.key === "h" || e.key === "H") setShowHints((v) => !v);
+      if (e.key === "l" || e.key === "L") setLeaderboardOpen((v) => !v);
+      if (e.key === "d" || e.key === "D" || e.key === "в" || e.key === "В")
+        setDarkMode((v) => !v);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [zenMode, handleZenModeChange, setDarkMode]);
 
   const { state, swipeSwap, setDragSource, activateUlt, gameId, getActionLog } =
     useGameState(
       zenMode,
-      chatOpen || leaderboardOpen || settingsOpen,
+      chatOpen || leaderboardOpen || settingsOpen || !gameStarted,
       session.seed,
       session.gameId,
     );
@@ -86,15 +102,6 @@ export function MainPage() {
     () => void newSession(zenMode ? "zen" : "normal"),
     [newSession, zenMode],
   );
-
-  const zenModeInitialized = useRef(false);
-  useEffect(() => {
-    if (!zenModeInitialized.current) {
-      zenModeInitialized.current = true;
-      return;
-    }
-    void newSession(zenMode ? "zen" : "normal");
-  }, [zenMode, newSession]);
 
   const firstRun = useRef(true);
   useEffect(() => {
@@ -153,7 +160,7 @@ export function MainPage() {
 
             <SettingsMenu
               zenMode={zenMode}
-              onZenModeChange={setZenMode}
+              onZenModeChange={handleZenModeChange}
               showHints={showHints}
               onShowHintsChange={setShowHints}
               darkMode={darkMode}
@@ -165,25 +172,30 @@ export function MainPage() {
 
         <Hud score={state.score} combo={state.combo} hearts={state.hearts} />
 
-        <div className="flex w-full flex-col items-center gap-3">
-          <Board
-            board={state.board}
-            dragSource={state.dragSource}
-            hintPositions={showHints ? state.hintPositions : null}
-            scoreFlash={state.scoreFlash}
-            onSwipe={swipeSwap}
-            onDragSource={setDragSource}
-          />
+        {session.gameId && (
+          <div className="flex w-full flex-col items-center gap-3">
+            <Board
+              board={state.board}
+              dragSource={state.dragSource}
+              hintPositions={showHints ? state.hintPositions : null}
+              scoreFlash={state.scoreFlash}
+              onSwipe={swipeSwap}
+              onDragSource={setDragSource}
+            />
 
-          <SpiritPanel
-            spiritCharge={state.spiritCharge}
-            onActivate={activateUlt}
-          />
+            <SpiritPanel
+              spiritCharge={state.spiritCharge}
+              onActivate={activateUlt}
+            />
 
-          {!zenMode && (
-            <TimerBar timeLeft={state.timeLeft} started={state.timerStarted} />
-          )}
-        </div>
+            {!zenMode && (
+              <TimerBar
+                timeLeft={state.timeLeft}
+                started={state.timerStarted}
+              />
+            )}
+          </div>
+        )}
 
         <GameOverBlock
           open={state.phase === "gameOver"}
@@ -196,6 +208,8 @@ export function MainPage() {
           onReset={handleNewGame}
         />
       </div>
+
+      <StartMenu open={!gameStarted} onStart={handleStartGame} />
 
       <ChatPanel open={chatOpen} onOpenChange={setChatOpen} />
       <LeaderboardPanel

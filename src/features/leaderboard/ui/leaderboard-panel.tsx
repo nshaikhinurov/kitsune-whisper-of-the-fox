@@ -40,7 +40,7 @@ function LeaderboardRow({
           "bg-neutral-400/25 inset-ring-3 inset-ring-neutral-400": rank === 2,
           "bg-amber-700/25 inset-ring-3 inset-ring-amber-700": rank === 3,
           "hover:bg-muted/50": rank > 3 && !isHighlighted,
-          "border border-yellow-500/40 bg-yellow-500/20": isHighlighted,
+          "bg-yellow-500/20 inset-ring inset-ring-yellow-500/40": isHighlighted,
         },
       )}
     >
@@ -117,7 +117,7 @@ export function LeaderboardPanel({
           </h2>
         </div>
 
-        <ScrollArea className="flex flex-col overflow-y-auto pr-1">
+        <ScrollArea className="flex flex-col overflow-y-auto p-1">
           {scores === undefined && (
             <div className="text-muted-foreground animate-pulse py-8 text-center">
               Загрузка…

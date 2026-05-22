@@ -58,7 +58,6 @@ function makeInitialState(makeTile: TileFactory): GameState {
     isNight: false,
     phase: "idle",
     gameOverReason: "time",
-    lastElectricCol: 0,
     hintPositions: null,
     scoreFlash: null,
   };
@@ -104,19 +103,35 @@ export function useGameState(
   const stateRef = useRef(state);
   stateRef.current = state;
 
-  // Action log + game clock — `t` is ms since game start (combo reset is
-  // real-time, so this is wall-clock relative). Surfaced for score submission.
+  // Action log + game clock — `t` is ms of *active game time*, matching the
+  // server's replay budget. It is anchored at the first action (when the
+  // countdown timer starts) and excludes paused intervals (menus/chat), since
+  // the in-game timer freezes during those too. Anchoring at hook mount or
+  // counting paused time instead would inflate `t` past GAME_DURATION_MS and
+  // trip the server's `timeline:over-budget` check on otherwise-legit runs.
   const seedRef = useRef(seed);
   const gameIdRef = useRef(gameId);
   gameIdRef.current = gameId;
   const actionLogRef = useRef<ReplayAction[]>([]);
-  const gameStartRef = useRef<number>(
-    typeof performance !== "undefined" ? performance.now() : Date.now(),
-  );
+  const perfNow = () =>
+    typeof performance !== "undefined" ? performance.now() : Date.now();
+  // Wall time of the first action (timer start); null until then.
+  const timerEpochRef = useRef<number | null>(null);
+  // Total paused ms accrued since the timer started, plus the start of the
+  // pause currently in progress (if any).
+  const pausedAccumRef = useRef(0);
+  const pauseStartRef = useRef<number | null>(null);
   const nowT = useCallback(() => {
-    const now =
-      typeof performance !== "undefined" ? performance.now() : Date.now();
-    return Math.round(now - gameStartRef.current);
+    const now = perfNow();
+    if (timerEpochRef.current === null) {
+      timerEpochRef.current = now; // first action anchors t = 0
+      return 0;
+    }
+    const livePause =
+      pauseStartRef.current !== null ? now - pauseStartRef.current : 0;
+    return Math.round(
+      now - timerEpochRef.current - pausedAccumRef.current - livePause,
+    );
   }, []);
 
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
@@ -149,10 +164,24 @@ export function useGameState(
     cascadeIdxRef.current = 0;
     queuedSwapRef.current = null;
     actionLogRef.current = [];
-    gameStartRef.current =
-      typeof performance !== "undefined" ? performance.now() : Date.now();
+    timerEpochRef.current = null;
+    pausedAccumRef.current = 0;
+    pauseStartRef.current = null;
     setState(makeInitialState(makeTileRef.current));
   }, []);
+
+  // Track paused intervals so `nowT` can exclude them — but only once the
+  // action clock has started (the timer doesn't run before the first move).
+  useEffect(() => {
+    if (paused) {
+      if (timerEpochRef.current !== null && pauseStartRef.current === null) {
+        pauseStartRef.current = perfNow();
+      }
+    } else if (pauseStartRef.current !== null) {
+      pausedAccumRef.current += perfNow() - pauseStartRef.current;
+      pauseStartRef.current = null;
+    }
+  }, [paused]);
 
   // A new server-issued seed means a new game.
   useEffect(() => {
@@ -299,7 +328,6 @@ export function useGameState(
             ),
             lastMatchElement: step.lastMatchElement,
             consecutiveSameElement: step.consecutiveSameElement,
-            lastElectricCol: step.lastElectricCol,
             phase: "falling",
           };
         });
@@ -388,7 +416,6 @@ export function useGameState(
       swapped,
       s.lastMatchElement,
       s.consecutiveSameElement,
-      s.lastElectricCol,
       makeTileRef.current!,
       zenModeRef.current,
     );
@@ -440,7 +467,6 @@ export function useGameState(
         eff.board,
         s.lastMatchElement,
         s.consecutiveSameElement,
-        s.lastElectricCol,
         makeTileRef.current!,
         zenModeRef.current,
       );

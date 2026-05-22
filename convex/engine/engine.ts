@@ -61,29 +61,35 @@ export interface CascadeStep {
   spiritDelta: Partial<Record<TileElement, number>>;
   lastMatchElement: TileElement | null;
   consecutiveSameElement: number;
-  lastElectricCol: number;
   matchedCentroid: { row: number; col: number };
   deadlocked?: boolean;
 }
 
+// Прогоняет цепочку каскадов начиная с переданной доски: на каждой итерации
+// находит совпадения, очищает их, применяет гравитацию и досыпает фишки.
+// Возвращает массив шагов (по одному на каждый каскад) до тех пор, пока
+// совпадений не останется или доска не окажется в тупике (deadlock).
 export function computeCascadeSteps(
   initialBoard: CellState[][],
   startLastElement: TileElement | null,
   startConsecutive: number,
-  startElectricCol: number,
   makeTile: TileFactory,
   zenMode = false,
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
   let board = initialBoard;
+  // Состояние, переносимое между каскадами: последний совпавший элемент
+  // и длина серии одинаковых элементов.
   let lastMatchElement = startLastElement;
   let consecutiveSameElement = startConsecutive;
-  let lastElectricCol = startElectricCol;
 
   while (true) {
+    // Ищем все совпадения на текущей доске; если их нет — каскады закончились.
     const matches = findMatches(board);
     if (matches.length === 0) break;
 
+    // Считаем, сколько фишек совпало по каждому элементу, чтобы определить
+    // доминирующий (самый массовый) элемент этого каскада.
     const elementCounts: Partial<Record<TileElement, number>> = {};
     for (const match of matches) {
       elementCounts[match.element] =
@@ -93,6 +99,8 @@ export function computeCascadeSteps(
       (a, b) => b[1] - a[1],
     )[0][0] as TileElement;
 
+    // Если доминирующий элемент совпал с предыдущим — увеличиваем серию,
+    // иначе сбрасываем счётчик и запоминаем новый элемент.
     if (dominant === lastMatchElement) {
       consecutiveSameElement++;
     } else {
@@ -105,6 +113,9 @@ export function computeCascadeSteps(
     let heartsDelta = 0;
     const spiritDelta: Partial<Record<TileElement, number>> = {};
 
+    // Начисляем очки и заряд духов за каждое совпадение. Очки растут
+    // квадратично от размера совпадения, а совпадение по доминирующему
+    // элементу даёт бонус заряда, умноженный на длину серии.
     for (const match of matches) {
       const n = match.positions.length;
       baseScoreDelta += 2 * n * (n + 2);
@@ -116,13 +127,14 @@ export function computeCascadeSteps(
         (spiritDelta[match.element] ?? 0) + chargeBonus;
     }
 
+    // Проходим по очищаемым клеткам: считаем собранные сердечки.
     for (const key of matchedSet) {
       const { row, col } = parseKey(key);
       const tile = board[row][col];
       if (tile?.hasHeart) heartsDelta++;
-      if (tile?.element === "electric") lastElectricCol = col;
     }
 
+    // Геометрический центр совпавших клеток — используется для эффектов/анимаций.
     const matchedPositions = [...matchedSet].map(parseKey);
     const matchedCentroid = {
       row:
@@ -133,11 +145,14 @@ export function computeCascadeSteps(
         matchedPositions.length,
     };
 
+    // Убираем совпавшие фишки (ставим null на их места).
     const clearedBoard = board.map((row, r) =>
       row.map((cell, c) =>
         matchedSet.has(posKey({ row: r, col: c })) ? null : cell,
       ),
     );
+    // Применяем гравитацию (фишки падают вниз) и досыпаем новые.
+    // deadlocked = true, если после досыпки не осталось возможных ходов.
     const { board: filledBoard, deadlocked } = refillBoard(
       applyGravity(clearedBoard),
       GRID_ROWS,
@@ -154,12 +169,13 @@ export function computeCascadeSteps(
       spiritDelta,
       lastMatchElement,
       consecutiveSameElement,
-      lastElectricCol,
       matchedCentroid,
       deadlocked,
     });
 
+    // При тупике дальнейшие каскады невозможны — прекращаем цикл.
     if (deadlocked) break;
+    // Иначе переходим к следующей итерации с обновлённой доской.
     board = filledBoard;
   }
 
@@ -329,7 +345,6 @@ export interface EngineState {
   comboResetAt: number | null;
   lastMatchElement: TileElement | null;
   consecutiveSameElement: number;
-  lastElectricCol: number;
   spiritCharge: SpiritCharge;
   isNight: boolean;
   timeLeftMs: number;
@@ -353,7 +368,6 @@ export function createGame(seed: number, mode: GameMode): EngineState {
     comboResetAt: null,
     lastMatchElement: null,
     consecutiveSameElement: 0,
-    lastElectricCol: 0,
     spiritCharge: { ...INITIAL_SPIRIT_CHARGE },
     isNight: false,
     timeLeftMs: GAME_DURATION_MS,
@@ -401,7 +415,6 @@ export function applySwap(
     swapped,
     s.lastMatchElement,
     s.consecutiveSameElement,
-    s.lastElectricCol,
     s.makeTile,
     s.zenMode,
   );
@@ -427,7 +440,6 @@ export function applySwap(
     s.spiritCharge = applyChargeDeltas(s.spiritCharge, step.spiritDelta);
     s.lastMatchElement = step.lastMatchElement;
     s.consecutiveSameElement = step.consecutiveSameElement;
-    s.lastElectricCol = step.lastElectricCol;
   }
 
   s.comboResetAt =
@@ -469,7 +481,6 @@ export function applyUlt(
     eff.board,
     s.lastMatchElement,
     s.consecutiveSameElement,
-    s.lastElectricCol,
     s.makeTile,
     s.zenMode,
   );
@@ -502,7 +513,6 @@ export function applyUlt(
       s.spiritCharge = applyChargeDeltas(s.spiritCharge, step.spiritDelta);
       s.lastMatchElement = step.lastMatchElement;
       s.consecutiveSameElement = step.consecutiveSameElement;
-      s.lastElectricCol = step.lastElectricCol;
     }
 
     s.comboResetAt =

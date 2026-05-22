@@ -46,7 +46,6 @@ export interface GameState {
   isNight: boolean; // Night tile ult active
   phase: "idle" | "swapping" | "clearing" | "falling" | "gameOver";
   gameOverReason: "time" | "deadlock";
-  lastElectricCol: number; // column of last matched electric tile
   hintPositions: [Position, Position] | null;
   scoreFlash: ScoreFlash | null;
 }
