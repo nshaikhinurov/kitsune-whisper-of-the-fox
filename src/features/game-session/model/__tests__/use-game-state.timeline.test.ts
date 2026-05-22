@@ -43,7 +43,10 @@ type Hook = ReturnType<typeof useGameState>;
 // Plays one hinted swap and animates its full cascade to completion, exactly
 // as the parity test does — the countdown then only consumes the real lock.
 function playHintedMove(result: { current: Hook }): boolean {
-  if (result.current.state.phase !== "idle") return false;
+  // Read phase via a call so the early-return narrowing below does not leak
+  // into the cascade comparisons in the loop.
+  const phaseOf = () => result.current.state.phase;
+  if (phaseOf() !== "idle") return false;
   const hint = findFirstHintMove(result.current.state.board);
   if (!hint) return false;
 
@@ -51,8 +54,7 @@ function playHintedMove(result: { current: Hook }): boolean {
   act(() => vi.advanceTimersByTime(SWAP_ANIM_MS));
   let guard = 0;
   while (
-    (result.current.state.phase === "clearing" ||
-      result.current.state.phase === "falling") &&
+    (phaseOf() === "clearing" || phaseOf() === "falling") &&
     guard++ < 200
   ) {
     act(() => vi.advanceTimersByTime(CLEAR_ANIM_MS));

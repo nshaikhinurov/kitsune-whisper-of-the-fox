@@ -51,10 +51,15 @@ export function ChatPanel({ open, onOpenChange }: ChatPanelProps) {
   const myClientId = getChatClientId();
 
   useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
-    }
-  }, [messages]);
+    if (!open) return;
+    // Defer to next frame so the Sheet content is mounted and laid out.
+    const id = requestAnimationFrame(() => {
+      if (listRef.current) {
+        listRef.current.scrollTop = listRef.current.scrollHeight;
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open, messages]);
 
   async function handleSend() {
     if (!nickname || !draft.trim() || sending) return;
