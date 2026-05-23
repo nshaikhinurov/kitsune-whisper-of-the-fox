@@ -1,6 +1,23 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const actionValidator = v.object({
+  t: v.number(),
+  type: v.union(v.literal("swap"), v.literal("ult")),
+  from: v.optional(v.object({ row: v.number(), col: v.number() })),
+  to: v.optional(v.object({ row: v.number(), col: v.number() })),
+  element: v.optional(
+    v.union(
+      v.literal("ori"),
+      v.literal("green"),
+      v.literal("electric"),
+      v.literal("chaotic"),
+      v.literal("night"),
+      v.literal("sakura"),
+    ),
+  ),
+});
+
 export default defineSchema({
   leaderboard: defineTable({
     nickname: v.string(),
@@ -15,6 +32,9 @@ export default defineSchema({
     // "timeline:gap-too-small", "wall-clock", "shape", "duplicate-session").
     // Absent when the run passed validation. Multiple reasons are "; "-joined.
     flagReason: v.optional(v.string()),
+    // Full replay log submitted by the client. Optional for legacy rows that
+    // predate this column.
+    actions: v.optional(v.array(actionValidator)),
   })
     .index("by_score", ["score"])
     .index("by_mode_and_score", ["mode", "score"]),

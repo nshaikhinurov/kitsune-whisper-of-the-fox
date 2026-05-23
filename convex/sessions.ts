@@ -118,6 +118,7 @@ export const submitRun = mutation({
       createdAt: Date.now(),
       flagged,
       ...(flagged ? { flagReason: reasons.join("; ") } : {}),
+      actions: args.actions,
     });
   },
 });
