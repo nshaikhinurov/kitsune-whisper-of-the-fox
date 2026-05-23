@@ -12,7 +12,10 @@ import { Button } from "~/shared/ui/button";
 import { TimerBar } from "~/widgets/timer-bar";
 import { api } from "../../convex/_generated/api";
 import { ChatPanel } from "../features/chat";
-import { useDarkMode } from "../features/dark-mode/use-dark-mode";
+import {
+  useDarkMode,
+  useThemeTransitionActive,
+} from "../features/dark-mode/use-dark-mode";
 import { useGameState } from "../features/game-session";
 import { LeaderboardPanel } from "../features/leaderboard";
 import { Board } from "../widgets/game-board";
@@ -27,6 +30,11 @@ export function MainPage() {
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
   const [gameStarted, setGameStarted] = useState(false);
   const [darkMode, setDarkMode] = useDarkMode();
+  // A theme switch runs a 1.5s view transition that visually freezes the
+  // screen (timer included). Treat it as a pause so the countdown and the
+  // server-replay clock freeze together and board input is blocked — otherwise
+  // the player could keep matching/scoring during the frozen window.
+  const themeTransitioning = useThemeTransitionActive();
 
   const [chatOpen, setChatOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
@@ -93,7 +101,11 @@ export function MainPage() {
   const { state, swipeSwap, setDragSource, activateUlt, gameId, getActionLog } =
     useGameState(
       zenMode,
-      chatOpen || leaderboardOpen || settingsOpen || !gameStarted,
+      chatOpen ||
+        leaderboardOpen ||
+        settingsOpen ||
+        !gameStarted ||
+        themeTransitioning,
       session.seed,
       session.gameId,
     );

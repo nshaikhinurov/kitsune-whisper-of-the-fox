@@ -382,11 +382,13 @@ export function useGameState(
   // ---------------------------------------------------------------------------
 
   const setDragSource = useCallback((pos: Position | null) => {
+    if (pausedRef.current) return;
     idleMsRef.current = 0;
     setState((prev) => ({ ...prev, dragSource: pos, hintPositions: null }));
   }, []);
 
   const swipeSwap = useCallback((from: Position, to: Position) => {
+    if (pausedRef.current) return;
     const s = stateRef.current;
     if (!isAdjacent(from, to)) return;
 
@@ -446,6 +448,7 @@ export function useGameState(
 
   const activateUlt = useCallback(
     (element: TileElement) => {
+      if (pausedRef.current) return;
       const s = stateRef.current;
       if (s.phase !== "idle") return;
       if (s.spiritCharge[element] < SPIRIT_MAX) return;
