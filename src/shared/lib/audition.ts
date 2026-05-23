@@ -10,18 +10,55 @@ const sources = {
 
 type SoundKey = keyof typeof sources;
 
-const cache = {} as Record<SoundKey, HTMLAudioElement>;
+let ctx: AudioContext | null = null;
+let masterGain: GainNode | null = null;
+const buffers = {} as Record<SoundKey, AudioBuffer | undefined>;
 
-for (const key in sources) {
-  const audio = new Audio(sources[key as SoundKey]);
-  audio.preload = "auto";
-  audio.load();
-  cache[key as SoundKey] = audio;
+function getCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  if (!ctx) {
+    const Ctor =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!Ctor) return null;
+    ctx = new Ctor();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 1;
+    masterGain.connect(ctx.destination);
+  }
+  return ctx;
+}
+
+async function preload() {
+  const context = getCtx();
+  if (!context) return;
+  await Promise.all(
+    (Object.keys(sources) as SoundKey[]).map(async (key) => {
+      try {
+        const res = await fetch(sources[key]);
+        const data = await res.arrayBuffer();
+        buffers[key] = await context.decodeAudioData(data);
+      } catch {
+        // ignore — sound will be silently unavailable
+      }
+    }),
+  );
+}
+
+if (typeof window !== "undefined") {
+  void preload();
 }
 
 function play(key: SoundKey) {
-  const node = cache[key].cloneNode(true) as HTMLAudioElement;
-  node.play().catch(() => {});
+  const context = getCtx();
+  const buffer = buffers[key];
+  if (!context || !masterGain || !buffer) return;
+  if (context.state === "suspended") void context.resume();
+  const src = context.createBufferSource();
+  src.buffer = buffer;
+  src.connect(masterGain);
+  src.start(0);
 }
 
 export const Audition = {
