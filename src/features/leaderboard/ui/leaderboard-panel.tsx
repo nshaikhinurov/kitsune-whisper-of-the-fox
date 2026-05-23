@@ -1,5 +1,6 @@
 import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import { cn } from "~/shared/lib/utils";
 import type {
   GameMode,
@@ -26,13 +27,16 @@ function LeaderboardRow({
   entry,
   rank,
   isHighlighted,
+  rowRef,
 }: {
   entry: LeaderboardEntry;
   rank: number;
   isHighlighted: boolean;
+  rowRef?: React.Ref<HTMLDivElement>;
 }) {
   return (
     <div
+      ref={rowRef}
       className={cn(
         "grid min-h-11 grid-cols-[1.5rem_1fr_5rem_5rem] items-center gap-3 rounded-lg px-3 py-2 tabular-nums transition-colors",
         {
@@ -101,6 +105,25 @@ export function LeaderboardPanel({
       : "skip",
   ) as RankContext | null | undefined;
 
+  const highlightedRowRef = useRef<HTMLDivElement | null>(null);
+  const hasHighlightInTop =
+    highlightId != null &&
+    !!scores?.some((entry) => entry._id === highlightId);
+  const hasHighlightInContext =
+    highlightId != null &&
+    !!rankContext?.slice.some(({ entry }) => entry._id === highlightId);
+  const canScroll = open && (hasHighlightInTop || hasHighlightInContext);
+
+  useEffect(() => {
+    if (!canScroll) return;
+    const node = highlightedRowRef.current;
+    if (!node) return;
+    const raf = requestAnimationFrame(() => {
+      node.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [canScroll]);
+
   return (
     <Dialog
       open={open}
@@ -145,6 +168,7 @@ export function LeaderboardPanel({
                       entry={entry}
                       rank={idx + 1}
                       isHighlighted={isHighlighted}
+                      rowRef={isHighlighted ? highlightedRowRef : undefined}
                     />
                   </motion.div>
                 );
@@ -154,16 +178,19 @@ export function LeaderboardPanel({
             {rankContext && rankContext.slice.length > 0 && (
               <>
                 {rankContext.hasGapAbove && <Ellipsis />}
-                {rankContext.slice.map(({ rank, entry }) => (
-                  <LeaderboardRow
-                    key={entry._id}
-                    entry={entry}
-                    rank={rank}
-                    isHighlighted={
-                      highlightId != null && entry._id === highlightId
-                    }
-                  />
-                ))}
+                {rankContext.slice.map(({ rank, entry }) => {
+                  const isHighlighted =
+                    highlightId != null && entry._id === highlightId;
+                  return (
+                    <LeaderboardRow
+                      key={entry._id}
+                      entry={entry}
+                      rank={rank}
+                      isHighlighted={isHighlighted}
+                      rowRef={isHighlighted ? highlightedRowRef : undefined}
+                    />
+                  );
+                })}
                 {rankContext.hasMoreBelow && <Ellipsis />}
               </>
             )}
