@@ -15,7 +15,7 @@ export function TimerBar({ timeLeft, started = true }: TimerBarProps) {
   const barColor = `color-mix(in oklch, ${fullColor} ${(timeLeftPercentage * 100).toFixed(1)}%, ${zeroColor})`;
 
   return (
-    <div className="flex w-full items-center gap-3">
+    <div data-testid="timer-bar" className="flex w-full items-center gap-3">
       <div className="bg-muted h-5 flex-1 overflow-hidden rounded-full">
         <motion.div
           className="h-full rounded-full"

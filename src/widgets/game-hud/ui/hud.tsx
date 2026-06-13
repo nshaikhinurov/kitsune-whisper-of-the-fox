@@ -10,7 +10,10 @@ interface HudProps {
 
 export function Hud({ score, combo, hearts }: HudProps) {
   return (
-    <div className="dark:text-primary bg-muted font-sushi flex w-full items-center justify-between gap-2 rounded-xl p-3 px-5 text-4xl text-[#e17100] backdrop-blur sm:gap-4">
+    <div
+      data-testid="hud"
+      className="dark:text-primary bg-muted font-sushi flex w-full items-center justify-between gap-2 rounded-xl p-3 px-5 text-4xl text-[#e17100] backdrop-blur sm:gap-4"
+    >
       <motion.div
         key={score}
         className="flex items-center gap-2.5 tabular-nums"

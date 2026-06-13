@@ -106,7 +106,10 @@ function SpiritButton({
 
 export function SpiritPanel({ spiritCharge, onActivate }: SpiritPanelProps) {
   return (
-    <div className="flex w-full justify-around gap-2 px-2 sm:px-5 lg:h-full lg:gap-5 lg:py-9">
+    <div
+      data-testid="spirit-panel"
+      className="flex w-full shrink-0 justify-around gap-2 px-2 sm:px-5 lg:gap-5"
+    >
       {ELEMENTS.map((el) => {
         const charge = spiritCharge[el];
         const isReady = charge >= SPIRIT_MAX;

@@ -138,9 +138,9 @@ export function MainPage() {
             "color-mix(in oklab, var(--foreground) 10%, transparent)",
         } as React.CSSProperties
       }
-      className="bg-background text-foreground relative min-h-screen bg-[radial-gradient(circle,var(--dot-color)_var(--dot-size),transparent_calc(var(--dot-size)+0.5px))] bg-size-[var(--dot-spacing)_var(--dot-spacing)] p-3 md:p-5 xl:p-8"
+      className="bg-background text-foreground relative flex h-screen flex-col overflow-hidden bg-[radial-gradient(circle,var(--dot-color)_var(--dot-size),transparent_calc(var(--dot-size)+0.5px))] bg-size-[var(--dot-spacing)_var(--dot-spacing)] p-3 md:p-5 xl:p-8"
     >
-      <div className="mx-auto flex max-w-150 flex-col items-center justify-start gap-4 md:gap-8 lg:max-w-200">
+      <div className="mx-auto flex h-full max-h-full w-full min-h-0 flex-col items-center justify-start gap-4 md:gap-6">
         <div className="flex w-full items-center justify-between">
           <h1 className="flex h-[1em] items-center gap-[0.4em] text-2xl sm:text-3xl md:text-5xl">
             <img src="/imgs/logo-cat.svg" alt="Ori cat" className="h-full" />
@@ -185,15 +185,22 @@ export function MainPage() {
         <Hud score={state.score} combo={state.combo} hearts={state.hearts} />
 
         {session.gameId && (
-          <div className="flex w-full flex-col items-center gap-3">
-            <Board
-              board={state.board}
-              dragSource={state.dragSource}
-              hintPositions={showHints ? state.hintPositions : null}
-              scoreFlash={state.scoreFlash}
-              onSwipe={swipeSwap}
-              onDragSource={setDragSource}
-            />
+          <div className="flex w-full min-h-0 flex-1 flex-col items-center gap-3">
+            <div className="flex min-h-0 w-full flex-1 items-center justify-center [container-type:size]">
+              <div
+                data-testid="board"
+                className="aspect-square w-[min(100cqw,100cqh)]"
+              >
+                <Board
+                  board={state.board}
+                  dragSource={state.dragSource}
+                  hintPositions={showHints ? state.hintPositions : null}
+                  scoreFlash={state.scoreFlash}
+                  onSwipe={swipeSwap}
+                  onDragSource={setDragSource}
+                />
+              </div>
+            </div>
 
             <SpiritPanel
               spiritCharge={state.spiritCharge}

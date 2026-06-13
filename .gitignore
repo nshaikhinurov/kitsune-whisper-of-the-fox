@@ -27,3 +27,9 @@ dist-ssr
 public/**/*.tmp
 public/**/*.ai
 public/**/*.m4a
+
+# Playwright
+test-results
+playwright-report
+blob-report
+playwright/.cache
