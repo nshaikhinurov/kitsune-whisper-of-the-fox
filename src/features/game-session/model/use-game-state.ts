@@ -133,6 +133,15 @@ export function useGameState(
       now - timerEpochRef.current - pausedAccumRef.current - livePause,
     );
   }, []);
+  // Active-game-time `t` at which the normal-mode countdown reaches 0. The
+  // displayed timer is derived from this and `nowT()` rather than by
+  // subtracting a fixed step per interval tick: setInterval fires late under
+  // load/throttling, and a fixed decrement made the on-screen countdown run
+  // slower than the wall clock the action log is stamped with — honest runs
+  // played to the end then overshot the server's replay budget and were
+  // flagged `timeline:over-budget`. Null until the first action starts the
+  // timer; never set in zen mode.
+  const deadlineTRef = useRef<number | null>(null);
 
   const cascadeStepsRef = useRef<CascadeStep[]>([]);
   const cascadeIdxRef = useRef(0);
@@ -165,6 +174,7 @@ export function useGameState(
     queuedSwapRef.current = null;
     actionLogRef.current = [];
     timerEpochRef.current = null;
+    deadlineTRef.current = null;
     pausedAccumRef.current = 0;
     pauseStartRef.current = null;
     setState(makeInitialState(makeTileRef.current));
@@ -233,14 +243,18 @@ export function useGameState(
         if (!prev.timerStarted) return prev;
 
         const isZen = zenModeRef.current;
-        const newTime = isZen ? prev.timeLeft : prev.timeLeft - TIMER_TICK_MS;
-        if (!isZen && newTime <= 0)
-          return {
-            ...prev,
-            timeLeft: 0,
-            phase: "gameOver",
-            gameOverReason: "time",
-          };
+        let newTime = prev.timeLeft;
+        if (!isZen) {
+          if (deadlineTRef.current === null) return prev;
+          newTime = deadlineTRef.current - nowT();
+          if (newTime <= 0)
+            return {
+              ...prev,
+              timeLeft: 0,
+              phase: "gameOver",
+              gameOverReason: "time",
+            };
+        }
 
         if (prev.phase === "idle" && prev.hintPositions === null) {
           idleMsRef.current += TIMER_TICK_MS;
@@ -257,7 +271,7 @@ export function useGameState(
       });
     }, TIMER_TICK_MS);
     return () => clearInterval(id);
-  }, [isGameOver]);
+  }, [isGameOver, nowT]);
 
   useEffect(() => {
     idleMsRef.current = 0;
@@ -427,8 +441,20 @@ export function useGameState(
       return;
     }
 
+    const t = nowT();
+    if (!zenModeRef.current) {
+      if (deadlineTRef.current === null) {
+        deadlineTRef.current = t + GAME_DURATION_MS;
+      } else if (t >= deadlineTRef.current) {
+        // Countdown expired but the game-over tick hasn't fired yet (interval
+        // ticks can land late). Logging this action would put it past the
+        // server's replay budget, so drop it.
+        return;
+      }
+    }
+
     Audition.tileSwiped();
-    actionLogRef.current.push({ t: nowT(), type: "swap", from, to });
+    actionLogRef.current.push({ t, type: "swap", from, to });
     cascadeStepsRef.current = steps;
     cascadeIdxRef.current = 0;
 
@@ -453,6 +479,22 @@ export function useGameState(
       if (s.phase !== "idle") return;
       if (s.spiritCharge[element] < SPIRIT_MAX) return;
 
+      const t = nowT();
+      // Derive the remaining time from the deadline (exact) rather than the
+      // state's timeLeft (stale by up to one tick), so the night bonus and the
+      // updated deadline stay on the action-log clock.
+      let timeLeftNow = s.timeLeft;
+      if (!zenModeRef.current) {
+        if (deadlineTRef.current === null) {
+          deadlineTRef.current = t + GAME_DURATION_MS;
+        } else if (t >= deadlineTRef.current) {
+          // Countdown expired but the game-over tick hasn't fired yet; drop
+          // the action instead of logging it past the server's replay budget.
+          return;
+        }
+        timeLeftNow = deadlineTRef.current - t;
+      }
+
       const newCharge = { ...s.spiritCharge, [element]: 0 };
       if (element === "electric") Audition.electricUlt();
 
@@ -460,11 +502,12 @@ export function useGameState(
         element,
         s.board,
         s.isNight,
-        s.timeLeft,
+        timeLeftNow,
         makeTileRef.current!,
         rngRef.current!,
         zenModeRef.current,
       );
+      if (!zenModeRef.current) deadlineTRef.current = t + eff.timeLeft;
 
       const steps = computeCascadeSteps(
         eff.board,
@@ -474,7 +517,7 @@ export function useGameState(
         zenModeRef.current,
       );
 
-      actionLogRef.current.push({ t: nowT(), type: "ult", element });
+      actionLogRef.current.push({ t, type: "ult", element });
 
       if (steps.length > 0) {
         cascadeStepsRef.current = steps;

@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as chat from "../chat.js";
 import type * as engine_board from "../engine/board.js";
 import type * as engine_config from "../engine/config.js";
@@ -25,6 +26,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   chat: typeof chat;
   "engine/board": typeof engine_board;
   "engine/config": typeof engine_config;
