@@ -8,25 +8,24 @@ const TOP_LIMIT = 20;
 const RANK_SCAN_LIMIT = 1000;
 
 // Public top scores. Server-flagged runs (failed replay / timeline / wall-clock
-// validation) are hidden: over-fetch on the score-ordered index then filter,
-// since `flagged` is sparse and a dedicated index isn't worth it at this size.
+// validation) are currently shown alongside clean runs; `flagged` is still
+// stored on the row if hiding needs to be re-enabled later.
 export const getTopScores = query({
   args: { mode: v.union(v.literal("normal"), v.literal("zen")) },
   handler: async (ctx, args) => {
-    const rows = await ctx.db
+    return await ctx.db
       .query("leaderboard")
       .withIndex("by_mode_and_score", (q) => q.eq("mode", args.mode))
       .order("desc")
-      .take(TOP_LIMIT * 4);
-    return rows.filter((r) => r.flagged !== true).slice(0, TOP_LIMIT);
+      .take(TOP_LIMIT);
   },
 });
 
 // Rank-context strip for a just-submitted entry. Returns null when the entry
-// is flagged, not found, or already inside the visible top (getTopScores
-// already shows & highlights it there). Otherwise returns the player's rank
-// plus the n-1 / n / n+1 slice so the UI can render it under an ellipsis.
-// Scan order/flag-filter mirrors getTopScores so ranks stay consistent.
+// is not found or already inside the visible top (getTopScores already shows
+// & highlights it there). Otherwise returns the player's rank plus the
+// n-1 / n / n+1 slice so the UI can render it under an ellipsis.
+// Scan order mirrors getTopScores so ranks stay consistent.
 export const getRankContext = query({
   args: {
     entryId: v.id("leaderboard"),
@@ -34,15 +33,13 @@ export const getRankContext = query({
   },
   handler: async (ctx, args) => {
     const target = await ctx.db.get(args.entryId);
-    if (target === null || target.flagged === true || target.mode !== args.mode)
-      return null;
+    if (target === null || target.mode !== args.mode) return null;
 
-    const rows = await ctx.db
+    const ranked = await ctx.db
       .query("leaderboard")
       .withIndex("by_mode_and_score", (q) => q.eq("mode", args.mode))
       .order("desc")
       .take(RANK_SCAN_LIMIT);
-    const ranked = rows.filter((r) => r.flagged !== true);
 
     const idx = ranked.findIndex((r) => r._id === args.entryId);
     if (idx === -1) return null;

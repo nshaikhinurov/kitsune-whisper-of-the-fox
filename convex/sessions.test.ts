@@ -92,7 +92,7 @@ describe("submitRun — happy path", () => {
 });
 
 describe("submitRun — tampering is shadow-flagged", () => {
-  it("flags a forged action log and hides it from the public top", async () => {
+  it("flags a forged action log but still lists it in the public top", async () => {
     const t = convexTest(schema, modules);
     const { gameId, seed } = await t.mutation(api.sessions.startGame, {
       mode: "normal",
@@ -122,7 +122,8 @@ describe("submitRun — tampering is shadow-flagged", () => {
     const top = await t.query(api.leaderboard.getTopScores, {
       mode: "normal",
     });
-    expect(top).toHaveLength(0);
+    expect(top).toHaveLength(1);
+    expect(top[0].flagged).toBe(true);
   });
 });
 
@@ -174,8 +175,8 @@ describe("submitRun — protocol errors throw", () => {
   });
 });
 
-describe("getTopScores — excludes flagged rows", () => {
-  it("returns only unflagged rows in score order", async () => {
+describe("getTopScores — includes flagged rows", () => {
+  it("returns all rows in score order regardless of flagged", async () => {
     const t = convexTest(schema, modules);
     await t.run(async (ctx) => {
       await ctx.db.insert("leaderboard", {
@@ -206,6 +207,6 @@ describe("getTopScores — excludes flagged rows", () => {
     const top = await t.query(api.leaderboard.getTopScores, {
       mode: "normal",
     });
-    expect(top.map((r) => r.nickname)).toEqual(["Clean", "Legacy"]);
+    expect(top.map((r) => r.nickname)).toEqual(["Forged", "Clean", "Legacy"]);
   });
 });
