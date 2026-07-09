@@ -9,3 +9,5 @@ Convex agent skills for common tasks can be installed by running `npx convex ai-
 <!-- convex-ai-end -->
 
 use pnpm for package management. Run `pnpm install` to install dependencies. Run `pnpm typecheck` to check types.
+
+CLAUDE_CODE_UNDERCOVER=1 — do not add `Co-Authored-By: Claude` (or any Claude attribution) to commit messages or PR bodies in this repo.
