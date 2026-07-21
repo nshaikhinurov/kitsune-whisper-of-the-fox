@@ -25,7 +25,7 @@ export const StartMenu = ({ open, onStart }: StartMenuProps) => {
             type="button"
             onClick={() => onStart("normal")}
             variant="outline"
-            className="flex h-auto w-full flex-col items-start gap-1 rounded-2xl border p-4 text-left transition-all outline-none focus-visible:ring-3 active:translate-y-px dark:bg-transparent"
+            className="flex h-auto w-full flex-col items-start gap-1 rounded-2xl border p-4 text-left whitespace-normal wrap-break-word transition-all outline-none focus-visible:ring-3 active:translate-y-px dark:bg-transparent"
           >
             <span className="flex items-center gap-2 text-lg font-semibold">
               <Timer className="size-5" />
@@ -40,7 +40,7 @@ export const StartMenu = ({ open, onStart }: StartMenuProps) => {
             type="button"
             onClick={() => onStart("zen")}
             variant="outline"
-            className="flex h-auto w-full flex-col items-start gap-1 rounded-2xl border p-4 text-left transition-all outline-none focus-visible:ring-3 active:translate-y-px dark:bg-transparent"
+            className="flex h-auto w-full flex-col items-start gap-1 rounded-2xl border p-4 text-left whitespace-normal wrap-break-word transition-all outline-none focus-visible:ring-3 active:translate-y-px dark:bg-transparent"
           >
             <span className="flex items-center gap-2 text-lg font-semibold">
               <Wind className="size-5" />
