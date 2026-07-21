@@ -25,10 +25,39 @@ import { SettingsMenu } from "../widgets/settings-menu";
 import { SpiritPanel } from "../widgets/spirit-panel";
 import { StartMenu } from "../widgets/start-menu";
 
+interface GameOverOverride {
+  score: number;
+  hearts: number;
+  reason: "time" | "deadlock";
+}
+
+// Dev-only escape hatch: reaching the end-of-game dialog for real means
+// playing out a full 60s timed run (the countdown is anchored to wall-clock
+// time, not something a test can fast-forward). Behind an explicit opt-in
+// query param, e2e tests can inject the score/hearts/reason directly and
+// exercise the same dialog with realistic (even production-leaderboard-sized)
+// numbers instead. `import.meta.env.DEV` is statically inlined at build time,
+// so this whole branch — and the query-string parsing — is dead code and
+// never reaches a production bundle.
+function readGameOverOverride(): GameOverOverride | null {
+  if (!import.meta.env.DEV) return null;
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("e2eGameOver") !== "1") return null;
+  return {
+    score: Number(params.get("score") ?? "0"),
+    hearts: Number(params.get("hearts") ?? "0"),
+    reason: params.get("reason") === "deadlock" ? "deadlock" : "time",
+  };
+}
+
 export function MainPage() {
+  const [gameOverOverride] = useState(readGameOverOverride);
   const [showHints, setShowHints] = useState(SHOW_HINTS_INITIALLY);
   const [zenMode, setZenMode] = useState(ZEN_MODE_ON_INITIALLY);
-  const [gameStarted, setGameStarted] = useState(false);
+  // Skip the start menu too when the override is active — otherwise it stays
+  // open on top of (or under) the injected game-over dialog since nothing
+  // ever calls handleStartGame.
+  const [gameStarted, setGameStarted] = useState(gameOverOverride !== null);
   const [darkMode, setDarkMode] = useDarkMode();
   // A theme switch runs a 1.5s view transition that visually freezes the
   // screen (timer included). Treat it as a pause so the countdown and the
@@ -217,13 +246,13 @@ export function MainPage() {
         )}
 
         <GameOverBlock
-          open={state.phase === "gameOver"}
-          score={state.score}
-          hearts={state.hearts}
+          open={gameOverOverride !== null || state.phase === "gameOver"}
+          score={gameOverOverride?.score ?? state.score}
+          hearts={gameOverOverride?.hearts ?? state.hearts}
           mode={zenMode ? "zen" : "normal"}
           gameId={gameId}
           getActionLog={getActionLog}
-          reason={state.gameOverReason}
+          reason={gameOverOverride?.reason ?? state.gameOverReason}
           onReset={handleNewGame}
         />
       </div>
